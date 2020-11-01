@@ -18,10 +18,8 @@ GTfield=$8
 LDwindow=1000000
 cd ${Score_dir}
 
-echo $block
 
 line=$(head -n $block $filehead | tail -n1)
-
 
 if [ -f ${LDdir}/${line}.LDcorr.txt.gz ] ; then
 #echo ${LDdir}/${line}.LDcorr.txt.gz exists!

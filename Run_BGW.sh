@@ -14,10 +14,10 @@
 ################################################################
 BGW_dir=~/GIT/BGW-TWAS # tool directory
 
-gene=ABCA7
+gene_name=ABCA7
 GeneExpFile=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt
 geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
-wkdir=${BGW_dir}/Example/ExampleWorkDir~
+wkdir=${BGW_dir}/Example/ExampleWorkDir
 LDdir=${BGW_dir}/Example/ExampleData/LDdir
 Genome_Seg_File=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
 num_segments=2 # number of genotype segmentation
@@ -32,7 +32,10 @@ GTfield=DS # specify genotype field "GT" for genotype, or "DS" for imputed dosag
 ################################################################
 ################################################################
 
-${BGW_dir}/bin/Step1.sh ${gene} ${GeneExpFile} ${geno_dir} ${BGW_dir} ${wkdir} ${LDdir} ${Genome_Seg_File} ${num_segments} ${num_cores} ${GTfield}
+${BGW_dir}/bin/Step1_get_sumstat.sh --BGW_dir ${BGW_dir} \
+--wkdir ${wkdir} --gene_name ${gene_name} --GeneExpFile ${GeneExpFile} \
+--geno_dir ${geno_dir} --LDdir ${LDdir} --Genome_Seg_File ${Genome_Seg_File} \
+--GTfield ${GTfield} --num_cores ${num_cores}  
 
 ################################################################
 ################################################################
