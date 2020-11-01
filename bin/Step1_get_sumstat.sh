@@ -10,6 +10,15 @@
 
 # Variable needed for obtaining summary statistics
 ###
+# --BGW_dir : Specify the directory of BGW-TWAS tool
+# --wkdir : Specify a working directory
+# --gene_name : Specify the gene name that should be the same used in `GeneExpFile`
+# --GeneExpFile : Specify gene expression file directory
+# --geno_dir : Specify the directory of all genotype files
+# --LDdir : Specify the directory of all LD files
+# --Genome_Seg_File : Specify the genome segmentation file
+# --GTfield : Specify the genotype format in the vcf file that should be used: "GT" (default) or e.g., "DS" for dosage
+# --num_cores : Specify the number of parallele sessions
 
 #################################
 VARS=`getopt -o "" -a -l \

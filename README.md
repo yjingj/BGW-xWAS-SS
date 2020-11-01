@@ -8,7 +8,11 @@ Please cite our BGW-TWAS paper if you use the tool:
 ---
 - [Software Installation](#software-installation)
 - [Input Files](#input-files)
+	- [1. Gene Expression File](#1-gene-expression-file)
+	- [2. Genotype File](#2-genotype-file)
 - [Example Usage](#example-usage)
+	- [1. Obtain Summary Statistics](#1-obtain-summary-statistics)
+	- [2. Prune Genome Segments](#2-prune-genome-segments)
 ---
 
 ## Software Installation
@@ -38,7 +42,7 @@ Executive file *Estep_mcmc* will be created under `./bin/` with success compilat
 
 The following information is required, stored in various text files with pre-defined formats: a gene expression file, genotype files for the training sample, a list of filenames for training genotype files, genotype files for the prediction sample, a list of filenames for prediction genotype files, and phenotype files for the prediction sample.
 
-### 1. Gene Expression Quantitative Trait File 
+### 1. Gene Expression File 
 
 A file containing a list of genes and gene expression scores for the training sample. Each gene should be listed in a row. The first five columns need to contain the chromosome, starting position, ending position, Gene ID, and Gene Name. Columns from 6 to $N_{train}$ should contain the subject IDs for each training sample, with gene expression scores for each gene. An example of the first row and 6 columns of such a file is below: 
 
@@ -110,51 +114,51 @@ The entire process requires the storage of many results files for each gene (sto
 
 ## Example Usage
 
-### 1. Set up bash environment variables 
-```
-BGW_dir=/BGW-TWAS # tool directory
-GeneExpFile=/Example/ExampleData/Gene_Exp_example.txt
-gene=ABCA7
-Res_dir=/Example/ExampleData
-geno_dir=/Example/ExampleData/genotype_data_files 
-LDdir=/Example/ExampleData/genotype_data_files
-Genome_Seg_File=Example/ExampleData/geno_block_filehead.txt
-```
-
-### 2. Usage Steps 
-
-A simple command executing a shell script for each step is detailed below, along with corresponding necessary information. 
-
-
-#### Step 1: Obtain Summary Statistics 
-
-The first shell script will obtain single variant eQTL summary statistics in required formats. This shell script requires 9 arguments: 1) `${gene}` 2) `${geneFile}` 3) `${geno_dir}` 4) `${Scripts_dir}` 5) `${Res_dir}` 6) `${LDdir}` 7) `${Genome_Seg_File}` 8) `${number_segments}` 9) `${number_cores}`
-
+Set up bash variables:
 
 ```
-################################################################
-################################################################
-### Step 1: obtain summary statistics (aka Score Statistics)
-### Runs single-variant GWAS on the training sample genotypes and available expression data.
-### first extracts gene location information for target gene from geneFile.
-################################################################
-################################################################
-
-num_segments=2
-num_cores=4
-
-${Scripts_dir}/Step1.sh ${gene} ${geneFile} ${geno_dir} ${Scripts_dir} ${Res_dir} 
-${LDdir} ${Genome_Seg_File} ${num_segments} ${num_cores}
-
+BGW_dir=~/GIT/BGW-TWAS # tool directory
+gene_name=ABCA7
+GeneExpFile=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt
+geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
+wkdir=${BGW_dir}/Example/ExampleWorkDir
+LDdir=${BGW_dir}/Example/ExampleData/LDdir
+Genome_Seg_File=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
+GTfield=DS # specify genotype field "GT" for genotype
+num_cores=2 # number of cores to be used
 ```
 
+### 1. Obtain Summary Statistics by `Step1_get_sum_stat.sh`
+This shell script will obtain single variant eQTL summary statistics (aka Score Statistics) in required formats. 
 
-This shell script will create a directory called `${gene}_scores` within the `${Res_dir}`, where results for each genome segment will be stored. 
+#### Input arguments
+- `--BGW_dir` : Specify the directory of BGW-TWAS tool
+- `--wkdir` : Specify a working directory
+- `-GeneExpFile` : Specify gene expression file directory
+- `--gene_name` : Specify the gene name that should be the same used in `GeneExpFile`
+- `--geno_dir` : Specify the directory of all genotype files
+- `--LDdir` : Specify the directory of all LD files
+- `--Genome_Seg_File` : Specify the genome segmentation file
+- `--GTfield` : Specify the genotype format in the vcf file that should be used: `GT` (default) or e.g., `DS` for dosage
+- `--num_cores` : Specify the number of parallele sessions, default `1`.
 
-**Note**: for the first gene, this script will also compute LD information and save the information per genome segment in the `${LDdir}`. This step is time consuming, but only needs to be completed one time. 
+#### Example command:
+```
+${BGW_dir}/bin/Step1_get_sumstat.sh --BGW_dir ${BGW_dir} \
+--wkdir ${wkdir} --gene_name ${gene_name} --GeneExpFile ${GeneExpFile} \
+--geno_dir ${geno_dir} --LDdir ${LDdir} --Genome_Seg_File ${Genome_Seg_File} \
+--GTfield ${GTfield} --num_cores ${num_cores}  
+```
 
-#### Step 2: Prune genome segments 
+#### Output files
+- This shell script will create a directory called `${gene}_scores/` under the specified working directory `${wkdir}/`, where results for each genome segment will be stored. 
 
+- This script will also generate LD files under `${LDdir}/` for all genome blocks. Since LD files will be the same per genome block, these files will only be generated once and used for training prediction models for all gene expression traits. 
+
+- These summary statistics files and LD files will be used for implementing the MCMC algorithm to fit the Bayesian model
+
+
+### 2. Prune genome segments 
 Step 2 reduces the number of genome segments considered for the Bayesian training model for $GReX$. Unique arguments required for this shell script are the $p$-value threshold for inclusion and the maximum number of segments to include. The arguments are 1) `${gene}` 2) `${geneFile}` 3) `${Res_dir}` 4) `${p_thresh}` 5) `${max_blocks}`
 
 ```
