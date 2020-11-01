@@ -128,8 +128,8 @@ GTfield=DS # specify genotype field "GT" for genotype
 num_cores=2 # number of cores to be used
 ```
 
-### 1. Obtain Summary Statistics by `Step1_get_sum_stat.sh`
-This shell script will obtain single variant eQTL summary statistics (aka Score Statistics) in required formats. 
+### 1. Obtain Summary Statistics
+Shell script `Step1_get_sum_stat.sh` will obtain single variant eQTL summary statistics (aka Score Statistics) in required formats. 
 
 #### Input arguments
 - `--BGW_dir` : Specify the directory of BGW-TWAS tool
@@ -158,7 +158,7 @@ ${BGW_dir}/bin/Step1_get_sumstat.sh --BGW_dir ${BGW_dir} \
 - These summary statistics files and LD files will be used for implementing the MCMC algorithm to fit the Bayesian model
 
 
-### 2. Prune genome segments 
+### 2. Prune Genome Segments 
 Step 2 reduces the number of genome segments considered for the Bayesian training model for $GReX$. Unique arguments required for this shell script are the $p$-value threshold for inclusion and the maximum number of segments to include. The arguments are 1) `${gene}` 2) `${geneFile}` 3) `${Res_dir}` 4) `${p_thresh}` 5) `${max_blocks}`
 
 ```
