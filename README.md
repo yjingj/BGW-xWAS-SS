@@ -9,7 +9,7 @@ Please cite our BGW-TWAS paper if you use the tool:
 - [Software Installation](#software-installation)
 - [Input Files](#input-files)
 	- [1. Gene Expression File](#1-gene-expression-file)
-	- [2. Genotype File](#2-genotype-file)
+	- [2. Genotype Files for Training](#2-genotype-file-for-training)
 - [Example Usage](#example-usage)
 	- [1. Obtain Summary Statistics](#1-obtain-summary-statistics)
 	- [2. Prune Genome Segments](#2-prune-genome-segments)
@@ -42,7 +42,7 @@ Executive file *Estep_mcmc* will be created under `./bin/` with success compilat
 
 The following information is required, stored in various text files with pre-defined formats: a gene expression file, genotype files for the training sample, a list of filenames for training genotype files, genotype files for the prediction sample, a list of filenames for prediction genotype files, and phenotype files for the prediction sample.
 
-### 1. Gene Expression File 
+### 1. Gene Expression File for Training
 
 A file containing a list of genes and gene expression scores for the training sample. Each gene should be listed in a row. The first five columns need to contain the chromosome, starting position, ending position, Gene ID, and Gene Name. Columns from 6 to $N_{train}$ should contain the subject IDs for each training sample, with gene expression scores for each gene. An example of the first row and 6 columns of such a file is below: 
 
@@ -51,14 +51,14 @@ A file containing a list of genes and gene expression scores for the training sa
 |  19	  |  1040101	| 1065571 |	 ENSG00000064687 |	 ABCA7  | 0.6707739044 |
 
 
-### 2. Genotype Files - Training Sample
+### 2. Genotype Files for Training
 
 Genotype files for both training and prediction sets are required for analysis. The genotype files should be a VCF text file zipped by `gzip` (file names ending with .vcf.gz), e.g., `chr1_seg1.vcf.gz`
 (http://samtools.github.io/hts-specs/VCFv4.1.pdf).
 
 Note that the training software can handle `plink` PED, bim, and fam files or genotype text file in a specific format to carry out summary statistics for GReX training. However, the process currently requires VCF files for the prediction dataset, and the scripts as constructed utilize VCF for training. 
 
-### 3. Genotype Files - Prediction Sample
+### 3. Genotype Files for GReX Prediction
 
 The genotype files for the prediction sample should be stored by chromosome, as is common for GWAS samples. The files should be VCF files, zipped with `gzip`, and the file name should include `CHR${chr}` for each chromosome. 
 
