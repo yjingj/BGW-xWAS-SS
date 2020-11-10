@@ -16,13 +16,13 @@
 # --GeneExpFile : Specify gene expression file directory
 # --geno_dir : Specify the directory of all genotype files
 # --LDdir : Specify the directory of all LD files
-# --Genome_Seg_File : Specify the genome segmentation file
+# --Genome_Seg_Filehead : Specify the file containing the fileheads of all genome segmentations
 # --GTfield : Specify the genotype format in the vcf file that should be used: "GT" (default) or e.g., "DS" for dosage
 # --num_cores : Specify the number of parallele sessions
 
 #################################
 VARS=`getopt -o "" -a -l \
-BGW_dir:,wkdir:,gene_name:,GeneExpFile:,geno_dir:,LDdir:,Genome_Seg_File:,GTfield:,num_cores: \
+BGW_dir:,wkdir:,gene_name:,GeneExpFile:,geno_dir:,LDdir:,Genome_Seg_Filehead:,GTfield:,num_cores: \
 -- "$@"`
 
 
@@ -43,7 +43,7 @@ do
         --GeneExpFile|-GeneExpFile) GeneExpFile=$2; shift 2;;
         --geno_dir|-geno_dir) geno_dir=$2; shift 2;;
         --LDdir|-LDdir) LDdir=$2; shift 2;;
-        --Genome_Seg_File|-Genome_Seg_File) Genome_Seg_File=$2; shift 2;;
+        --Genome_Seg_Filehead|-Genome_Seg_Filehead) Genome_Seg_Filehead=$2; shift 2;;
         --GTfield|-GTfield) GTfield=$2; shift 2;;
         --num_cores|-num_cores) num_cores=$2; shift 2;;
         --) shift;break;;
@@ -57,7 +57,7 @@ done
 GTfield=${GTfield:-"GT"}
 num_cores=${num_cores:-1}
 
-num_segments=`wc -l ${Genome_Seg_File} | awk '{print $1}'`
+num_segments=`wc -l ${Genome_Seg_Filehead} | awk '{print $1}'`
 echo ${gene_name} with ${num_segments} genome blocks
 echo GTfield = $GTfield , number of cores = $num_cores
 
@@ -87,7 +87,7 @@ echo -e ${gene_name} '\t' ${pv} > ${wkdir}/${gene}_geneExp_var.txt
 rm -f temp_ID.txt exp_temp.txt
 
 ## Run in parallele with specified number of processes by -P
-seq 1 ${num_segments}  | xargs -I % -n 1 -P ${num_cores} sh ${BGW_dir}/bin/get_score_stat.sh ${pheno} ${geno_dir} ${Score_dir} ${BGW_dir} ${LDdir} ${Genome_Seg_File} % ${GTfield}
+seq 1 ${num_segments}  | xargs -I % -n 1 -P ${num_cores} sh ${BGW_dir}/bin/get_score_stat.sh ${pheno} ${geno_dir} ${Score_dir} ${BGW_dir} ${LDdir} ${Genome_Seg_Filehead} % ${GTfield}
 
 
 echo Step 1 complete for generating eQTL summary statistics!

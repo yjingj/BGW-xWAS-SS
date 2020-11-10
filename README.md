@@ -44,27 +44,24 @@ The following information is required, stored in various text files with pre-def
 
 ### 1. Gene Expression File for Training
 
-A file containing a list of genes and gene expression scores for the training sample. Each gene should be listed in a row. The first five columns need to contain the chromosome, starting position, ending position, Gene ID, and Gene Name. Columns from 6 to $N_{train}$ should contain the subject IDs for each training sample, with gene expression scores for each gene. An example of the first row and 6 columns of such a file is below: 
+A file containing gene expression levels for training samples, with one gene per row, and one sample per column starting from the 6th column. The first five columns are required to be gene annotation information including chromosome number, starting position, ending position, Gene ID, and Gene Name or Gene ID. An example of one gene and first 6 columns is below: 
 
 | CHROM |	GeneStart |	GeneEnd |	    TargetID     | GeneName |	 ROS20275399 |
 | ----- | --------- | ------- | ---------------- | -------- | ------------ |
 |  19	  |  1040101	| 1065571 |	 ENSG00000064687 |	 ABCA7  | 0.6707739044 |
 
 
-### 2. Genotype Files for Training
+### 2. VCF Genotype Files for Training
 
-Genotype files for both training and prediction sets are required for analysis. The genotype files should be a VCF text file zipped by `gzip` (file names ending with .vcf.gz), e.g., `chr1_seg1.vcf.gz`
-(http://samtools.github.io/hts-specs/VCFv4.1.pdf).
-
-Note that the training software can handle `plink` PED, bim, and fam files or genotype text file in a specific format to carry out summary statistics for GReX training. However, the process currently requires VCF files for the prediction dataset, and the scripts as constructed utilize VCF for training. 
-
-### 3. Genotype Files for GReX Prediction
-
-The genotype files for the prediction sample should be stored by chromosome, as is common for GWAS samples. The files should be VCF files, zipped with `gzip`, and the file name should include `CHR${chr}` for each chromosome. 
+[VCF Genotype files](http://samtools.github.io/hts-specs/VCFv4.1.pdf) are required for training gene expression prediction models. The VCF genotype files should be one per genome block (variants of the same chromosome should be in the same block), sorted by position, and then zipped by `bgzip` (file names are of `[filehead].vcf.gz`), e.g., `./Example/ExampleData/genotype_data_files/Cis_geno_block.vcf.gz`.
 
 
-### 4. Genotype file lists 
+### 3. VCF Genotype Files for GReX Prediction
 
+[VCF Genotype files](http://samtools.github.io/hts-specs/VCFv4.1.pdf) are required for predicting GReX values of test samples, which should be one per chromosome, sorted by position, and then zipped by `bgzip`. The files should be VCF files, zipped with `bgzip`. 
+
+
+### 4. List of file heads of VCF genotype files 
 For the training procedure, users can split the genotype information into many segments based on LD information, each segment containing approximately 3,000-5,000 SNPs. To facilitate computation, users should provide a text file that is a list names for the genome segment files. These should contain a common name (e.g., the name of study or sample), plus the chromosome, start position, and end position of the genome block - all seperated by underscore `_`. E.g.:
 
 |            #filename             |

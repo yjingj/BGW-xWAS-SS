@@ -1,68 +1,73 @@
 
 ################################################################
 ################################################################
-# Step 0: Set up directories of input files and working directory.
-# need a name/identifier for each gene.
-# need a file that has gene information with following columns:
-# CHR, START POS, END POS, GENE Name, Gene ID
-# from column 6 on is the subject ID and expression scores for each gene.
-# need directory with genotype, and a Results directory to send output.
-# need a file that contains a list of filenames for the genotype data.
-# For computation speed, recommend segmenting into many small chunks.
-# need scripts directory with perl script, shell files, R script.
+# Step 0: Set up directories of BGW-TWAS tool, input files, and working directory.
 ################################################################
 ################################################################
-BGW_dir=~/GIT/BGW-TWAS # tool directory
-gene_name=ABCA7
+# Tool directory
+BGW_dir=~/GIT/BGW-TWAS 
+
+# Specify gene name/identifier as in the 5th column of the gene expression file.
+gene_name=ABCA7 
+
+# The gene expression file has the following gene information in the first 5 columns:
+# CHR, GeneStart, GeneEnd, TargetID/GeneID_1, GeneName/GeneID_2
+# And gene expression levels from column 6 with samples in columns and genes in rows.
 GeneExpFile=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt
+
+# Parent directory of genotype data in VCF files
 geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
+# File with filehead of all VCF files as in ${geno_dir}/[filehead].vcf.gz of all genome blocks 
+Genome_Seg_Filehead=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
+# Specify the genotype field "GT" (genotype) or "DS" (dosage) to be used from the VCF files
+GTfield=DS 
+
+# Working directory to save all output
 wkdir=${BGW_dir}/Example/ExampleWorkDir
+
+# Parent directory of all LD files
 LDdir=${BGW_dir}/Example/ExampleData/LDdir
-Genome_Seg_File=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
-GTfield=DS # specify genotype field "GT" for genotype
-num_cores=2 # number of cores to be used
+
+# Number of cores/parallele_jobs to be used/implemented
+num_cores=2 
 
 ################################################################
 ################################################################
 # Step 1: obtain summary statistics (aka Score Statistics)
-# Runs single-variant GWAS on the training sample genotypes and available expression data.
-# first extracts gene location information for target gene from geneFile.
+# Run single-variant eQTL analyses on the training gene expression and genotypes data profiled for the same samples
 ################################################################
 ################################################################
 
 ${BGW_dir}/bin/Step1_get_sumstat.sh --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} --GeneExpFile ${GeneExpFile} \
---geno_dir ${geno_dir} --LDdir ${LDdir} --Genome_Seg_File ${Genome_Seg_File} \
+--geno_dir ${geno_dir} --LDdir ${LDdir} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
 --GTfield ${GTfield} --num_cores ${num_cores}  
 
 ################################################################
 ################################################################
 # Step 2: Prune blocks
-# Select a limited number of genome segments to consider in the EM training model
-# cis blocks are always included (when available), then blocks are filtered
-# by p-value threshold, ranked by smallest p-value, and set at a max number of blocks.
+# Select a subset of genome blocks (up to ${max_blocks}) for joint model training by BGW-TWAS
+# Cis blocks are always selected
+# Rank trans blocks with minimum single-variant eQTL p-value < ${p_thresh} by the smallest p-value within block (from the smallest to the largest), and select top ranked trans blocks up to ${max_blocks}.
+################################################################
+################################################################
+p_thresh=0.001 # p-value threshold
+max_blocks=100 # maximum blocks
+
+${BGW_dir}/bin/Step2_prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
+--GeneExpFile ${GeneExpFile} --Genome_Seg_File ${Genome_Seg_File} \
+--p_thresh 0.001 --max_blocks 100
+
+
+select_filehead=${wkdir}/${gene_name}_scores/${gene_name}_select_segments.txt
+
+################################################################
+################################################################
+# Step 3: Training BVSR gene expression prediction model by EM-MCMC algorithm
 ################################################################
 ################################################################
 
-p_thresh=0.00000005
-max_blocks=100
-
-${Scripts_dir}/Step2.sh ${gene} ${geneFile} ${Res_dir} ${p_thresh} ${max_blocks}
-
-
-filehead=${Res_dir}/${gene}_scores/${gene}_signif_segments.txt
-
-
-################################################################
-################################################################
-# Step 3: EM-MCMC training
-# use Make with Perl script to create file
-################################################################
-################################################################
-
-
-N=499
-
+N=499 # sample size
 ${Scripts_dir}/Step3.sh ${gene} ${geneFile} ${geno_dir} ${Scripts_dir} ${Res_dir} ${LDdir} ${N} ${num_cores}
 
 ################################################################
