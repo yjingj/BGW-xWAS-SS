@@ -120,7 +120,7 @@ GeneExpFile=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt
 geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
 wkdir=${BGW_dir}/Example/ExampleWorkDir
 LDdir=${BGW_dir}/Example/ExampleData/LDdir
-Genome_Seg_File=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
+Genome_Seg_Filehead=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
 GTfield=DS # specify genotype field "GT" for genotype
 num_cores=2 # number of cores to be used
 ```
@@ -135,7 +135,7 @@ Shell script `Step1_get_sum_stat.sh` will obtain single variant eQTL summary sta
 - `--gene_name` : Specify the gene name that should be the same used in `GeneExpFile`
 - `--geno_dir` : Specify the directory of all genotype files
 - `--LDdir` : Specify the directory of all LD files
-- `--Genome_Seg_File` : Specify the genome segmentation file
+- `--Genome_Seg_Filehead` : Specify the genome segmentation file
 - `--GTfield` : Specify the genotype format in the vcf file that should be used: `GT` (default) or e.g., `DS` for dosage
 - `--num_cores` : Specify the number of parallele sessions, default `1`.
 
@@ -143,7 +143,7 @@ Shell script `Step1_get_sum_stat.sh` will obtain single variant eQTL summary sta
 ```
 ${BGW_dir}/bin/Step1_get_sumstat.sh --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} --GeneExpFile ${GeneExpFile} \
---geno_dir ${geno_dir} --LDdir ${LDdir} --Genome_Seg_File ${Genome_Seg_File} \
+--geno_dir ${geno_dir} --LDdir ${LDdir} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
 --GTfield ${GTfield} --num_cores ${num_cores}  
 ```
 
@@ -156,29 +156,26 @@ ${BGW_dir}/bin/Step1_get_sumstat.sh --BGW_dir ${BGW_dir} \
 
 
 ### 2. Prune Genome Segments 
-Step 2 reduces the number of genome segments considered for the Bayesian training model for $GReX$. Unique arguments required for this shell script are the $p$-value threshold for inclusion and the maximum number of segments to include. The arguments are 1) `${gene}` 2) `${geneFile}` 3) `${Res_dir}` 4) `${p_thresh}` 5) `${max_blocks}`
+Step 2 selects a subset of genome blocks (up to `${max_blocks}`) for joint model training by BGW-TWAS, where Cis blocks are always selected. Trans blocks with minimum single-variant eQTL `p-value < ${p_thresh}` will first be ranked by the smallest p-value within block (from the smallest to the largest), where top ranked trans blocks will be selected up to `${max_blocks}`.
 
+
+#### Input arguments
+- `--wkdir` : Specify a working directory
+- `--gene_name` : Specify the gene name that should be the same used in `GeneExpFile`
+- `-GeneExpFile` : Specify gene expression file directory
+- `--Genome_Seg_Filehead` : Specify the genome segmentation file
+- `--p_thresh` : Specify p-value threshold for pruning, default `1e-5`
+- `--max_blocks` : Specify the maximum number of genome blocks for jointly training gene expression prediction models, default `100`
+
+#### Example command:
 ```
-################################################################
-################################################################
-### Step 2: Prune blocks
-### Select a limited number of genome segments to consider in the EM training model
-### cis blocks are always included (when available), then blocks are filtered
-# by p-value threshold, ranked by smallest p-value, and set at a max number of blocks.
-################################################################
-################################################################
-
-p_thresh=0.00000005
-max_blocks=100
-
-${Scripts_dir}/Step2.sh ${gene} ${geneFile} ${Res_dir} ${p_thresh} ${max_blocks}
-
-
-filehead=${Res_dir}/${gene}_scores/${gene}_signif_segments.txt
-
+${BGW_dir}/bin/Step2_prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
+--GeneExpFile ${GeneExpFile} --Genome_Seg_File ${Genome_Seg_File} \
+--p_thresh 0.001 --max_blocks 100
 ```
 
-This shell script creates the file `${gene}_signif_segments.txt`, which needs to be passed to the commands for Step 3. 
+#### Output files
+A list of filehead of selected genome blocks is given in the file of `${wkdir}/${gene_name}_scores/${gene_name}_select_segments.txt`, which will be used in next step (model training). 
 
 #### Step 3: Execute Bayesian Training model on selected genome segments 
 
