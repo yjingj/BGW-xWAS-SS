@@ -8,12 +8,13 @@ Please cite our BGW-TWAS paper if you use the tool:
 ---
 - [Software Installation](#software-installation)
 - [Input Files](#input-files)
-	- [Step 1. Gene Expression File](#1-gene-expression-file)
-	- [Step 2. Genotype Files for Training](#2-genotype-files-for-training)
-	- [Step 3. Training BGW-TWAS](#3-training-BGW-TWAS)
+	- [1. Gene Expression File](#1-gene-expression-file)
+	- [2. Genotype Files for Training](#2-genotype-files-for-training)
 - [Example Usage](#example-usage)
 	- [1. Obtain Summary Statistics](#1-obtain-summary-statistics)
 	- [2. Prune Genome Segments](#2-prune-genome-segments)
+	- [3. Training BGW-TWAS](#3-training)
+
 ---
 
 ## Software Installation
