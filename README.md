@@ -10,6 +10,7 @@ Please cite our BGW-TWAS paper if you use the tool:
 - [Input Files](#input-files)
 	- [1. Gene Expression File](#1-gene-expression-file)
 	- [2. Genotype Files for Training](#2-genotype-files-for-training)
+	- [3. Training BGW-TWAS](#3-training-BGW-TWAS)
 - [Example Usage](#example-usage)
 	- [1. Obtain Summary Statistics](#1-obtain-summary-statistics)
 	- [2. Prune Genome Segments](#2-prune-genome-segments)
@@ -125,7 +126,7 @@ GTfield=DS # specify genotype field "GT" for genotype
 num_cores=2 # number of cores to be used
 ```
 
-### 1. Obtain Summary Statistics
+### Step 1. Obtain Summary Statistics
 Shell script `Step1_get_sum_stat.sh` will obtain single variant eQTL summary statistics (aka Score Statistics) in required formats.
 
 #### Input arguments
@@ -155,7 +156,7 @@ ${BGW_dir}/bin/Step1_get_sumstat.sh --BGW_dir ${BGW_dir} \
 - These summary statistics files and LD files will be used for implementing the MCMC algorithm to fit the Bayesian model
 
 
-### 2. Prune Genome Segments
+### Step 2. Prune Genome Segments
 Step 2 selects a subset of genome blocks (up to `${max_blocks}`) for joint model training by BGW-TWAS, where Cis blocks are always selected. Trans blocks with minimum single-variant eQTL `p-value < ${p_thresh}` will first be ranked by the smallest p-value within block (from the smallest to the largest), where top ranked trans blocks will be selected up to `${max_blocks}`.
 
 
