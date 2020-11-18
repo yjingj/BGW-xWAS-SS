@@ -185,6 +185,7 @@ Step 3 will use summary statistics generated from Step 1 for genome blocks prune
 ```
 N=499 # sample size
 hfile=${BGW_dir}/Example/hypval.txt
+
 ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
 --GeneExpFile ${GeneExpFile} --LDdir ${LDdir} \
@@ -194,11 +195,9 @@ ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 ```
 
 #### Output files
-The final iteration of the EM-MCMC algorithm will result in a file that lists all variants found to have  non-zero effect sizes (specifically, a non-zero posterior probability of inclusion, $PP_i$). The chromosome, position, rsID, reference and alternative alleles, $maf$, $cis$ or $trans$ status relative to the gene, $PP_i$, and effect size $w_i$ will all be saved in the file `${Res_dir}/${gene}_TWAS/Eoutput/grexparam.txt`.
+The final iteration of the EM-MCMC algorithm will result in a file that lists all variants found to have  non-zero effect sizes (specifically, a non-zero posterior probability of inclusion, $PP_i$). The chromosome, position, rsID, reference and alternative alleles, $maf$, $cis$ or $trans$ status relative to the gene, $PP_i$, and effect size $w_i$ will all be saved in the file `${wkdir}/Eoutput/grexparam.txt`.
 
-**note**: within this script, there are several optional arguments that control parameters of the EM-MCMC algorithm, such as the number of EM iterations and the number of MCMC draws. These are set to 5 EM iterations with 10,000 burn-in and 10,000 additional MCMC iterations. If desired, these can be modified by the user within the script.
-
-Numerous arguments can be used to modify the EM-MCMC algorithm in Step 3, but should be done with caution. These arguments are detailed in Yang et al. 2017 (https://github.com/yjingj/bfGWAS/blob/master/bfGWAS_Manual.pdf).
+[//]: <> (Numerous arguments can be used to modify the EM-MCMC algorithm in Step 3, but should be done with caution. These arguments are detailed in Yang et al. 2017 https://github.com/yjingj/bfGWAS/blob/master/bfGWAS_Manual.pdf)
 
 ### Step 4: Extract Genotypes from the Prediction Sample
 
