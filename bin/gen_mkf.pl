@@ -14,7 +14,7 @@ Generate bfGWAS Makefile
 
 =head1 SYNOPSIS
 
-./gen_mkf.pl [options] 
+./gen_mkf.pl [options]
 
 Options:
   -h      help messages
@@ -29,42 +29,21 @@ Options:
 
   -w         work directory : location for all output files
   -t         directory for the C++ executable file for Estep (running MCMC)
-  --geno     specify genotype format: (gzipped) vcf, (gzipped) genotxt, or bed
-  --gd       genotype file directory
-  --ad       annotation file directory
-  --ac       annotation classification code file
-  --pheno    phenotype file
   --hyp      initial hyper parameter value file
-  -f         file with a list of fileheads for genotype files
-  -G         genotype format: GT(genotype data 0/0, 0/1, 1/1) or EC (dosage data)
-  --maf      maf threshold: default 0.5% 
-  --pp       specify prior for the causal probability: default 1e-6
-  --abgamma  specify inverse gamma prior for the effect size variance: default 0.1
-  --win      window size of the neighborhood: default 100
   --em       number of EM iterations: default 5
   -b         number of burn ins: default 50,000
   -N         number of MCMC iterations: default 50,000
   --NL       number of MCMC iterations for the last EM iteration: default 50,000
-  -c         compress genotype data (1) or not (0): default 0 (do not compress)
-  --initype  specify initial model (1:start with top signal), (2: start with genome-wide significant signals), or default (3: stepwise selected signals)
-  --rv       fixed residual variance value : default 1 (recomended)
   --smin     minimum number of variates per block in the model: default 0
   --smax     maximum number of variates per block in the model: default 5
-  --mem      specify maximum memory usage: default 3000MB
-  --time     specify time of runing MCMC per block per MCMC iteration: default 24hr
   -l         specify how job will be submited (options: slurm, mosix, local): default slurm
   --mf       output make file
-  --nice     SLURM option for scheduling priority
-  --xnode    compuation nodes to be excluded
-  -j         specify SLURM job names
-  --wnode    specify compuation nodes to be used
-  --part     specify SLURM partition
 
 =back
 
 =head1 DESCRIPTION
 
-B<gen_mkf.pl> will generate a makefile for conducting Bayesian Functional GWASs by bfGWAS. 
+B<gen_mkf.pl> will generate a makefile for conducting Bayesian Functional GWASs by bfGWAS.
 
 =cut
 
@@ -73,34 +52,26 @@ my $help;
 my $verbose;
 my $debug;
 my $man;
-my $launchMethod = "slurm";
-my $wkDir=getcwd();
-my $makeFile = "bfGWAS.mk";
-my $genofile = "vcf";
+my $launchMethod = "local";
+my $makeFile = "BGW-TWAS.mk";
+my $genofile = "sumstat";
 
-my $toolE="/home/jluningham/Projects/bfGWAS_SS/bin/Estep_mcmc";
-my $rs="/mnt/icebreaker/data2/home/jluningham/Projects/bfGWAS_SS/bin/Mstep.R";
-my $annoDir="";
-my $genoDir = "";
-my $pheno="";
-my $annoCode="";
-my $hyppar="/mnt/YangFSS/data/ROSMAP_GWAS_Segments/DDX11_GWAS/hypval.current";
-my $filelist = "/mnt/YangFSS/data/ROSMAP_GWAS_Segments/ROSMAP_GWAS_Seg_filehead_short.txt";
 my $start_pos="31226778";
 my $end_pos="31257725";
 my $target_chr="12";
 my $window_size="1e6";
 
 my $EM=5;
+my $burnin="10000";
+my $Nmcmc="10000";
+my $NmcmcLast="10000";
+
 my $GTfield="GT";
 my $maf="0.005";
 my $rho="1";
 my $smin="0";
 my $smax="5";
 my $win="100";
-my $burnin="50000";
-my $Nmcmc="50000";
-my $NmcmcLast="50000";
 my $compress=0;
 my $initype="0";
 my $rv="1";
@@ -113,40 +84,46 @@ my $convergence="1e-7";
 my $maxmem = "8000";
 my $time = "24:00:00";
 my $nice = "0";
-my $jobid="";
-my $xnode="";
-my $wnode="";
 my $part="nomosix";
 
-my $seed="2017";
+my $seed="2020";
 my $refld=0;
 my $usextxld=0;
 my $r2_level="0.001";
-my $LDdir="/home/jyang/Collaborations/IrwinSAGE/BFGWAS_Analysis/RefLD/AA";
-my $Scoredir="/mnt/YangFSS/data/BU_GWASs_CDSymptomDimensions/BFGWAS/AA/ScoreStat";
 my $N="499";
 my $pv="0.56";
-my $EMdir="/home/jluningham/Projects/BFGWAS/ROSMAP/Scripts";
+my $BGW_dir="/home/jyang/GIT/BGW-TWAS";
+my $wkDir="${BGW_dir}/Example/ExampleWorkDir";
+my $hyppar="${BGW_dir}/Example/hypval.txt";
+my $filelist = "${BGW_dir}/Example/ExampleData/geno_block_filehead.txt";
+my $LDdir="${BGW_dir}/Example/ExampleData/LDdir";
+my $Scoredir="${BGW_dir}/Example/ExampleWorkDir/ABCA7_scores";
 
+## parameters that do not used by BGW-TWAS
+my $genoDir="";
+my $annoCode="";
+my $pheno="";
+my $annoDir="";
+my $wnode="";
+my $xnode="";
+my $jobid="";
 
 #initialize options
 Getopt::Long::Configure ('bundling');
 
 if(!GetOptions ('h'=>\$help, 'v'=>\$verbose, 'd'=>\$debug, 'm'=>\$man,
-'w:s'=>\$wkDir, 'Estep:s' =>\$toolE, 'ad:s'=>\$annoDir,
-'geno:s'=>\$genofile, 'ac:s'=>\$annoCode, 'gd:s'=>\$genoDir, 'pheno:s'=>\$pheno, 'window_size:i'=>\$window_size,
+'w:s'=>\$wkDir, 'geno:s'=>\$genofile, 'window_size:i'=>\$window_size,
 'hyp:s'=>\$hyppar, 'start:i'=>\$start_pos, 'end:i'=>\$end_pos,
-'targ:s'=>\$target_chr,'G:s'=>\$GTfield, 'maf:s'=>\$maf,
+'targ:s'=>\$target_chr,
 'smin:s'=>\$smin, 'smax:s'=>\$smax, 'win:s'=>\$win,
 'b:s'=>\$burnin, 'N:s'=>\$Nmcmc, 'NL:s'=>\$NmcmcLast,
 'c:i'=>\$compress, 'n:i'=>\$N, 'converg:s'=>\$convergence, 'iter:i'=>\$max_iter,
-'initype:s'=>\$initype, 'rv:s'=>\$rv, #'algo:s'=>\$algorithm,
 'pp:s'=>\$pp, 'abgamma:s'=>\$abgamma,
-'mem:s'=>\$maxmem, 'time:s'=>\$time, 'f:s'=>\$filelist, 'em:i'=>\$EM, 'rs:s'=>\$rs,
+'mem:s'=>\$maxmem, 'time:s'=>\$time, 'f:s'=>\$filelist, 'em:i'=>\$EM,
 'l:s'=>\$launchMethod, 'mf:s'=>\$makeFile, 'nice:s'=>\$nice,
 'j:s' =>\$jobid, 'xnode:s'=>\$xnode, 'wnode:s'=>\$wnode, 'part:s'=>\$part,
 'refLD:s'=>\$refld, 'seed:s'=>\$seed, 'r2:s'=>\$r2_level,
-'LDdir:s'=>\$LDdir, 'Scoredir:s'=>\$Scoredir, 'EMdir:s'=>\$EMdir,
+'LDdir:s'=>\$LDdir, 'Scoredir:s'=>\$Scoredir, 'BGW_dir:s'=>\$BGW_dir,
 'pv:s'=>\$pv, 'usextxLD:i'=>\$usextxld )
 || !defined($wkDir) || scalar(@ARGV)!=0)
 
@@ -185,29 +162,25 @@ if ($launchMethod ne "local" && $launchMethod ne "slurm" && $launchMethod ne "mo
 ##############
 #print options
 ##############
+my $toolE="${BGW_dir}/bin/Estep_mcmc";
+my $rs="${BGW_dir}/bin/Mstep.R";
+
 printf("Options\n");
 printf("\n");
 printf("launch method : %s\n", $launchMethod);
 printf("work directory : %s\n", $wkDir);
-print "Estep: ", $toolE, "\n";
-print "genoDir: ", $genoDir,
-"\nannoDir: ", $annoDir,
-"\npheno: ", $pheno,
-"\n LDdir: ", $LDdir,
-"\n Scoredir: ", $Scoredir,
-"\nannoCode: ", $annoCode, "\n",
-"hyppar: ", $hyppar,
-"\nfileheads: ", $filelist, "\n",
-"Rscript: ", $rs, "\n",
-"Start Pos: ", $start_pos, "\n",
-"End Pos: ", $end_pos, "\n",
-"Chr: ", $target_chr, "\n",
-"run_Estep.sh and run_Mstep.sh directory: ", $EMdir, "\n";
-#  "GTfield ", $GTfield, "; maf ", $maf, "; smin ", $smin, "\n",
-#  "smax ", $smax, "; win ", $win, "; burnin ", $burnin, "; Nmcmc ", $Nmcmc, "\n",
-#  "NmcmcLast ", $NmcmcLast, "; compress ", $compress, "; initype ", $initype, "\n",
-#  "rv ", $rv, "; pp ", $pp, "; abgamma ", $abgamma, "\n";
+print "BGW-TWAS tool directory: ", $BGW_dir, "\n";
+print "Estep tool: ", $toolE, "\n";
+print "Mstep Rscript: ", $rs, "\n", "\n";
+print "LDdir: ", $LDdir,"\n",
+"Scoredir: ", $Scoredir,"\n",
+"hyppar: ", $hyppar,"\n",
+"fileheads: ", $filelist, "\n", "\n",
+"Gene Chr: ", $target_chr, "\n",
+"Gene Start Pos: ", $start_pos, "\n",
+"Gene End Pos: ", $end_pos, "\n";
 printf("\n");
+
 my $comp = "";
 if ($compress != 0){
   $comp = "-comp"
@@ -238,7 +211,7 @@ push(@cmd, "mkdir -p $wkDir/output $wkDir/Eoutput $wkDir/OUT");
 push(@cmd, "cp -f $hyppar $hypcurrent");
 push(@cmd, "> $wkDir/Eoutput/EM\_result.txt");
 push(@cmd, "> $wkDir/Rout.txt");
-makeJob("local", $tgt, $dep, $wkDir, @cmd);  
+makeJob("local", $tgt, $dep, $wkDir, @cmd);
 
 
 ###### EM step 0 without dependencies ###########
@@ -258,7 +231,7 @@ close $FILELIST;
 if(@filehead == 0) {
     print STDERR "file list is empty\! \n";
     exit(1);
-} 
+}
 else{ print "Total \# of fileheads: ", scalar(@filehead), "\n \n"; }
 
 
@@ -276,7 +249,7 @@ for(my $j=0; $j< @filehead; ++$j)
         }elsif ($genofile eq "bed") {
           @cmd = "$toolE -bfile $genoDir/$line -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
         }elsif($genofile eq "sumstat"){
-            @cmd = "$EMdir/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $window_size ";
+            @cmd = "$BGW_dir/bin/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $window_size ";
             # @cmd = "$toolE -score $genoDir/$line.SS.score.txt.gz -inputSS $refLD -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -n $N -pv $pv -maf $maf -r2 $r2_level -bvsrm -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -seed ${seed} > $wkDir/OUT/$line.output.txt";
         }
         else{
@@ -305,7 +278,7 @@ $dep = "$wkDir/Eoutput/cp_param$i.OK $wkDir/pre_em.OK";
 makeJob("local", $tgt, $dep, $wkDir, @cmd);
 
 
-####### With dependencies of previous output 
+####### With dependencies of previous output
 my $ipre="";
 
 for $i (1..$EM){
@@ -325,7 +298,7 @@ for $i (1..$EM){
           }elsif ($genofile eq "bed") {
             @cmd = "$toolE -bfile $genoDir/$line -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
           }elsif($genofile eq "sumstat"){
-              @cmd = "$EMdir/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $window_size" ;
+              @cmd = "$BGW_dir/bin/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $window_size" ;
               # @cmd = "$toolE -score $genoDir/$line.SS.score.txt.gz -inputSS $refLD -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -n $N -pv $pv -maf $maf -r2 $r2_level -bvsrm -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -seed ${seed} > $wkDir/OUT/$line.output.txt";
           }else{
               die "genoDir need to be one of the vcf, genotxt, bed, or sumstat file types\!\n"
@@ -336,7 +309,7 @@ for $i (1..$EM){
             }elsif ($genofile eq "genotxt"){
               @cmd = "$toolE -g $genoDir/$line.geno.gz -p $pheno -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $NmcmcLast $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
             }elsif($genofile eq "sumstat"){
-                @cmd = "$EMdir/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $window_size";
+                @cmd = "$BGW_dir/bin/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $window_size";
                 #@cmd = "$toolE -score $genoDir/$line.SS.score.txt.gz -inputSS $refLD -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -n $N -pv $pv -maf $maf -r2 $r2_level -bvsrm -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -seed ${seed} > $wkDir/OUT/$line.output.txt";
             }else{
                 die "genoDir need to be one of the vcf, genotxt, bed, or sumstat file types\!\n"
@@ -359,7 +332,7 @@ for $i (1..$EM){
   $tgt = "$wkDir/R$i.OK";
   $dep = "$wkDir/Eoutput/cp_param$i.OK";
   @cmd = "Rscript --no-save --no-restore --verbose $rs $hypfile $i $pp $abgamma $wkDir/Eoutput/EM_result.txt $hypcurrent MCMC >> $wkDir/Rout.txt";
-   
+
     makeJob("local", $tgt, $dep, $wkDir, @cmd);
 
 }

@@ -5,10 +5,10 @@
 ################################################################
 ################################################################
 # Tool directory
-BGW_dir=~/GIT/BGW-TWAS 
+BGW_dir=~/GIT/BGW-TWAS
 
 # Specify gene name/identifier as in the 5th column of the gene expression file.
-gene_name=ABCA7 
+gene_name=ABCA7
 
 # The gene expression file has the following gene information in the first 5 columns:
 # CHR, GeneStart, GeneEnd, TargetID/GeneID_1, GeneName/GeneID_2
@@ -17,10 +17,10 @@ GeneExpFile=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt
 
 # Parent directory of genotype data in VCF files
 geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
-# File with filehead of all VCF files as in ${geno_dir}/[filehead].vcf.gz of all genome blocks 
+# File with filehead of all VCF files as in ${geno_dir}/[filehead].vcf.gz of all genome blocks
 Genome_Seg_Filehead=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
 # Specify the genotype field "GT" (genotype) or "DS" (dosage) to be used from the VCF files
-GTfield=DS 
+GTfield=DS
 
 # Working directory to save all output
 wkdir=${BGW_dir}/Example/ExampleWorkDir
@@ -29,7 +29,7 @@ wkdir=${BGW_dir}/Example/ExampleWorkDir
 LDdir=${BGW_dir}/Example/ExampleData/LDdir
 
 # Number of cores/parallele_jobs to be used/implemented
-num_cores=2 
+num_cores=2
 
 ################################################################
 ################################################################
@@ -41,7 +41,7 @@ num_cores=2
 ${BGW_dir}/bin/Step1_get_sumstat.sh --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} --GeneExpFile ${GeneExpFile} \
 --geno_dir ${geno_dir} --LDdir ${LDdir} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
---GTfield ${GTfield} --num_cores ${num_cores}  
+--GTfield ${GTfield} --num_cores ${num_cores}
 
 ################################################################
 ################################################################
@@ -55,20 +55,24 @@ p_thresh=0.001 # p-value threshold
 max_blocks=100 # maximum blocks
 
 ${BGW_dir}/bin/Step2_prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
---GeneExpFile ${GeneExpFile} --Genome_Seg_File ${Genome_Seg_File} \
+--GeneExpFile ${GeneExpFile} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
 --p_thresh 0.001 --max_blocks 100
 
-
-select_filehead=${wkdir}/${gene_name}_scores/${gene_name}_select_segments.txt
-
 ################################################################
 ################################################################
-# Step 3: Training BVSR gene expression prediction model by EM-MCMC algorithm
+# Step 3: Training BGW-TWAS/BVSR gene expression prediction model by EM-MCMC algorithm
 ################################################################
 ################################################################
 
 N=499 # sample size
-${Scripts_dir}/Step3.sh ${gene} ${geneFile} ${geno_dir} ${Scripts_dir} ${Res_dir} ${LDdir} ${N} ${num_cores}
+hfile=${BGW_dir}/Example/hypval.txt
+
+${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
+--wkdir ${wkdir} --gene_name ${gene_name} \
+--GeneExpFile ${GeneExpFile} --LDdir ${LDdir} \
+--N ${N} --hfile ${BGW_dir}/Example/hypval.txt \
+--em 5 --burnin 10000 --Nmcmc 10000 \
+--num_cores 2
 
 ################################################################
 ################################################################

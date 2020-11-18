@@ -11,7 +11,7 @@
 ###
 # --wkdir : Specify a working directory
 # --gene_name : Specify the gene name/id that should be the same used in `GeneExpFile`
-# --GeneExpFile : Specify gene expression file directory
+# --GeneExpFilehead : Directory of the file containing a list of fileheads of segmented genotype files
 # --p_thresh : Specify p-value threshold
 # --max_blocks : Specify maximum genome block number
 
@@ -25,7 +25,7 @@ then
     echo "Please provide required input arguments. Terminating....." >&2
     exit 1
 fi
- 
+
 eval set -- "$VARS"
 
 while true
@@ -43,7 +43,7 @@ do
 done
 
 ##########################################
-# Setting Default Input Argument Values 
+# Setting Default Input Argument Values
 ##########################################
 p_thresh=${p_thresh:-0.00001}
 max_blocks=${max_blocks:-100}
@@ -55,18 +55,18 @@ Score_dir=${wkdir}/${gene_name}_scores
 cd ${Score_dir}
 
 > ${gene_name}_ranked_segments.txt
-cat ${Genome_Seg_Filehead} | while read filehead ; do 
+cat ${Genome_Seg_Filehead} | while read filehead ; do
 if [ -s  ${filehead}.score.txt.gz ] ; then
-zcat ${filehead}.score.txt | awk -v var=$filehead 'NR == 2 {line = $0; min = $13}; NR >2 && $13 < min {line = $0; min = $13}; END{print var, min}' >> ${gene_name}_ranked_segments.txt
-else 
-	echo a non-empty ${filehead}.score.txt.gz file dose not exist !
+    zcat ${filehead}.score.txt | awk -v var=$filehead 'NR == 2 {line = $0; min = $13}; NR >2 && $13 < min {line = $0; min = $13}; END{print var, min}' >> ${gene_name}_ranked_segments.txt
+    else
+    	echo a non-empty ${filehead}.score.txt.gz file dose not exist !
 fi
 done
 
 # Grep gene info from ${GeneExpFile}
 gene_info=$(grep ${gene_name} ${GeneExpFile})
-target_chr=$( echo ${gene_info} | awk 'FS {print $1}'); 
-start_pos=$(echo ${gene_info} | awk 'FS {print $2}');  
+target_chr=$( echo ${gene_info} | awk 'FS {print $1}');
+start_pos=$(echo ${gene_info} | awk 'FS {print $2}');
 start_pos=$((start_pos - 1000000))
 end_pos=$(echo ${gene_info} | awk 'FS {print $3}');
 end_pos=$((end_pos + 1000000))
@@ -78,30 +78,30 @@ echo ${gene_name} from CHR $target_chr ranging from $start_pos to $end_pos
 
 cat ${gene_name}_ranked_segments.txt | while read line ; do
 
-filehead=$(echo $line | awk -F " " '{print $1}' )
-pval=$(echo $line | awk -F " " '{print $2}' )
+    filehead=$(echo $line | awk -F " " '{print $1}' )
+    pval=$(echo $line | awk -F " " '{print $2}' )
 
-row_1=$(zcat ${filehead}.score.txt | head -n 2 | tail -n1)
-chr=$(echo ${row_1} | awk '{print $1}' )
-start=$(echo ${row_1} | awk '{print $2}')
+    row_1=$(zcat ${filehead}.score.txt | head -n 2 | tail -n1)
+    chr=$(echo ${row_1} | awk '{print $1}' )
+    start=$(echo ${row_1} | awk '{print $2}')
 
-if [ "$chr" -eq "${target_chr}" ] ; then
+    if [ "$chr" -eq "${target_chr}" ] ; then
 
-end=$( zcat ${filehead}.score.txt | tail -n1 | awk '{print $2}' )
+        end=$( zcat ${filehead}.score.txt | tail -n1 | awk '{print $2}' )
 
-if [ "$end" -gt "$start_pos" ] && [ "$start" -lt "$start_pos" ] ; then
-echo -e "${filehead}\t${pval}" >> ${gene_name}_cis_segments.txt
-elif [ "$start" -lt "$end_pos" ]  && [ "$end" -gt "$end_pos" ] ; then
-echo -e  "${filehead}\t${pval}" >> ${gene_name}_cis_segments.txt
-elif ( ($(echo "$pval < $p_thresh" | bc -l )) ) ; then
-echo -e  "${filehead}\t${pval}" >> ${gene_name}_trans_segments.txt
-fi
+        if [ "$end" -gt "$start_pos" ] && [ "$start" -lt "$start_pos" ] ; then
+            echo -e "${filehead}\t${pval}" >> ${gene_name}_cis_segments.txt
+        elif [ "$start" -lt "$end_pos" ]  && [ "$end" -gt "$end_pos" ] ; then
+            echo -e  "${filehead}\t${pval}" >> ${gene_name}_cis_segments.txt
+        elif ( ($(echo "$pval < $p_thresh" | bc -l )) ) ; then
+            echo -e  "${filehead}\t${pval}" >> ${gene_name}_trans_segments.txt
+        fi
 
-elif (( $(echo "$pval < $p_thresh" | bc -l) )) ; then
-echo -e  "${filehead}\t${pval}" >> ${gene_name}_trans_segments.txt
-else
-continue;
-fi
+        elif (( $(echo "$pval < $p_thresh" | bc -l) )) ; then
+            echo -e  "${filehead}\t${pval}" >> ${gene_name}_trans_segments.txt
+        else
+        continue;
+    fi
 
 done
 
@@ -112,9 +112,9 @@ max_trans_blocks=$((max_blocks - n_cis))
 
 cat ${gene_name}_cis_segments.txt > ${gene_name}_select_segments.txt
 if [ "$n_trans" -gt "$max_trans_blocks" ] ; then
-sort -g -k 2 -u ${gene_name}_trans_segments.txt | head -${max_trans_blocks} >> ${gene_name}_select_segments.txt 
-else
-sort -g -k 2 -u ${gene_name}_trans_segments.txt >> ${gene_name}_select_segments.txt 
+        sort -g -k 2 -u ${gene_name}_trans_segments.txt | head -${max_trans_blocks} >> ${gene_name}_select_segments.txt
+    else
+        sort -g -k 2 -u ${gene_name}_trans_segments.txt >> ${gene_name}_select_segments.txt
 fi
 
 rm -f ${gene_name}_cis_segments.txt  ${gene_name}_trans_segments.txt ${gene_name}_ranked_segments.txt
