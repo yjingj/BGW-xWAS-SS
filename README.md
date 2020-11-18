@@ -8,7 +8,7 @@ Please cite our BGW-TWAS paper if you use the tool:
 ---
 - [Software Installation](#software-installation)
 - [Input Files](#input-files)
-	- [1. Gene Expression File](#1-gene-expression-file)
+	- [1. Gene Expression File for Training](#1-gene-expression-file-for-training)
 	- [2. VCF Genotype Files for Training](#2-vcf-genotype-files-for-training)
 - [Example Usage](#example-usage)
 	- [Step 1. Obtain Summary Statistics](#step-1-obtain-summary-statistics)
