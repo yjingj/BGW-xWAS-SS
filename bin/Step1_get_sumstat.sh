@@ -31,7 +31,7 @@ then
     echo "Please provide required input arguments. Terminating....." >&2
     exit 1
 fi
- 
+
 eval set -- "$VARS"
 
 while true
@@ -52,7 +52,7 @@ do
 done
 
 ##########################################
-# Setting Default Input Argument Values 
+# Setting Default Input Argument Values
 ##########################################
 GTfield=${GTfield:-"GT"}
 num_cores=${num_cores:-1}
@@ -89,7 +89,9 @@ rm -f temp_ID.txt exp_temp.txt
 ## Run in parallele with specified number of processes by -P
 seq 1 ${num_segments}  | xargs -I % -n 1 -P ${num_cores} sh ${BGW_dir}/bin/get_score_stat.sh ${pheno} ${geno_dir} ${Score_dir} ${BGW_dir} ${LDdir} ${Genome_Seg_Filehead} % ${GTfield}
 
-
 echo Step 1 complete for generating eQTL summary statistics!
+echo Score statistics files not existed under ${LDdir} were generated !
+
+rm -fr ${wkdir}/${gene_name}_scores/output
 
 exit
