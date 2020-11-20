@@ -171,6 +171,8 @@ Bayesian estimates of eQTL PCP and effect sizes from the final EM-MCMC iteration
 ### Step 4. Predict Bayesian GReX
 Step 4 will use the BGW weight file (`${gene_name}_BGW_eQTL_weights.txt`) generated from Step 3 and provided individual-level GWAS data to predict GReX values for test samples. Both test genotype VCF files (saved per chromosome, each file name containing `CHR[chr_num]`) and test phenotype file should be provided.
 
+The product of eQTL PCP and effect size will give an expected eQTL effect size that will be used as SNP weight for estimating the GReX values in Step 4.
+
 #### Input arguments
 - `--BGW_dir` : Directory of BGW-TWAS tool
 - `--wkdir` : Working directory with writting access
