@@ -14,8 +14,8 @@ Please cite our BGW-TWAS paper if you use the tool:
 - [Example Usage](#example-usage)
 	- [Step 1. Obtain Summary Statistics](#step-1-obtain-summary-statistics)
 	- [Step 2. Prune Genome Segments](#step-2-prune-genome-segments)
-	- [Step 3. Training Gene Expression Prediction Model](#step-3-training-bgw-twas)
-	- [Step 4. Predict GReX](#step-4-predict-grex)
+	- [Step 3. Training Gene Expression Prediction Model](#step-3-training-gene-expression-prediction-model)
+	- [Step 4. Predict Bayesian GReX](#step-4-predict-bayesian-grex)
 ---
 
 ## Software Installation
@@ -168,7 +168,7 @@ Bayesian estimates of eQTL PCP and effect sizes from the final EM-MCMC iteration
 
 [//]: <> (Numerous arguments can be used to modify the EM-MCMC algorithm in Step 3, but should be done with caution. These arguments are detailed in Yang et al. 2017 https://github.com/yjingj/bfGWAS/blob/master/bfGWAS_Manual.pdf)
 
-### Step 4: Predict Bayesian GReX
+### Step 4. Predict Bayesian GReX
 Step 4 will use the BGW weight file (`${gene_name}_BGW_eQTL_weights.txt`) generated from Step 3 and provided individual-level GWAS data to predict GReX values for test samples. Both test genotype VCF files (saved per chromosome, each file name containing `CHR[chr_num]`) and test phenotype file should be provided.
 
 #### Input arguments
