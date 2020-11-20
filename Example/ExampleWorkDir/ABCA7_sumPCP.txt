@@ -1,0 +1,2 @@
+Gene total_PCP cis_PCP trans_PCP
+ABCA7 0.0092 0.0046 0.0046

@@ -1,0 +1,31 @@
+##
+## Software Version = bfGWAS_SS_MCMC
+##
+## Command Line Input = -inputSS -score /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_scores/Trans_geno_block.score.txt.gz -LDcorr /home/jyang/GIT/BGW-TWAS/Example/ExampleData/LDdir/Trans_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_EM_MCMC/hypval.current -max_iter 100 -convergence 1e-20 -n 499 -pv 1.02401 -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 -o Trans_geno_block -w 10000 -s 10000 -bvsrm -initype 3 -seed 2757 
+##
+## Date = Thu Nov 19 21:16:22 2020
+
+##
+## Summary Statistics:
+## number_of_total_individuals = 499
+## number_of_analyzed_individuals = 499
+## number_of_total_SNPs = 10068
+## number_of_analyzed_SNPs = 6778
+## Phenotype_var = 1.02401
+##
+## MCMC related:
+## initial value of |gamma| = 1
+## random seed = 2757
+## acceptance ratio = 0.00455
+## Region_PIP = 0
+##
+## Computation Time:
+## total computation time = 0.590333 min 
+## computation time break down: 
+##      time on MCMC = 0.00233333 min 
+##      time on Proposal = 0.000166667 min 
+##      time on Posterior = 11771.6 min 
+Accept #add=34, total add step = 6612
+Accept #delete=35, total delete step = 35
+Accept #switch=22, total switch step = 44
+##

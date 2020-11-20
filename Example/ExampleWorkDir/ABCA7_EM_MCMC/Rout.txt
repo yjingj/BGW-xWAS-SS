@@ -1,0 +1,138 @@
+[1] "set options(stringsAsFactors=FALSE)"
+[1] "load libraries plyr, dplyr, ggplot2, data.table"
+[1] "Sourced ~/bin/util_func.r!"
+[1] "add R3.4 library path"
+[1] "Sourced .Rprofile on home directory!"
+[1] "LC_CTYPE=C;LC_NUMERIC=C;LC_TIME=C;LC_COLLATE=C;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C"
+[1] "a_gamma=b_gamma =  0.1"
+[1] " Total Annotation categories :  2"
+[1] "hyper parameter values before MCMC: "
+     pi sigma2
+1 1e-05      1
+2 1e-05      1
+[1] "hyper parameter values updates after MCMC: "
+        pi     sigma2
+[1,] 1e-06 0.09262870
+[2,] 1e-06 0.09121392
+[1] "write to hypcurrent file with hyper parameter values after MCMC: "
+ [1] "0"            "1.057419e-03" "2.236736e+01" "1.000000e-06" "0.000000e+00"
+ [6] "9.262870e-02" "8.926079e-02" "1.000000e-06" "0.000000e+00" "9.121392e-02"
+[11] "8.679678e-02"
+[1] "EM step time cost (in minutes) : "
+        user       system      elapsed 
+0.0037833333 0.0003166667 0.0041666667 
+[1] "set options(stringsAsFactors=FALSE)"
+[1] "load libraries plyr, dplyr, ggplot2, data.table"
+[1] "Sourced ~/bin/util_func.r!"
+[1] "add R3.4 library path"
+[1] "Sourced .Rprofile on home directory!"
+[1] "LC_CTYPE=C;LC_NUMERIC=C;LC_TIME=C;LC_COLLATE=C;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C"
+[1] "a_gamma=b_gamma =  0.1"
+[1] " Total Annotation categories :  2"
+[1] "hyper parameter values before MCMC: "
+     pi     sigma2
+1 1e-06 0.09262870
+2 1e-06 0.09121392
+[1] "hyper parameter values updates after MCMC: "
+        pi     sigma2
+[1,] 1e-06 0.09088084
+[2,] 1e-06 0.09084732
+[1] "write to hypcurrent file with hyper parameter values after MCMC: "
+ [1] "1"            "1.377127e-04" "3.043006e+01" "1.000000e-06" "0.000000e+00"
+ [6] "9.088084e-02" "8.648613e-02" "1.000000e-06" "0.000000e+00" "9.084732e-02"
+[11] "8.651205e-02"
+[1] "EM step time cost (in minutes) : "
+        user       system      elapsed 
+4.433333e-03 6.666667e-05 4.583333e-03 
+[1] "set options(stringsAsFactors=FALSE)"
+[1] "load libraries plyr, dplyr, ggplot2, data.table"
+[1] "Sourced ~/bin/util_func.r!"
+[1] "add R3.4 library path"
+[1] "Sourced .Rprofile on home directory!"
+[1] "LC_CTYPE=C;LC_NUMERIC=C;LC_TIME=C;LC_COLLATE=C;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C"
+[1] "a_gamma=b_gamma =  0.1"
+[1] " Total Annotation categories :  2"
+[1] "hyper parameter values before MCMC: "
+     pi     sigma2
+1 1e-06 0.09088084
+2 1e-06 0.09084732
+[1] "hyper parameter values updates after MCMC: "
+        pi     sigma2
+[1,] 1e-06 0.09087594
+[2,] 1e-06 0.09075950
+[1] "write to hypcurrent file with hyper parameter values after MCMC: "
+ [1] "2"            "1.172001e-04" "3.042874e+01" "1.000000e-06" "0.000000e+00"
+ [6] "9.087594e-02" "8.648801e-02" "1.000000e-06" "0.000000e+00" "9.075950e-02"
+[11] "8.630412e-02"
+[1] "EM step time cost (in minutes) : "
+        user       system      elapsed 
+4.433333e-03 6.666667e-05 4.583333e-03 
+[1] "set options(stringsAsFactors=FALSE)"
+[1] "load libraries plyr, dplyr, ggplot2, data.table"
+[1] "Sourced ~/bin/util_func.r!"
+[1] "add R3.4 library path"
+[1] "Sourced .Rprofile on home directory!"
+[1] "LC_CTYPE=C;LC_NUMERIC=C;LC_TIME=C;LC_COLLATE=C;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C"
+[1] "a_gamma=b_gamma =  0.1"
+[1] " Total Annotation categories :  2"
+[1] "hyper parameter values before MCMC: "
+     pi     sigma2
+1 1e-06 0.09087594
+2 1e-06 0.09075950
+[1] "hyper parameter values updates after MCMC: "
+        pi     sigma2
+[1,] 1e-06 0.09090883
+[2,] 1e-06 0.09078692
+[1] "write to hypcurrent file with hyper parameter values after MCMC: "
+ [1] "3"            "1.841963e-04" "3.042753e+01" "1.000000e-06" "0.000000e+00"
+ [6] "9.090883e-02" "8.652437e-02" "1.000000e-06" "0.000000e+00" "9.078692e-02"
+[11] "8.635803e-02"
+[1] "EM step time cost (in minutes) : "
+        user       system      elapsed 
+4.933333e-03 6.666667e-05 5.066667e-03 
+[1] "set options(stringsAsFactors=FALSE)"
+[1] "load libraries plyr, dplyr, ggplot2, data.table"
+[1] "Sourced ~/bin/util_func.r!"
+[1] "add R3.4 library path"
+[1] "Sourced .Rprofile on home directory!"
+[1] "LC_CTYPE=C;LC_NUMERIC=C;LC_TIME=C;LC_COLLATE=C;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C"
+[1] "a_gamma=b_gamma =  0.1"
+[1] " Total Annotation categories :  2"
+[1] "hyper parameter values before MCMC: "
+     pi     sigma2
+1 1e-06 0.09090883
+2 1e-06 0.09078692
+[1] "hyper parameter values updates after MCMC: "
+        pi     sigma2
+[1,] 1e-06 0.09094645
+[2,] 1e-06 0.09073486
+[1] "write to hypcurrent file with hyper parameter values after MCMC: "
+ [1] "4"            "9.983089e-05" "3.043058e+01" "1.000000e-06" "0.000000e+00"
+ [6] "9.094645e-02" "8.667455e-02" "1.000000e-06" "0.000000e+00" "9.073486e-02"
+[11] "8.623878e-02"
+[1] "EM step time cost (in minutes) : "
+       user      system     elapsed 
+0.004733333 0.000150000 0.004950000 
+[1] "set options(stringsAsFactors=FALSE)"
+[1] "load libraries plyr, dplyr, ggplot2, data.table"
+[1] "Sourced ~/bin/util_func.r!"
+[1] "add R3.4 library path"
+[1] "Sourced .Rprofile on home directory!"
+[1] "LC_CTYPE=C;LC_NUMERIC=C;LC_TIME=C;LC_COLLATE=C;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C"
+[1] "a_gamma=b_gamma =  0.1"
+[1] " Total Annotation categories :  2"
+[1] "hyper parameter values before MCMC: "
+     pi     sigma2
+1 1e-06 0.09094645
+2 1e-06 0.09073486
+[1] "hyper parameter values updates after MCMC: "
+        pi     sigma2
+[1,] 1e-06 0.09089813
+[2,] 1e-06 0.09076378
+[1] "write to hypcurrent file with hyper parameter values after MCMC: "
+ [1] "5"            "1.323438e-04" "3.042798e+01" "1.000000e-06" "0.000000e+00"
+ [6] "9.089813e-02" "8.653019e-02" "1.000000e-06" "0.000000e+00" "9.076378e-02"
+[11] "8.629179e-02"
+[1] "EM step time cost (in minutes) : "
+        user       system      elapsed 
+5.650000e-03 8.333333e-05 5.800000e-03 

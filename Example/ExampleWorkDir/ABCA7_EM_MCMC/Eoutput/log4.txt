@@ -1,0 +1,62 @@
+##
+## Software Version = bfGWAS_SS_MCMC
+##
+## Command Line Input = -inputSS -score /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_scores/Cis_geno_block.score.txt.gz -LDcorr /home/jyang/GIT/BGW-TWAS/Example/ExampleData/LDdir/Cis_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_EM_MCMC/hypval.current -max_iter 100 -convergence 1e-20 -n 499 -pv 1.02401 -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 -o Cis_geno_block -w 10000 -s 10000 -bvsrm -initype 3 -seed 9443 
+##
+## Date = Thu Nov 19 21:15:11 2020
+
+##
+## Summary Statistics:
+## number_of_total_individuals = 499
+## number_of_analyzed_individuals = 499
+## number_of_total_SNPs = 4048
+## number_of_analyzed_SNPs = 3067
+## Phenotype_var = 1.02401
+##
+## MCMC related:
+## initial value of |gamma| = 1
+## random seed = 9443
+## acceptance ratio = 0.0043
+## Region_PIP = 0
+##
+## Computation Time:
+## total computation time = 0.106833 min 
+## computation time break down: 
+##      time on MCMC = 0.00166667 min 
+##      time on Proposal = 0.000666667 min 
+##      time on Posterior = 2114.98 min 
+Accept #add=33, total add step = 6583
+Accept #delete=34, total delete step = 34
+Accept #switch=19, total switch step = 31
+##
+##
+## Software Version = bfGWAS_SS_MCMC
+##
+## Command Line Input = -inputSS -score /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_scores/Trans_geno_block.score.txt.gz -LDcorr /home/jyang/GIT/BGW-TWAS/Example/ExampleData/LDdir/Trans_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_EM_MCMC/hypval.current -max_iter 100 -convergence 1e-20 -n 499 -pv 1.02401 -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 -o Trans_geno_block -w 10000 -s 10000 -bvsrm -initype 3 -seed 6338 
+##
+## Date = Thu Nov 19 21:15:43 2020
+
+##
+## Summary Statistics:
+## number_of_total_individuals = 499
+## number_of_analyzed_individuals = 499
+## number_of_total_SNPs = 10068
+## number_of_analyzed_SNPs = 6778
+## Phenotype_var = 1.02401
+##
+## MCMC related:
+## initial value of |gamma| = 1
+## random seed = 6338
+## acceptance ratio = 0.0045
+## Region_PIP = 0
+##
+## Computation Time:
+## total computation time = 0.6375 min 
+## computation time break down: 
+##      time on MCMC = 0.00233333 min 
+##      time on Proposal = 0.000166667 min 
+##      time on Posterior = 12714.5 min 
+Accept #add=40, total add step = 6568
+Accept #delete=41, total delete step = 41
+Accept #switch=9, total switch step = 32
+##
