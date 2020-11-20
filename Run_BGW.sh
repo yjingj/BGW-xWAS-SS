@@ -84,9 +84,9 @@ ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 ################################################################
 
 BGW_weight=${wkdir}/${gene_name}_BGW_eQTL_weights.txt
-test_geno_dir=/mnt/YangFSS/data2/AMP-AD/Mayo/Genotype/Impute2_1KG
-test_geno_filehead=/mnt/YangFSS/data2/AMP-AD/Mayo/Genotype/Impute2_1KG/vcf_filehead.txt
-test_pheno=/mnt/YangFSS/data2/AMP-AD/Mayo/Phenotype/MayoPhenoAD.txt
+test_geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
+test_geno_filehead=${BGW_dir}/Example/ExampleData/test_geno_filehead.txt
+test_pheno=${BGW_dir}/Example/ExampleData/Test_pheno.txt
 GTfield=GT #or DS
 
 ${BGW_dir}/bin/Step4_get_test_grex.sh --BGW_dir ${BGW_dir} \
