@@ -93,7 +93,7 @@ echo Run make with $mkfile and j=$num_cores parallel jobs
 make -k -C ${wkdir}/${gene_name}_EM_MCMC -f ${mkfile} -j ${num_cores} > ${wkdir}/${gene_name}_EM_MCMC/make.output 2> ${wkdir}/${gene_name}_EM_MCMC/make.err
 
 if [ -s ${wkdir}/${gene_name}_EM_MCMC/Eoutput/paramtemp${em}.txt ] ; then
-    echo -e "CHROM\tPOS\tID\tREF\tALT\tMAF\tTrans\tPCP\tbeta\tSE_beta\tLRT\tpval_LRT\tRank" > ${wkdir}/${gene_name}_BGW_eQTL_weights.txt
+    echo -e "#CHROM\tPOS\tID\tREF\tALT\tMAF\tTrans\tPCP\tbeta\tSE_beta\tLRT\tpval_LRT\tRank" > ${wkdir}/${gene_name}_BGW_eQTL_weights.txt
     awk -v PCP_thresh=${PCP_thresh} '$8>PCP_thresh{print }' ${wkdir}/${gene_name}_EM_MCMC/Eoutput/paramtemp${em}.txt | sort -nk1,2 >> ${wkdir}/${gene_name}_BGW_eQTL_weights.txt
     rm -f ${wkdir}/${gene_name}_EM_MCMC/**
 else

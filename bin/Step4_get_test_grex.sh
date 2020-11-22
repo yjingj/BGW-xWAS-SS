@@ -42,12 +42,18 @@ num_cores=${num_cores:-1}
 mkdir -p ${wkdir}/${gene_name}_GReX
 cd ${wkdir}/${gene_name}_GReX
 
-## Check if $BGW_weight is generated
+## Check if $BGW_weight is generated and there is valid eQTL
 if [ ! -s ${BGW_weight} ] ; then
     echo ${BGW_weight} is not generated. Please check Step 3.
     exit
 else
-    echo Extract genotype vcf file for SNPs in ${BGW_weight} ...
+    n_eqtl=`grep -v "#" ${BGW_weight} | wc -l  | awk '{print $1}'`
+    if [ $n_eqtl -gt 0 ] ; then
+        echo Extract genotype vcf file for ${n_eqtl} SNPs in ${BGW_weight} ...
+    else
+        echo There is no SNPs with non-zero eQTL effect sizes in ${BGW_weight}.
+        exit
+    fi
 fi
 
 ## make header row for vcf file from one of the existing genotype files
@@ -68,26 +74,32 @@ file_temp=$(grep CHR${chr} $test_geno_filehead | awk '{print }' )
 tabix ${test_geno_dir}/${file_temp}.vcf.gz ${chr}:${pos}-${pos} | awk -v ref=${ref} -v alt=${alt} -F"\t" '($4==ref && $5==alt) || ($4==alt && $5==ref) {print }' >> ${wkdir}/${gene_name}_GReX/${gene_name}_grex.vcf
 done
 
-echo ${wkdir}/${gene_name}_GReX/${gene_name}_grex.vcf is created
+echo ${wkdir}/${gene_name}_GReX/${gene_name}_grex.vcf is created.
 
 ## Generate genotype file (dosages) with ${gene_name}_grex.vcf
-nsnp=`wc -l ${wkdir}/${gene_name}_GReX/${gene_name}_grex.vcf | awk '{print $1}'`
+nsnp=`grep -v "#" ${wkdir}/${gene_name}_GReX/${gene_name}_grex.vcf | wc -l  | awk '{print $1}'`
 if [ $nsnp -gt 0 ] ; then
-cd ${wkdir}/${gene_name}_GReX
-${BGW_dir}/bin/Estep_mcmc -vcf ${wkdir}/${gene_name}_GReX/${gene_name}_grex.vcf -p ${test_pheno} -o ${gene_name}_grex -GTfield ${GTfield} -saveGeno -maf 0
+    ${BGW_dir}/bin/Estep_mcmc -vcf ${wkdir}/${gene_name}_GReX/${gene_name}_grex.vcf -p ${test_pheno} -o ${gene_name}_grex -GTfield ${GTfield} -saveGeno -maf 0
+    if [ -s ./output/${gene_name}_grex.geno ] ; then
+        # echo Converting test genotype VCF file ${wkdir}/${gene_name}_GReX/${gene_name}_grex.vcf to genotype dosage file ${wkdir}/${gene_name}_GReX/output/${gene_name}_grex.geno is success.
+        sed -i 's/#//g' ./output/${gene_name}_grex.geno
+        mv -f ./output/${gene_name}_grex.geno ${wkdir}/
+        echo Converting test genotype VCF file to genotype dosage file ${wkdir}/${gene_name}_grex.geno is success.
+    else
+        echo ${wkdir}/${gene_name}_GReX/output/${gene_name}_grex.geno failed to be generated.
+        exit
+    fi
 else
-echo There is no eQTL with non-zero weights for gene $gene_name
+    echo There is no test SNPs with non-zero eQTL weights for gene $gene_name. Please check if you BGW weight file and test VCF files.
+    exit
 fi
-echo ${wkdir}/${gene_name}_GReX/output/${gene_name}_grex.geno is created
 
 ## Remove the "#" from the header row
-if [ -s ${wkdir}/${gene_name}_GReX/output/${gene_name}_grex.geno ] ; then
-	sed -i 's/#//g' ${wkdir}/${gene_name}_GReX/output/${gene_name}_grex.geno
-	mv -f ${wkdir}/${gene_name}_GReX/output/${gene_name}_grex.geno ${wkdir}/
-	echo Test genotype dosage file ${wkdir}/${gene_name}_grex.geno is generated successfully.
+if [ -s ${wkdir}/${gene_name}_grex.geno ] ; then
     echo Calculating predicted GReX ...
     Rscript ${BGW_dir}/bin/compute_grex.R ${gene_name} ${wkdir}
     echo Test GReX file is generated under ${wkdir}
+    rm -rf ${wkdir}/${gene_name}_GReX/output/
     rm -f ${wkdir}/${gene_name}_GReX/**
     rm -f ${wkdir}/ABCA7_grex.geno
 else
