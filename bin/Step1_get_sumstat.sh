@@ -57,8 +57,19 @@ done
 GTfield=${GTfield:-"GT"}
 num_cores=${num_cores:-1}
 
-num_segments=`wc -l ${Genome_Seg_Filehead} | awk '{print $1}'`
-echo ${gene_name} with ${num_segments} genome blocks
+if [ -s ${Genome_Seg_Filehead} ]; then
+    num_segments=`wc -l ${Genome_Seg_Filehead} | awk '{print $1}'`
+    if [ $num_segments -gt 0 ] ; then
+        echo ${gene_name} with ${num_segments} genome blocks
+    else
+        echo ${Genome_Seg_Filehead} has no genome blocks, one per row. Expecting at least one genome block.
+        exit
+    fi
+else
+    echo ${Genome_Seg_Filehead} is empty. Please check.
+    exit
+fi
+
 echo GTfield = $GTfield , number of cores = $num_cores
 
 #### Create work/output directory if not existed
@@ -75,23 +86,26 @@ cd ${wkdir}
 # GeneExpFile columns are Gene Name, Chr, Pos, start, end, expr_data
 
 # the following creates a phenotype file for target gene expression trait that includes subject IDs in the first column and gene expression levels in the second column.
-head -1 ${GeneExpFile} | awk '{$1=$2=$3=$4=$5=""; print substr($0,6)}' | tr ' ' '\n' > temp_ID.txt
-grep ${gene_name} ${GeneExpFile} | awk '{$1=$2=$3=$4=$5=""; print substr($0,6)}' | tr ' ' '\n' > exp_temp.txt
-paste temp_ID.txt exp_temp.txt > ${wkdir}/${gene_name}_exp_trait.txt
-pheno=${wkdir}/${gene_name}_exp_trait.txt
+if [ -s ${GeneExpFile} ] ; then
+    head -1 ${GeneExpFile} | awk '{$1=$2=$3=$4=$5=""; print substr($0,6)}' | tr ' ' '\n' > temp_ID.txt
+    grep ${gene_name} ${GeneExpFile} | awk '{$1=$2=$3=$4=$5=""; print substr($0,6)}' | tr ' ' '\n' > exp_temp.txt
+    paste temp_ID.txt exp_temp.txt > ${wkdir}/${gene_name}_exp_trait.txt
+    pheno=${wkdir}/${gene_name}_exp_trait.txt
+else
+    echo ${GeneExpFile} is empty. Please provide a valid gene expression file.
+fi
 
 # calculate variance of the gene expression trait
 pv=$(awk '{delta=$2; sum+=$2; ssq+=(delta - avg/NR)^2} END {print ssq/(NR-1)}' ${wkdir}/${gene_name}_exp_trait.txt)
 echo quantitative gene expression trait variance = $pv
-echo -e ${gene_name} '\t' ${pv} > ${wkdir}/${gene}_geneExp_var.txt
+echo -e ${gene_name} '\t' ${pv} > ${wkdir}/${gene_name}_geneExp_var.txt
 rm -f temp_ID.txt exp_temp.txt
 
 ## Run in parallele with specified number of processes by -P
 seq 1 ${num_segments}  | xargs -I % -n 1 -P ${num_cores} sh ${BGW_dir}/bin/get_score_stat.sh ${pheno} ${geno_dir} ${Score_dir} ${BGW_dir} ${LDdir} ${Genome_Seg_Filehead} % ${GTfield}
 
-echo Step 1 complete for generating eQTL summary statistics!
-echo Score statistics files not existed under ${LDdir} were generated !
-
 rm -fr ${wkdir}/${gene_name}_scores/output
+
+echo Step 1 complete for generating eQTL summary statistics!
 
 exit

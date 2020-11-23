@@ -1,9 +1,9 @@
 ##
 ## Software Version = bfGWAS_SS_MCMC
 ##
-## Command Line Input = -inputSS -score /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_scores/Cis_geno_block.score.txt.gz -LDcorr /home/jyang/GIT/BGW-TWAS/Example/ExampleData/LDdir/Cis_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_EM_MCMC/hypval.current -max_iter 100 -convergence 1e-20 -n 499 -pv 1.02401 -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 -o Cis_geno_block -w 10000 -s 10000 -bvsrm -initype 3 -seed 25899 
+## Command Line Input = -inputSS -score /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_scores/Cis_geno_block.score.txt.gz -LDcorr /home/jyang/GIT/BGW-TWAS/Example/ExampleData/LDdir/Cis_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_EM_MCMC/hypval.current -max_iter 100 -convergence 1e-20 -n 499 -pv 1.02401 -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 -o Cis_geno_block -w 10000 -s 10000 -bvsrm -initype 3 -seed 7830 
 ##
-## Date = Thu Nov 19 21:12:21 2020
+## Date = Mon Nov 23 17:53:53 2020
 
 ##
 ## Summary Statistics:
@@ -15,26 +15,26 @@
 ##
 ## MCMC related:
 ## initial value of |gamma| = 1
-## random seed = 25899
-## acceptance ratio = 0.03745
+## random seed = 7830
+## acceptance ratio = 0.0396
 ## Region_PIP = 0
 ##
 ## Computation Time:
-## total computation time = 0.111667 min 
+## total computation time = 0.105167 min 
 ## computation time break down: 
-##      time on MCMC = 0.002 min 
-##      time on Proposal = 0.000166667 min 
-##      time on Posterior = 2205.3 min 
-Accept #add=288, total add step = 6644
-Accept #delete=289, total delete step = 289
-Accept #switch=172, total switch step = 290
+##      time on MCMC = 0.00333333 min 
+##      time on Proposal = 0.00183333 min 
+##      time on Posterior = 2072.68 min 
+Accept #add=313, total add step = 6509
+Accept #delete=314, total delete step = 314
+Accept #switch=165, total switch step = 289
 ##
 ##
 ## Software Version = bfGWAS_SS_MCMC
 ##
-## Command Line Input = -inputSS -score /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_scores/Trans_geno_block.score.txt.gz -LDcorr /home/jyang/GIT/BGW-TWAS/Example/ExampleData/LDdir/Trans_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_EM_MCMC/hypval.current -max_iter 100 -convergence 1e-20 -n 499 -pv 1.02401 -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 -o Trans_geno_block -w 10000 -s 10000 -bvsrm -initype 3 -seed 22069 
+## Command Line Input = -inputSS -score /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_scores/Trans_geno_block.score.txt.gz -LDcorr /home/jyang/GIT/BGW-TWAS/Example/ExampleData/LDdir/Trans_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_EM_MCMC/hypval.current -max_iter 100 -convergence 1e-20 -n 499 -pv 1.02401 -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 -o Trans_geno_block -w 10000 -s 10000 -bvsrm -initype 3 -seed 14943 
 ##
-## Date = Thu Nov 19 21:12:51 2020
+## Date = Mon Nov 23 17:54:21 2020
 
 ##
 ## Summary Statistics:
@@ -46,17 +46,17 @@ Accept #switch=172, total switch step = 290
 ##
 ## MCMC related:
 ## initial value of |gamma| = 1
-## random seed = 22069
-## acceptance ratio = 0.0207
+## random seed = 14943
+## acceptance ratio = 0.021
 ## Region_PIP = 0
 ##
 ## Computation Time:
-## total computation time = 0.612833 min 
+## total computation time = 0.5705 min 
 ## computation time break down: 
-##      time on MCMC = 0.00266667 min 
-##      time on Proposal = 0.000666667 min 
-##      time on Posterior = 12216.2 min 
-Accept #add=160, total add step = 6640
-Accept #delete=161, total delete step = 162
-Accept #switch=93, total switch step = 163
+##      time on MCMC = 0.0025 min 
+##      time on Proposal = 0.000333333 min 
+##      time on Posterior = 11382.8 min 
+Accept #add=173, total add step = 6567
+Accept #delete=174, total delete step = 176
+Accept #switch=73, total switch step = 173
 ##

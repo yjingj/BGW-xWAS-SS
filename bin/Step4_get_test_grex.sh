@@ -95,6 +95,7 @@ else
 fi
 
 ## Remove the "#" from the header row
+sed -i 's/#//' $BGW_weight
 if [ -s ${wkdir}/${gene_name}_grex.geno ] ; then
     echo Calculating predicted GReX ...
     Rscript ${BGW_dir}/bin/compute_grex.R ${gene_name} ${wkdir}

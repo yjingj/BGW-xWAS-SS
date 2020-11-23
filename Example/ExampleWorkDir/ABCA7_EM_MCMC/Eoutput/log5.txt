@@ -1,9 +1,9 @@
 ##
 ## Software Version = bfGWAS_SS_MCMC
 ##
-## Command Line Input = -inputSS -score /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_scores/Cis_geno_block.score.txt.gz -LDcorr /home/jyang/GIT/BGW-TWAS/Example/ExampleData/LDdir/Cis_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_EM_MCMC/hypval.current -max_iter 100 -convergence 1e-20 -n 499 -pv 1.02401 -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 -o Cis_geno_block -w 10000 -s 10000 -bvsrm -initype 3 -seed 12454 
+## Command Line Input = -inputSS -score /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_scores/Cis_geno_block.score.txt.gz -LDcorr /home/jyang/GIT/BGW-TWAS/Example/ExampleData/LDdir/Cis_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_EM_MCMC/hypval.current -max_iter 100 -convergence 1e-20 -n 499 -pv 1.02401 -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 -o Cis_geno_block -w 10000 -s 10000 -bvsrm -initype 3 -seed 9465 
 ##
-## Date = Thu Nov 19 21:15:53 2020
+## Date = Mon Nov 23 17:57:23 2020
 
 ##
 ## Summary Statistics:
@@ -15,26 +15,26 @@
 ##
 ## MCMC related:
 ## initial value of |gamma| = 1
-## random seed = 12454
-## acceptance ratio = 0.0059
+## random seed = 9465
+## acceptance ratio = 0.00745
 ## Region_PIP = 0
 ##
 ## Computation Time:
-## total computation time = 0.105 min 
+## total computation time = 0.1035 min 
 ## computation time break down: 
 ##      time on MCMC = 0.00166667 min 
-##      time on Proposal = 0.000333333 min 
-##      time on Posterior = 2078.7 min 
-Accept #add=48, total add step = 6462
-Accept #delete=49, total delete step = 49
-Accept #switch=21, total switch step = 55
+##      time on Proposal = 0.000166667 min 
+##      time on Posterior = 2048.55 min 
+Accept #add=58, total add step = 6631
+Accept #delete=59, total delete step = 59
+Accept #switch=32, total switch step = 65
 ##
 ##
 ## Software Version = bfGWAS_SS_MCMC
 ##
-## Command Line Input = -inputSS -score /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_scores/Trans_geno_block.score.txt.gz -LDcorr /home/jyang/GIT/BGW-TWAS/Example/ExampleData/LDdir/Trans_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_EM_MCMC/hypval.current -max_iter 100 -convergence 1e-20 -n 499 -pv 1.02401 -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 -o Trans_geno_block -w 10000 -s 10000 -bvsrm -initype 3 -seed 2757 
+## Command Line Input = -inputSS -score /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_scores/Trans_geno_block.score.txt.gz -LDcorr /home/jyang/GIT/BGW-TWAS/Example/ExampleData/LDdir/Trans_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_EM_MCMC/hypval.current -max_iter 100 -convergence 1e-20 -n 499 -pv 1.02401 -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 -o Trans_geno_block -w 10000 -s 10000 -bvsrm -initype 3 -seed 21383 
 ##
-## Date = Thu Nov 19 21:16:22 2020
+## Date = Mon Nov 23 17:57:52 2020
 
 ##
 ## Summary Statistics:
@@ -46,17 +46,17 @@ Accept #switch=21, total switch step = 55
 ##
 ## MCMC related:
 ## initial value of |gamma| = 1
-## random seed = 2757
+## random seed = 21383
 ## acceptance ratio = 0.00455
 ## Region_PIP = 0
 ##
 ## Computation Time:
-## total computation time = 0.590333 min 
+## total computation time = 0.5765 min 
 ## computation time break down: 
 ##      time on MCMC = 0.00233333 min 
 ##      time on Proposal = 0.000166667 min 
-##      time on Posterior = 11771.6 min 
-Accept #add=34, total add step = 6612
-Accept #delete=35, total delete step = 35
-Accept #switch=22, total switch step = 44
+##      time on Posterior = 11495.2 min 
+Accept #add=37, total add step = 6619
+Accept #delete=38, total delete step = 38
+Accept #switch=16, total switch step = 41
 ##

@@ -54,6 +54,8 @@ echo ${gene_name} with up to ${max_blocks} genome blocks and p-value threshold $
 Score_dir=${wkdir}/${gene_name}_scores
 cd ${Score_dir}
 
+if [ -s ${Genome_Seg_Filehead} ]; then
+
 > ${gene_name}_ranked_segments.txt
 cat ${Genome_Seg_Filehead} | while read filehead ; do
 if [ -s  ${filehead}.score.txt.gz ] ; then
@@ -62,6 +64,10 @@ if [ -s  ${filehead}.score.txt.gz ] ; then
     	echo a non-empty ${filehead}.score.txt.gz file dose not exist !
 fi
 done
+else
+    echo ${Genome_Seg_Filehead} is empty. Please check.
+    exit
+fi
 
 # Grep gene info from ${GeneExpFile}
 gene_info=$(grep ${gene_name} ${GeneExpFile})
