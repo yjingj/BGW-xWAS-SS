@@ -32,24 +32,24 @@ inline std::string to_string (const T& t)
 
 
 void genMarker::iniRecord(VcfRecord& record){
-    
+
     rs = record.getIDStr();
     chr = record.getChromStr();
     bp = record.get1BasedPosition();
     Ref = record.getRefStr();
     Alt = record.getAltStr();
-    
+
     return;
 }
 
 void genMarker::printMarker(){
-    
+
     std::cout << "ID : " << rs <<"; ";
     std::cout << "chr : " << chr <<"; ";
     std::cout << "bp : " << bp <<"; ";
     std::cout << "Ref : " << Ref <<"; ";
     std::cout << "Alt : " << Alt <<"\n";
-    
+
     return;
 }
 
@@ -63,7 +63,7 @@ void SNPPOS::printMarker(){
 }
 
 void SNPINFO::printMarker(){
-    
+
     std::cout << "ID : " << rs_number <<"; ";
     std::cout << "chr : " << chr <<"; ";
     std::cout << "bp : " << base_position <<"; ";
@@ -93,8 +93,8 @@ void CalcWeight(const vector<bool> &indicator_func, vector<double> &weight, cons
 
 
 PARAM::PARAM(void):
-vscale(0.0), iniType(3), calc_K(0), saveGeno(0), saveSS(0), zipSS(0), 
-inputSS(0), refLD(0), scaleN(0), printLD(0), use_xtx_LD(0), LDwindow(1000000), rv(0.0), Compress_Flag(0), 
+vscale(0.0), iniType(3), calc_K(0), saveGeno(0), saveSS(0), zipSS(0),
+inputSS(0), refLD(0), scaleN(0), printLD(0), use_xtx_LD(0), LDwindow(1000000), rv(0.0), Compress_Flag(0),
 mode_silence (false), a_mode (0), k_mode(1), d_pace (100000),
 GTfield("GT"), file_out("result"), final_EM(0),
 miss_level(0.05), maf_level(0.005), hwe_level(0.001), r2_level(0.001),
@@ -114,12 +114,12 @@ target_chr("12"), start_pos(241229212), end_pos(241315842), window_size(1000000)
 
 bool comp_snp(const SNPPOS& lhs, const SNPPOS& rhs){
     return (lhs.chr.compare(rhs.chr) < 0) || ((lhs.chr.compare(rhs.chr) == 0) && (lhs.bp < rhs.bp));
-} 
+}
 
 
 //read individual level data files
 //obtain ns_total, ng_total, ns_test, ni_test, n_type
-void PARAM::ReadFiles (void) 
+void PARAM::ReadFiles (void)
 {
 	cout<<"\nStart reading individual-level data ...\n";
 	string file_str;
@@ -136,7 +136,7 @@ void PARAM::ReadFiles (void)
 			cout << "\nStart reading plink bim/fam files ...\n";
 			file_str=file_bfile+".bim";
 			if (ReadFile_bim (file_str, snpInfo, mapID2num)==false) {error=true;}
-	        
+
 			file_str=file_bfile+".fam";
 			if (ReadFile_fam (file_str, indicator_idv, pheno, InputSampleID, ni_total)==false) {error=true;}
 			if(!file_sample.empty()){
@@ -151,10 +151,10 @@ void PARAM::ReadFiles (void)
 					VcfSampleID.push_back(InputSampleID[i]);
 				}
 			}
-			
+
 			// obtain ni_test, ni_total, PhenoID2Ind, PhenoID2Pos before reading genotypes
 			ProcessPheno();
-			
+
 			file_str=file_bfile+".bed";
 			cout << "First time reading Plink bed file: \n";
 			if (ReadFile_bed (file_str, setSnps, indicator_idv, indicator_snp, snpInfo, PhenoID2Pos, ni_test, ni_total, maf_level, miss_level, hwe_level, ns_test, ns_total)==false) {error=true;}
@@ -168,7 +168,7 @@ void PARAM::ReadFiles (void)
 					// revise indicator_idv based on analyzed samples
 					readFile_sample (file_sample, InputSampleID, indicator_idv);
 				}
-	        	ProcessPheno(); 
+	        	ProcessPheno();
 	        	// obtain ni_test, ni_total, PhenoID2Ind, PhenoID2Pos before reading genotypes
 	    	}else{
 	    		cout << "No phenotype input file, extracting sample information from the vcf/genotype files.\n";
@@ -181,7 +181,7 @@ void PARAM::ReadFiles (void)
 		  			exit(-1);
 		  		}
 	    	}
-	    
+
 	      	//read vcf file for genotypes
 	      	if (!file_vcf.empty()) {
 	        	cout << "\nStart reading vcf file first time ...\n";
@@ -190,7 +190,7 @@ void PARAM::ReadFiles (void)
 	        	if (ReadFile_vcf(file_vcf, setSnps, indicator_idv, indicator_snp, maf_level, miss_level, hwe_level, snpInfo, ns_test, ns_total, ni_test, GTfield, PhenoID2Pos, VcfSampleID, SampleVcfPos, mapID2num, GenoSampleID2Ind) == false )
 	            	{error=true;}
 	      	}else if (!file_geno.empty()) {
-		  		//read genotype file 
+		  		//read genotype file
 		  		cout << "\nStart reading dosage file first time ...\n";
 				if (ReadFile_geno (file_geno, setSnps, indicator_idv, indicator_snp, PhenoID2Pos, snpInfo, VcfSampleID, SampleVcfPos, maf_level, miss_level, hwe_level, ns_test, ns_total, ni_test, ni_total, mapID2num, GenoSampleID2Ind)==false) {error=true;}
 		  	}
@@ -212,51 +212,51 @@ void PARAM::ReadFiles (void)
    // else{
     //    cout << "\nEmpty annotation file, no target position, all variants are treated as of one category!\n";
      //   if (Empty_anno (indicator_snp, snpInfo, n_type, mFunc)==false) {error=true;}
-        
+
    // }
 
 	    // need Snp info
 
 // jy edit on 11/2020
 	   // if (EM_step=final_EM)
-	   // if (!file_grex.empty()) // 
+	   // if (!file_grex.empty()) //
 
 	return;
 }
 
 
-void PARAM::CheckParam (void) 
-{	
+void PARAM::CheckParam (void)
+{
 	struct stat fileInfo;
 	string str;
-	
+
 	//check parameters
 	if (k_mode!=1 && k_mode!=2) {cout<<"error! unknown kinship/relatedness input mode: "<<k_mode<<endl; error=true;}
 
-	if (a_mode!=11 && a_mode!=12 && a_mode!=21 && a_mode!=31 && a_mode!=22 && a_mode!=43 && a_mode!=51 && a_mode!=52 && a_mode!=53 && a_mode!=54 && !saveGeno && !saveSS)   
+	if (a_mode!=11 && a_mode!=12 && a_mode!=21 && a_mode!=31 && a_mode!=22 && a_mode!=43 && a_mode!=51 && a_mode!=52 && a_mode!=53 && a_mode!=54 && !saveGeno && !saveSS)
 	{cout<<"error! unknown analysis mode: "<<a_mode<<". make sure -saveSS -saveGenoe -gk or -lm or -bvsrm or -predict is sepcified correctly."<<endl; error=true;}
 
 	if (miss_level>1) {cout<<"error! missing level needs to be between 0 and 1. current value = "<<miss_level<<endl; error=true;}
 	if (maf_level>0.5) {cout<<"error! maf level needs to be between 0 and 0.5. current value = "<<maf_level<<endl; error=true;}
 	if (hwe_level>1) {cout<<"error! hwe level needs to be between 0 and 1. current value = "<<hwe_level<<endl; error=true;}
-	
+
 	if (h_max<h_min) {cout<<"error! maximum h value must be larger than the minimal value. current values = "<<h_max<<" and "<<h_min<<endl; error=true;}
 	if (s_max<s_min) {cout<<"error! maximum s value must be larger than the minimal value. current values = "<<s_max<<" and "<<s_min<<endl; error=true;}
 	if (rho_max<rho_min) {cout<<"error! maximum rho value must be larger than the minimal value. current values = "<<rho_max<<" and "<<rho_min<<endl; error=true;}
 	if (logp_max<logp_min) {cout<<"error! maximum logp value must be larger than the minimal value. current values = "<<logp_max/log(10)<<" and "<<logp_min/log(10)<<endl; error=true;}
-	
+
 	if (h_max>1) {cout<<"error! h values must be bewtween 0 and 1. current values = "<<h_max<<" and "<<h_min<<endl; error=true;}
 	if (rho_max>1) {cout<<"error! rho values must be between 0 and 1. current values = "<<rho_max<<" and "<<rho_min<<endl; error=true;}
 	if (logp_max>0) {cout<<"error! maximum logp value must be smaller than 0. current values = "<<logp_max/log(10)<<" and "<<logp_min/log(10)<<endl; error=true;}
-		
+
 	if (h_scale>1.0) {cout<<"error! hscale value must be between 0 and 1. current value = "<<h_scale<<endl; error=true;}
 	if (rho_scale>1.0) {cout<<"error! rscale value must be between 0 and 1. current value = "<<rho_scale<<endl; error=true;}
 	if (logp_scale>1.0) {cout<<"error! pscale value must be between 0 and 1. current value = "<<logp_scale<<endl; error=true;}
 
 	if (rho_max==1 && rho_min==1 && a_mode==12) {cout<<"error! ridge regression does not support a rho parameter. current values = "<<rho_max<<" and "<<rho_min<<endl; error=true;}
-	if (final_EM){cout<< "Final EM, calculate VB R2" << endl;}
-	if (!final_EM){cout<< "Not final EM, check " << endl;}
-	
+	// if (final_EM){cout<< "Final EM, calculate VB R2" << endl;}
+	// if (!final_EM){cout<< "Not final EM, check " << endl;}
+
 	//check if files are compatible with each other, and if files exist
 	if (!file_bfile.empty()) {
 		str=file_bfile+".bim";
@@ -264,9 +264,9 @@ void PARAM::CheckParam (void)
 		str=file_bfile+".bed";
 		if (stat(str.c_str(),&fileInfo)==-1) {cout<<"error! fail to open .bed file: "<<str<<endl; error=true;}
 		str=file_bfile+".fam";
-		if (stat(str.c_str(),&fileInfo)==-1) {cout<<"error! fail to open .fam file: "<<str<<endl; error=true;}			
+		if (stat(str.c_str(),&fileInfo)==-1) {cout<<"error! fail to open .fam file: "<<str<<endl; error=true;}
 	}
-	
+
 
 	str=file_geno;
 	if (!str.empty() && stat(str.c_str(),&fileInfo)==-1 ) {cout<<"error! fail to open mean genotype file: "<<str<<endl; error=true;}
@@ -274,21 +274,21 @@ void PARAM::CheckParam (void)
 	size_t flag=0;
 	if (!file_bfile.empty()) {flag++;}
 	if (!file_geno.empty()) {flag++;}
-	
+
 	if (file_pheno.empty() && (a_mode==43) ) {
 		cout<<"error! phenotype file is required."<<endl; error=true;
 	}
-	
+
 	str=file_snps;
 	if (!str.empty() && stat(str.c_str(),&fileInfo)==-1 ) {cout<<"error! fail to open snps file: "<<str<<endl; error=true;}
-	
-	
+
+
 	str=file_anno;
 	if (!str.empty() && stat(str.c_str(),&fileInfo)==-1 ) {cout<<"error! fail to open annotation file: "<<str<<endl; error=true;}
 
 	str=file_kin;
 	if (!str.empty() && stat(str.c_str(),&fileInfo)==-1 ) {cout<<"error! fail to open relatedness matrix file: "<<str<<endl; error=true;}
-	
+
 	//check if files are compatible with analysis mode
 	if ((a_mode==43) && file_kin.empty())  {cout<<"error! missing relatedness file. -predict option requires -k option to provide a relatedness file."<<endl;  error=true;}
 
@@ -301,12 +301,12 @@ void PARAM::CheckParam (void)
 		cout << "Error! -inputSS is specified, need input for -n [sample size] and -rv [phenotype variance] \n";
 		error = true ;
 	}
-	
+
 	return;
 }
 
 
-		
+
 
 void PARAM::CheckData (void) {
 
@@ -314,15 +314,15 @@ void PARAM::CheckData (void) {
 	//and calculate np_obs and np_miss
 	if(!inputSS){
 		ni_total=(indicator_idv).size();
-		
-		ni_test=0; 
+
+		ni_test=0;
 		for (vector<int>::size_type i=0; i<(indicator_idv).size(); ++i) {
 			if (indicator_idv[i]==0) {continue;}
 			ni_test++;
 		}
 
 		np_obs=0; np_miss=0;
-		for (size_t j=0; j<indicator_pheno.size(); j++) {					
+		for (size_t j=0; j<indicator_pheno.size(); j++) {
 				if (indicator_pheno[j]==0) {
 					np_miss++;
 				} else {
@@ -341,15 +341,15 @@ void PARAM::CheckData (void) {
 		}
 		CreateSnpPosVec(snp_pos, snpInfo, indicator_snp);
     	// order snp_pos by chr/bp
-    	stable_sort(snp_pos.begin(), snp_pos.end(), comp_snp); 
-    	cout << "snp_pos size : " << snp_pos.size() << endl;	
+    	stable_sort(snp_pos.begin(), snp_pos.end(), comp_snp);
+    	cout << "snp_pos size : " << snp_pos.size() << endl;
 	}else{
 		ni_total = ni_test;
 		pheno_var = rv;
 		// Create a vector of "SNPPOS" structs snp_pos (snpInfo will be cleared)
     	CreateSnpPosVec(snp_pos, snpInfo, indicator_snp);
     	// order snp_pos by chr/bp
-    	stable_sort(snp_pos.begin(), snp_pos.end(), comp_snp); 
+    	stable_sort(snp_pos.begin(), snp_pos.end(), comp_snp);
     	// Delete variants without LD information
     	UpdateScore();
     	// cout << "snp_pos size : " << snp_pos.size() << endl;
@@ -358,70 +358,70 @@ void PARAM::CheckData (void) {
 	//output some information
 	cout<<"\n## number of total individuals = "<<ni_total<<endl;
 	cout<<"## number of individuals with full phenotypes = "<<ni_test<<endl;
-	cout<<"## number of total SNPs = "<<ns_total<<endl;	
+	cout<<"## number of total SNPs = "<<ns_total<<endl;
 	cout<<"## number of analyzed SNPs = "<<ns_test<<endl;
 
 	//set parameters for BSLMM
 	//and check for predict
 	if (a_mode==11 || a_mode==12 || a_mode==13 || a_mode==31) {
-		if (a_mode==11) {n_mh=1;}	
+		if (a_mode==11) {n_mh=1;}
 		if (logp_min==0) {logp_min=-1.0*log((double)ns_test);}
-	
+
 		if (h_scale==-1) {h_scale=min(1.0, 10.0/sqrt((double)ni_test) );}
 		if (rho_scale==-1) {rho_scale=min(1.0, 10.0/sqrt((double)ni_test) );}
 		if (logp_scale==-1) {logp_scale=min(1.0, 5.0/sqrt((double)ni_test) );}
         //cout << "h_scale = " << h_scale << "; rho_scale = " << rho_scale<< "; logtheta_scale = " << logp_scale << endl;
         if (vscale <= 0.0) { vscale = min(0.5, 10.0/sqrt((double)ni_test));}
-		
+
 		if (h_min==-1) {h_min=0.00000001;}
 		if (h_max==-1) {h_max=1.0;}
-		
+
 		if (s_max>ns_test) {s_max=ns_test; cout<<"s_max is re-set to the number of analyzed SNPs."<<endl;}
 		if (s_max<s_min) {cout<<"error! maximum s value must be larger than the minimal value. current values = "<<s_max<<" and "<<s_min<<endl; error=true;}
-	} 
+	}
 
 	return;
 }
 
 
-void PARAM::PrintSummary () 
+void PARAM::PrintSummary ()
 {
 	cout<<"pve estimate ="<<endl;
 	cout<<"se(pve) ="<<endl;
-		
+
 	return;
 }
 
 
 void PARAM::ReadGenotypes (uchar **X, gsl_matrix *K) {
- 
+
  	cout << "\nStarting reading genotype files for the second time ...\n";
     string file_str;
     UnCompBufferSize = (ni_test) * sizeof(uchar);
    // cout << "UnCompBufferSize = " << UnCompBufferSize << endl;
 
     if(calc_K) cout << "Kinship matrix is calculated here.\n";
-    
+
 	if (!file_bfile.empty()) {
 		file_str=file_bfile+".bed";
 		if (ReadFile_bed (file_str, indicator_idv, indicator_snp, X, K, calc_K, ni_test, ns_test, ni_total, ns_total, SNPmean, CompBuffSizeVec, Compress_Flag)==false) {error=true;}
         //revised
 	}
-	
+
     else if(!file_vcf.empty()){
         if ( ReadFile_vcf (file_vcf, indicator_idv, indicator_snp, X, ni_test, ns_test, K, calc_K, GTfield, SNPmean, CompBuffSizeVec, SampleVcfPos, PhenoID2Pos, VcfSampleID, Compress_Flag)==false )
         {error=true;} // revised
     }
-    
+
     else if(!file_geno.empty()){
         if (ReadFile_geno (file_geno, indicator_idv, indicator_snp, X, K, calc_K, ni_test, SNPmean, CompBuffSizeVec, SampleVcfPos, PhenoID2Pos, VcfSampleID, Compress_Flag)==false) {error=true;} //to be revised
     }else{
     	cerr << "one of the genotype files has to be specified." << endl;
     	exit(-1);
     }
-    
+
     return;
-    
+
 }
 
 // Read summary statistics and load into cPar
@@ -433,12 +433,12 @@ void PARAM::ReadSS (){
 
     		if(ReadFile_score(file_score, snpInfo, mapScoreKey2Pos, mapLDKey2Pos, pval_vec, pos_ChisqTest, U_STAT, SQRT_V_STAT, xtx_vec, snp_var_vec, ns_test, ns_total, mbeta, mbeta_SE, indicator_snp, ni_test, maf_level, hwe_level, pheno_var, LD_ref, use_xtx_LD) == false)
     			{ error = true; }
-    		
+
     		// read functional/annotation fule
 			if ( (!file_anno.empty()) && (!file_func_code.empty()) ) {
 		    	cout << "\nStart loading annotation files ... \n";
 		    	//cout << file_anno << " \nwith code file " << file_func_code << "\n";
-		        if (ReadFile_anno (file_anno, file_func_code, mapScoreKey2Pos, mapFunc2Code, snpInfo, n_type, mFunc)==false) 
+		        if (ReadFile_anno (file_anno, file_func_code, mapScoreKey2Pos, mapFunc2Code, snpInfo, n_type, mFunc)==false)
 		        	{error=true;}
 		    }
         // remove new function for testing 11-17-18
@@ -466,11 +466,11 @@ void PARAM::WriteGenotypes(uchar **X){
 
     //cout << "create UcharTable ...\n";
     CreateUcharTable(UcharTable);
-    
+
     ofstream outfile (file_str.c_str(), ofstream::out);
     if (!outfile) {cout<<"error writing file: "<<file_str.c_str()<<endl; return;}
 
-    //write header with VcfSampleID_test 
+    //write header with VcfSampleID_test
     cout << "Write genotype dosage file for analyzed samples:" << ni_test << endl;
     //cout << "VcfSampleID_test length = " << VcfSampleID_test.size() << endl;
 
@@ -482,20 +482,20 @@ void PARAM::WriteGenotypes(uchar **X){
             outfile << VcfSampleID_test[i] << endl;
         }
         else outfile << VcfSampleID_test[i] << "\t";
-    } 
+    }
 
     size_t pos=0;
     double geno_j;
     uchar c;
-    
+
     //cout << "write variant information."<<endl;
     for (size_t i=0; i<ns_total; ++i) {
 
     	if(!indicator_snp[i]){continue;}
-        
-    	// save the data 
+
+    	// save the data
         outfile<< snpInfo[i].chr<<"\t" <<snpInfo[i].base_position <<"\t"  << snpInfo[i].rs_number << "\t" << snpInfo[i].a_major << "\t" << snpInfo[i].a_minor << "\t";
- 
+
         for (size_t j=0; j < ni_test; j++) {
         	c = X[pos][j];
             geno_j = UcharTable[(int)c].second;
@@ -510,11 +510,11 @@ void PARAM::WriteGenotypes(uchar **X){
 		                outfile << fixed << setprecision(2)  << geno_j << endl;
 		            else
 		                outfile << fixed << setprecision(2) << geno_j << "\t";
-		            }           
+		            }
         }
         pos++;
     }
-    
+
     outfile.clear();
     outfile.close();
 
@@ -524,10 +524,10 @@ void PARAM::WriteGenotypes(uchar **X){
 // Calculate kinshiip matrix
 void PARAM::CalcKin (gsl_matrix *matrix_kin)  {
 	string file_str;
-	
+
 	gsl_matrix_set_zero (matrix_kin);
-	
-	if ( !file_bfile.empty() ) {		
+
+	if ( !file_bfile.empty() ) {
 		file_str=file_bfile+".bed";
 		if (PlinkKin (file_str, indicator_idv, indicator_snp, a_mode-20, d_pace, matrix_kin)==false) {error=true;}
 	}
@@ -542,23 +542,23 @@ void PARAM::CalcKin (gsl_matrix *matrix_kin)  {
 	else{
 		cerr << "Need input genotype file: plink, bimbam, or VCF!" <<endl;
 	}
-	
+
 	return;
 }
-		
+
 
 
 
 
 /*
-void PARAM::CheckCvt () 
+void PARAM::CheckCvt ()
 {
 	if (indicator_cvt.size()==0) {return;}
-		
+
 	size_t ci_test=0;
-	
+
 	gsl_matrix *W=gsl_matrix_alloc (ni_test, n_cvt);
-	
+
 	for (vector<int>::size_type i=0; i<indicator_idv.size(); ++i) {
 		if (indicator_idv[i]==0 || indicator_cvt[i]==0) {continue;}
 		for (size_t j=0; j<n_cvt; ++j) {
@@ -570,14 +570,14 @@ void PARAM::CheckCvt ()
 	size_t flag_ipt=0;
 	double v_min, v_max;
 	set<size_t> set_remove;
-	
+
 	//check if any columns is an intercept
 	for (size_t i=0; i<W->size2; i++) {
 		gsl_vector_view w_col=gsl_matrix_column (W, i);
 		gsl_vector_minmax (&w_col.vector, &v_min, &v_max);
 		if (v_min==v_max) {flag_ipt=1; set_remove.insert (i);}
 	}
-	
+
 	//add an intecept term if needed
 	if (n_cvt==set_remove.size()) {
 		indicator_cvt.clear();
@@ -588,12 +588,12 @@ void PARAM::CheckCvt ()
 			if (indicator_idv[i]==0 || indicator_cvt[i]==0) {continue;}
 			cvt[i].push_back(1.0);
 		}
-		
+
 		n_cvt++;
-	} else {}	
-	
+	} else {}
+
 	gsl_matrix_free(W);
-	
+
 	return;
 }
 */
@@ -608,7 +608,7 @@ void PARAM::ReorderPheno(gsl_vector *y)
     size_t c_ind=0, pheno_idx;
     gsl_vector *ytemp=gsl_vector_alloc (ni_test);
     VcfSampleID_test.clear(); // set VCFSampleID_test
-    
+
     cout << "Total number of samples in the genotype file: " << VcfSampleID.size() << endl;
 	cout << "Total number of samples in the phenotype file: " << PhenoID2Pos.size() << endl;
 	cout << "Total number of samples in with both geno and pheno data: " << PhenoID2Ind.size() << endl;
@@ -620,7 +620,7 @@ void PARAM::ReorderPheno(gsl_vector *y)
         id = VcfSampleID[i];
 
         if( (PhenoID2Ind.count(id) > 0) & (GenoSampleID2Ind.count(id) == 0) ){
-        	//if (i < 10) cout << id << ", count ="<< PhenoID2Ind.count(id) << ";    "; 
+        	//if (i < 10) cout << id << ", count ="<< PhenoID2Ind.count(id) << ";    ";
         	pheno_idx = PhenoID2Ind[id];
 
         	pheno_i = gsl_vector_get(y, pheno_idx);
@@ -628,7 +628,7 @@ void PARAM::ReorderPheno(gsl_vector *y)
             VcfSampleID_test.push_back(id);
             GenoSampleID2Ind[id] = i;
             c_ind++;
-        	
+
         }
     }
    // cout << "Finished reordering phenotypes. \nAnalyzed sample size is " << c_ind << endl;
@@ -641,7 +641,7 @@ void PARAM::ReorderPheno(gsl_vector *y)
 
 // Post-process phentoypes, obtain ni_total, ni_test, PhenoID2Ind
 void PARAM::ProcessPheno()
-{	
+{
 	//obtain ni_test
 	ni_test=0;
 
@@ -660,7 +660,7 @@ void PARAM::ProcessPheno()
     }
     //cout << "Create PhenoID2Ind map; total number of analyzed individual ni_test = " << ni_test << "\n";
     //cout << "PhenoID2Ind map length = " << PhenoID2Ind.size() << "\n";
-	
+
 	if (ni_test==0) {
 		error=true;
 		cout<<"error! number of analyzed individuals equals 0. "<<endl;
@@ -672,7 +672,7 @@ void PARAM::ProcessPheno()
 
 // Update phentoype sample info: ni_test, PhenoID2Ind
 void PARAM::UpdatePheno()
-{	
+{
 	//cout << "Update ni_test, PhenoID2Ind for samples that have geno data based on GenoSampleID2Ind ...\n";
 	//cout << "GenoSampleID2Ind map length = " << GenoSampleID2Ind.size() << "\n";
 
@@ -696,7 +696,7 @@ void PARAM::UpdatePheno()
     // cout << "Update PhenoID2Ind map; \n";
     cout << "Total number of analyzed individual with geno: ni_test = " << ni_test << "\n";
     cout << "PhenoID2Ind map length = " << PhenoID2Ind.size() << "\n";
-	
+
 	if (ni_test==0) {
 		error=true;
 		cout<<"error! number of analyzed individuals equals 0. "<<endl;
@@ -709,11 +709,11 @@ void PARAM::UpdatePheno()
 
 
 //else, indicator_idv to load phenotype
-void PARAM::CopyPheno (gsl_vector *y) 
+void PARAM::CopyPheno (gsl_vector *y)
 {
-	size_t ci_test=0; 
+	size_t ci_test=0;
 	pheno_mean = 0.0;
-	
+
 	for (size_t i=0; i<indicator_idv.size(); ++i) {
 		if (indicator_idv[i]) {
 			gsl_vector_set (y, ci_test, pheno[i]);
@@ -722,8 +722,8 @@ void PARAM::CopyPheno (gsl_vector *y)
 		}
 	}
 	pheno_mean /= (double) ci_test;
-	gsl_vector_add_constant(y, -1.0 * pheno_mean); 
-	
+	gsl_vector_add_constant(y, -1.0 * pheno_mean);
+
 	return;
 }
 
@@ -744,15 +744,15 @@ void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const ve
     string key;
 
     snp_pos.clear();
-    
+
     for (size_t i=0; i < indicator_snp.size(); ++i){
-    	
+
         if(!indicator_snp[i]) {continue;}
-        
+
         pos=tt;
        // if(tt == pos_loglr[tt].first ) pos = tt;
         //else cout << "error assigning position to snp_pos vector"<< endl;
-        
+
         rs = snpInfo[i].rs_number;
         chr = snpInfo[i].chr;
         bp = snpInfo[i].base_position;
@@ -765,11 +765,11 @@ void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const ve
 
         SNPPOS snp_temp={pos, rs, chr, bp, a_minor, a_major, maf, indicator_func, key};
         snp_pos.push_back(snp_temp);
-                
+
         tt++;
     }
     snpInfo.clear();
-    
+
 }
 
 
@@ -780,7 +780,7 @@ void PARAM::UpdateScore(){
     double yty = pheno_var * ((double)ni_test - 1.0);
     // cout << "yty in UpdateScore is " << yty << endl;
 
-    ni_effect_vec.clear(); 
+    ni_effect_vec.clear();
     if(scaleN){
     	cout << "Scale summary statistics with effective sample size!\n";
     	for(size_t i=0; i<ns_test; i++){
@@ -829,7 +829,7 @@ void PARAM::Convert_LD(){
         LD[i].push_back(snp_var_vec[i]) ;
         key_i = snp_pos[i].key;
         swap_i = false;
-        
+
         if( mapLDKey2Pos.count(key_i) == 0 ){
             SwapKey(key_i);
             swap_i = true;
@@ -854,7 +854,7 @@ void PARAM::Convert_LD(){
                             if( abs(idx_j - idx_i) >= LD_ref[ min(idx_i, idx_j) ].size() )
                         		continue;
                             r2_ij = getR2_ij(LD_ref, idx_i, idx_j, swap_i, swap_j);
-                            if(refLD & (r2_ij < r2_level) ) 
+                            if(refLD & (r2_ij < r2_level) )
                         		r2_ij = 0.0;
                             LD[i].push_back(r2_ij);
                         }
@@ -863,7 +863,7 @@ void PARAM::Convert_LD(){
                         if( abs(idx_j - idx_i) >= LD_ref[ min(idx_i, idx_j) ].size() )
                         		continue;
                         r2_ij = getR2_ij(LD_ref, idx_i, idx_j, swap_i, swap_j);
-                        if(refLD & (r2_ij < r2_level)) 
+                        if(refLD & (r2_ij < r2_level))
                         	r2_ij = 0.0;
                         LD[i].push_back(r2_ij);
                     }
@@ -886,7 +886,7 @@ void PARAM::Convert_LD(){
                         if( abs(idx_j - idx_i) >= LD_ref[ min(idx_i, idx_j) ].size() )
                         		continue;
                         r2_ij = getR2_ij(LD_ref, idx_i, idx_j, swap_i, swap_j);
-                        if(refLD & (r2_ij < r2_level)) 
+                        if(refLD & (r2_ij < r2_level))
                         	r2_ij = 0.0;
                         LD[i].push_back(r2_ij);
                     }
@@ -895,7 +895,7 @@ void PARAM::Convert_LD(){
                     if( abs(idx_j - idx_i) >= LD_ref[ min(idx_i, idx_j) ].size() )
                         		continue;
                     r2_ij = getR2_ij(LD_ref, idx_i, idx_j, swap_i, swap_j);
-                    if(refLD & (r2_ij < r2_level)) 
+                    if(refLD & (r2_ij < r2_level))
                         	r2_ij = 0.0;
                     LD[i].push_back(r2_ij);
                 }
@@ -905,7 +905,7 @@ void PARAM::Convert_LD(){
     // clear LD_ref to save memory
     LD_ref.clear();
     return;
-} 
+}
 
 
 
@@ -930,13 +930,13 @@ void SwapKey(string &key){
 	vector<string> temp;
 	temp = split(key, ":");
 	if(temp.size() < 4) {
-		// cout << "temp.size" <<  temp.size << endl; 
+		// cout << "temp.size" <<  temp.size << endl;
 		cout << "SNP annotation (chr:pos:ref:alt) is in wrong format: " << key << endl;
 		exit(-1);
 	}else{
 		key = temp[0] + ":" + temp[1] + ":" + temp[3] + ":" + temp[2] ;
 	}
-	return; 
+	return;
 }
 
 // Obtain correlation between snp_i and snp_j

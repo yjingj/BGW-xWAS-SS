@@ -24,7 +24,8 @@ Genome_Seg_Filehead=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
 GTfield=DS
 
 # Working directory to write intermediate files and output files, unique per gene
-wkdir=${BGW_dir}/Example/ExampleWorkDir
+# wkdir=${BGW_dir}/Example/ExampleWorkDir
+wkdir=/home/jyang/GIT/BGW-TWAS/Test
 
 # Parent directory of all LD files
 LDdir=${BGW_dir}/Example/ExampleData/LDdir
