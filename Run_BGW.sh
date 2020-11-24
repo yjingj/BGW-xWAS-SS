@@ -66,7 +66,6 @@ ${BGW_dir}/bin/Step2_prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 # Step 3: Training BGW-TWAS/BVSR gene expression prediction model by EM-MCMC algorithm
 ################################################################
 ################################################################
-
 N=499 # sample size
 hfile=${BGW_dir}/Example/hypval.txt
 PCP_thresh=0.0001

@@ -86,6 +86,8 @@ cat ${gene_name}_ranked_segments.txt | while read line ; do
 
     filehead=$(echo $line | awk -F " " '{print $1}' )
     pval=$(echo $line | awk -F " " '{print $2}' )
+    comp_pval=$(awk -v pval=$pval -v p_thresh=$p_thresh 'BEGIN{ print (pval+0)<(p_thresh+0) }')
+    # echo Compare if $pval less than $p_thresh gives comp_pval = $comp_pval ...
 
     row_1=$(zcat ${filehead}.score.txt | head -n 2 | tail -n1)
     chr=$(echo ${row_1} | awk '{print $1}' )
@@ -99,11 +101,11 @@ cat ${gene_name}_ranked_segments.txt | while read line ; do
             echo -e "${filehead}\t${pval}" >> ${gene_name}_cis_segments.txt
         elif [ "$start" -lt "$end_pos" ]  && [ "$end" -gt "$end_pos" ] ; then
             echo -e  "${filehead}\t${pval}" >> ${gene_name}_cis_segments.txt
-        elif ( ($(echo "$pval < $p_thresh" | bc -l )) ) ; then
+        elif [ "$comp_pval" -eq 1 ] ; then
             echo -e  "${filehead}\t${pval}" >> ${gene_name}_trans_segments.txt
         fi
 
-        elif (( $(echo "$pval < $p_thresh" | bc -l) )) ; then
+        elif [ "$comp_pval" -eq 1 ] ; then
             echo -e  "${filehead}\t${pval}" >> ${gene_name}_trans_segments.txt
         else
         continue;
