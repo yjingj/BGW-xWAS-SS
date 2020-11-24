@@ -24,8 +24,8 @@ Genome_Seg_Filehead=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
 GTfield=DS
 
 # Working directory to write intermediate files and output files, unique per gene
-# wkdir=${BGW_dir}/Example/ExampleWorkDir
-wkdir=/home/jyang/GIT/BGW-TWAS/Test
+wkdir=${BGW_dir}/Example/ExampleWorkDir
+# wkdir=/home/jyang/GIT/BGW-TWAS/Test
 
 # Parent directory of all LD files
 LDdir=${BGW_dir}/Example/ExampleData/LDdir
@@ -75,7 +75,7 @@ ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
 --GeneExpFile ${GeneExpFile} --LDdir ${LDdir} \
 --N 499 --hfile ${BGW_dir}/Example/hypval.txt \
---em 5 --burnin 10000 --Nmcmc 10000 \
+--em 3 --burnin 10000 --Nmcmc 10000 \
 --PCP_thresh 0.0001 --num_cores 2
 
 ################################################################
