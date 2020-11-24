@@ -100,9 +100,9 @@ if [ -s ${wkdir}/${gene_name}_grex.geno ] ; then
     echo Calculating predicted GReX ...
     Rscript ${BGW_dir}/bin/compute_grex.R ${gene_name} ${wkdir}
     echo Test GReX file is generated under ${wkdir}
-    rm -rf ${wkdir}/${gene_name}_GReX/output/
-    rm -f ${wkdir}/${gene_name}_GReX/**
-    rm -f ${wkdir}/ABCA7_grex.geno
+#    rm -rf ${wkdir}/${gene_name}_GReX/output/
+#    rm -f ${wkdir}/${gene_name}_GReX/**
+#    rm -f ${wkdir}/ABCA7_grex.geno
 else
 	echo Test genotype dosage file ${wkdir}/${gene_name}_grex.geno file failed to be generated. Please check your input files for ${BGW_dir}/bin/Step4_get_test_grex.sh.
 	exit

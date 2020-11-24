@@ -249,7 +249,7 @@ for(my $j=0; $j< @filehead; ++$j)
         }elsif ($genofile eq "bed") {
           @cmd = "$toolE -bfile $genoDir/$line -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
         }elsif($genofile eq "sumstat"){
-            @cmd = "$BGW_dir/bin/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $window_size ";
+            @cmd = "$BGW_dir/bin/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $toolE ";
             # @cmd = "$toolE -score $genoDir/$line.SS.score.txt.gz -inputSS $refLD -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -n $N -pv $pv -maf $maf -r2 $r2_level -bvsrm -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -seed ${seed} > $wkDir/OUT/$line.output.txt";
         }
         else{
@@ -298,7 +298,7 @@ for $i (1..$EM){
           }elsif ($genofile eq "bed") {
             @cmd = "$toolE -bfile $genoDir/$line -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
           }elsif($genofile eq "sumstat"){
-              @cmd = "$BGW_dir/bin/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $window_size" ;
+              @cmd = "$BGW_dir/bin/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $toolE " ;
               # @cmd = "$toolE -score $genoDir/$line.SS.score.txt.gz -inputSS $refLD -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -n $N -pv $pv -maf $maf -r2 $r2_level -bvsrm -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -seed ${seed} > $wkDir/OUT/$line.output.txt";
           }else{
               die "genoDir need to be one of the vcf, genotxt, bed, or sumstat file types\!\n"
@@ -309,7 +309,7 @@ for $i (1..$EM){
             }elsif ($genofile eq "genotxt"){
               @cmd = "$toolE -g $genoDir/$line.geno.gz -p $pheno -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $NmcmcLast $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
             }elsif($genofile eq "sumstat"){
-                @cmd = "$BGW_dir/bin/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $window_size";
+                @cmd = "$BGW_dir/bin/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $toolE ";
                 #@cmd = "$toolE -score $genoDir/$line.SS.score.txt.gz -inputSS $refLD -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -n $N -pv $pv -maf $maf -r2 $r2_level -bvsrm -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -seed ${seed} > $wkDir/OUT/$line.output.txt";
             }else{
                 die "genoDir need to be one of the vcf, genotxt, bed, or sumstat file types\!\n"
