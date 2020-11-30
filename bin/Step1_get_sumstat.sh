@@ -22,7 +22,7 @@
 
 #################################
 VARS=`getopt -o "" -a -l \
-BGW_dir:,wkdir:,gene_name:,GeneExpFile:,geno_dir:,LDdir:,Genome_Seg_Filehead:,GTfield:,num_cores: \
+BGW_dir:,wkdir:,gene_name:,GeneExpFile:,geno_dir:,LDdir:,Genome_Seg_Filehead:,GTfield:,num_cores:,clean_output: \
 -- "$@"`
 
 
@@ -46,6 +46,7 @@ do
         --Genome_Seg_Filehead|-Genome_Seg_Filehead) Genome_Seg_Filehead=$2; shift 2;;
         --GTfield|-GTfield) GTfield=$2; shift 2;;
         --num_cores|-num_cores) num_cores=$2; shift 2;;
+        --clean_output|-clean_output) clean_output=$2; shift 2;;
         --) shift;break;;
         *) echo "Wrong input arguments!";exit 1;;
         esac
@@ -56,6 +57,7 @@ done
 ##########################################
 GTfield=${GTfield:-"GT"}
 num_cores=${num_cores:-1}
+clean_output=${clean_output:-1}
 
 if [ -s ${Genome_Seg_Filehead} ]; then
     num_segments=`wc -l ${Genome_Seg_Filehead} | awk '{print $1}'`
@@ -104,7 +106,9 @@ rm -f temp_ID.txt exp_temp.txt
 ## Run in parallele with specified number of processes by -P
 seq 1 ${num_segments}  | xargs -I % -n 1 -P ${num_cores} sh ${BGW_dir}/bin/get_score_stat.sh ${pheno} ${geno_dir} ${Score_dir} ${BGW_dir} ${LDdir} ${Genome_Seg_Filehead} % ${GTfield}
 
+if [ $clean_output -eq 1 ] ; then
 rm -fr ${wkdir}/${gene_name}_scores/output
+fi
 
 echo Step 1 complete for generating eQTL summary statistics!
 

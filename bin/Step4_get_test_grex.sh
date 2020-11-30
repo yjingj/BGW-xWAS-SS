@@ -5,7 +5,7 @@
 
 #################################
 VARS=`getopt -o "" -a -l \
-BGW_dir:,wkdir:,gene_name:,BGW_weight:,test_geno_dir:,test_geno_filehead:,GTfield:,test_pheno:,num_cores: \
+BGW_dir:,wkdir:,gene_name:,BGW_weight:,test_geno_dir:,test_geno_filehead:,GTfield:,test_pheno:,num_cores:,clean_output: \
 -- "$@"`
 
 if [ $? != 0 ]
@@ -28,6 +28,7 @@ do
 		--GTfield|-GTfield) GTfield=$2; shift 2;;
 		--test_pheno|-test_pheno) test_pheno=$2; shift 2;;
         --num_cores|-num_cores) num_cores=$2; shift 2;;
+        --clean_output|-clean_output) clean_output=$2; shift 2;;
         --) shift;break;;
         *) echo "Wrong input arguments!";exit 1;;
         esac
@@ -38,6 +39,7 @@ done
 ##########################################
 GTfield=${Nmcmc:-"GT"}
 num_cores=${num_cores:-1}
+clean_output=${clean_output:-1}
 
 mkdir -p ${wkdir}/${gene_name}_GReX
 cd ${wkdir}/${gene_name}_GReX
@@ -100,12 +102,15 @@ if [ -s ${wkdir}/${gene_name}_grex.geno ] ; then
     echo Calculating predicted GReX ...
     Rscript ${BGW_dir}/bin/compute_grex.R ${gene_name} ${wkdir}
     echo Test GReX file is generated under ${wkdir}
-#    rm -rf ${wkdir}/${gene_name}_GReX/output/
-#    rm -f ${wkdir}/${gene_name}_GReX/**
-#    rm -f ${wkdir}/ABCA7_grex.geno
 else
 	echo Test genotype dosage file ${wkdir}/${gene_name}_grex.geno file failed to be generated. Please check your input files for ${BGW_dir}/bin/Step4_get_test_grex.sh.
 	exit
+fi
+
+if [ $clean_output -eq 1 ] ; then
+    rm -rf ${wkdir}/${gene_name}_GReX/output/
+    rm -f ${wkdir}/${gene_name}_GReX/**
+    rm -f ${wkdir}/ABCA7_grex.geno
 fi
 
 exit

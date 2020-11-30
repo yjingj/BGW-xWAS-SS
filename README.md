@@ -73,6 +73,7 @@ A file containing gene expression levels for training samples as in `./Example/E
 ### Set up Tool Directories and Input Arguments:
 
 ```
+## Variables for Step 1
 BGW_dir=~/GIT/BGW-TWAS # tool directory
 GeneExpFile=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt
 gene_name=ABCA7
@@ -82,29 +83,51 @@ GTfield=DS # specify genotype field "GT" for genotype
 wkdir=${BGW_dir}/Example/ExampleWorkDir
 LDdir=${BGW_dir}/Example/ExampleData/LDdir
 num_cores=2 # number of cores to be used
+
+## Varables for Step 2
+p_thresh=0.001 # p-value threshold
+max_blocks=100 # maximum blocks
+
+## Variables for Step 3
+N=499 # sample size
+hfile=${BGW_dir}/Example/hypval.txt
+PCP_thresh=0.0001
+
+## Variables for Step 4
+BGW_weight=${wkdir}/${gene_name}_BGW_eQTL_weights.txt
+test_geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
+test_geno_filehead=${BGW_dir}/Example/ExampleData/test_geno_filehead.txt
+test_pheno=${BGW_dir}/Example/ExampleData/Test_pheno.txt
+GTfield_test=GT #or DS
 ```
+
+* It is important to include the complete directory starting with `/home/` for all input files.
+* It is recommended to test the following steps one by one, instead of directly running the `./Run_BGW.sh` script.
 
 ### Step 1. Obtain Summary Statistics
 Shell script `Step1_get_sum_stat.sh` will generate single variant eQTL summary statistics (aka Score Statistics) in required formats.
 
 #### Input arguments
 - `--BGW_dir` : Specify the directory of BGW-TWAS tool
-- `--wkdir` : Specify a working directory
-- `-GeneExpFile` : Specify gene expression file directory
-- `--gene_name` : Specify the gene name that should be the same used in `GeneExpFile`
-- `--geno_dir` : Specify the directory of all genotype files
-- `--LDdir` : Specify the directory of all LD files
-- `--Genome_Seg_Filehead` : Specify the genome segmentation file
-- `--GTfield` : Specify the genotype format in the training vcf file that should be used. Default `GT` for assayed genotype. Alternative value `DS` for the inputed dosage genotype field by [Michigan Imputation Server](https://imputationserver.sph.umich.edu/index.html#!).
-- `--num_cores` : Specify the number of parallele sessions, default `1`.
+- `--wkdir` : Specify a working directory with writing access
+- `-GeneExpFile` : Gene expression file directory
+- `--gene_name` : Gene name that should be the same used in `GeneExpFile`
+- `--geno_dir` : Directory of all genotype files
+- `--LDdir` : Directory of all LD files with writing access
+- `--Genome_Seg_Filehead` : Genome segmentation file
+- `--GTfield` : Specify the genotype format in the training vcf file that should be used. Default `GT` for assayed genotype. Alternative value `DS` for the inputed dosage genotype field by [Michigan Imputation Server](https://imputationserver.sph.umich.edu/index.html#!), or other genotype _FIELD_ name as used in the VCF file.
+- `--num_cores` : Number of parallele sessions, default `1`.
+- `--clean_output` : Whether to delete all intermediate outcomes, taking the input value of `1` for deleting or `0` keeping all intermediate files for testing purpose.
 
 #### Example command:
 ```
 ${BGW_dir}/bin/Step1_get_sumstat.sh --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} --GeneExpFile ${GeneExpFile} \
 --geno_dir ${geno_dir} --LDdir ${LDdir} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
---GTfield ${GTfield} --num_cores ${num_cores}
+--GTfield ${GTfield} --num_cores ${num_cores} --clean_output 1
 ```
+
+* Rare variants with MAF <0.5% will be excluded from analysis by default.
 
 #### Output files
 - This shell script will create a directory called `${gene}_scores/` under the specified working directory `${wkdir}/`, where results for each genome segment will be stored.
@@ -120,8 +143,8 @@ Step 2 selects a subset of genome blocks (up to `${max_blocks}`) for joint model
 
 #### Input arguments
 - `--wkdir` : Specify a working directory
-- `--gene_name` : Specify the gene name that should be the same used in `GeneExpFile`
-- `-GeneExpFile` : Specify gene expression file directory
+- `--gene_name` : Gene name that should be the same used in `GeneExpFile`
+- `-GeneExpFile` : Gene expression file directory
 - `--Genome_Seg_Filehead` : Directory of the file containing a list of fileheads of segmented genotype files
 - `--p_thresh` : Specify p-value threshold for pruning, default `1e-5`
 - `--max_blocks` : Specify the maximum number of genome blocks for jointly training gene expression prediction models, default `100`
@@ -130,8 +153,9 @@ Step 2 selects a subset of genome blocks (up to `${max_blocks}`) for joint model
 ```
 ${BGW_dir}/bin/Step2_prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 --GeneExpFile ${GeneExpFile} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
---p_thresh 0.001 --max_blocks 100
+--p_thresh ${p_thresh} --max_blocks ${max_blocks}
 ```
+
 
 #### Output files
 A list of filehead of selected genome blocks and the corresponding minimum within-block single eQTL analysis p-values are given (one genome block per row) in the file of `${wkdir}/${gene_name}_scores/${gene_name}_select_segments.txt`, which will be used in step 4 (model training).
@@ -152,16 +176,19 @@ Step 3 will use summary statistics generated from Step 1 for genome blocks prune
 - `--Nmcmc` : Number of MCMC iterations. Default `10000`.
 - `--PCP_thresh` : PCP threshold for selecting eQTL with `PCP > ${PCP_thresh}` for predicting GReX and association study. Default `0.0001`.
 - `--num_cores` : Specify the number of parallele sessions, default `1`.
+- `--clean_output` : Whether to delete all intermediate outcomes, taking the input value of `1` for deleting or `0` keeping all intermediate files for testing purpose.
 
 #### Example commands:
 ```
 ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
 --GeneExpFile ${GeneExpFile} --LDdir ${LDdir} \
---N 499 --hfile ${BGW_dir}/Example/hypval.txt \
---em 5 --burnin 10000 --Nmcmc 10000 \
---PCP_thresh 0.0001 --num_cores 2
+--N ${N} --hfile ${hfile} \
+--em 3 --burnin 10000 --Nmcmc 10000 \
+--PCP_thresh ${PCP_thresh} --num_cores ${num_cores}
 ```
+
+* Intermediate output will be deleted unless with input argument `--clean_output 0`. Keeping intermediate outputs is recommended only for testing purpose.
 
 #### Output files
 Bayesian estimates of eQTL PCP and effect sizes from the final EM-MCMC iteration will result in the output `${gene_name}_BGW_eQTL_weights.txt` file under specified `${wkdir}` that lists all SNPs with `PCP>${PCP_thresh}`. The BGW weight file (`${gene_name}_BGW_eQTL_weights.txt`) will be used for predicting GReX values with individual-level GWAS data as in Step 4 or conducting gene-based association test with GWAS summary statistics.
@@ -183,23 +210,23 @@ The product of eQTL PCP and effect size will give an expected eQTL effect size t
 - `--test_pheno` : Directory of the test phentoype file
 - `--GTfield` : Specify the genotype field in the VCF file to be used. Default `GT` for assayed genotype. Alternative value `DS` for the inputed dosage genotype field by [Michigan Imputation Server](https://imputationserver.sph.umich.edu/index.html#!).
 - `--num_cores` : Specify the number of parallele sessions, default `1`.
+- `--clean_output` : Whether to delete all intermediate outcomes, taking the input value of `1` for deleting or `0` keeping all intermediate files for testing purpose.
 
 
 #### Example commands:
-```
-BGW_weight=${wkdir}/${gene_name}_BGW_eQTL_weights.txt
-test_geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
-test_geno_filehead=${BGW_dir}/Example/ExampleData/test_geno_filehead.txt
-test_pheno=${BGW_dir}/Example/ExampleData/Test_pheno.txt
-GTfield=GT #or DS
 
+```
 ${BGW_dir}/bin/Step4_get_test_grex.sh --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
 --BGW_weight ${BGW_weight} --test_geno_dir ${test_geno_dir} \
 --test_geno_filehead ${test_geno_filehead} \
 --GTfield ${GTfield} --test_pheno ${test_pheno} \
---num_cores 2
+--num_cores ${num_cores}
 ```
+
+* Intermediate output will be deleted unless with input argument `--clean_output 0`. Keeping intermediate outputs is recommended only for testing purpose.
+
+
 #### Output
 This step will generate predicted GReX values in `${gene_name}_pred_grex.txt` and the sum of PCP (estimating the expected number of eQTL) with respect to cis-, trans-, all eQTL as in `${gene_name}_sumPCP.txt`.
 
