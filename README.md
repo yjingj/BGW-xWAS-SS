@@ -5,7 +5,11 @@ Tool **BGW-TWAS** tool is developed for leveraging both **cis-** and **trans-** 
 Please cite our BGW-TWAS paper if you use the tool:
 >[*Bayesian Genome-wide TWAS Method to Leverage both cis- and trans-eQTL Information through Summary Statistics.* 2020 AJHG.](https://www.cell.com/ajhg/pdfExtended/S0002-9297(20)30291-3)
 
+Please contact **Jingjing Yang (<jingjing.yang@emory.edu>)** if there is any issue. 
+
+
 ---
+
 - [Software Installation](#software-installation)
 - [Input Files](#input-files)
 	- [1. Training Gene Expression File](#1-training-gene-expression-file)
@@ -16,6 +20,7 @@ Please cite our BGW-TWAS paper if you use the tool:
 	- [Step 2. Prune Genome Segments](#step-2-prune-genome-segments)
 	- [Step 3. Training Gene Expression Prediction Model](#step-3-training-gene-expression-prediction-model)
 	- [Step 4. Predict Bayesian GReX](#step-4-predict-bayesian-grex)
+	
 ---
 
 ## Software Installation
@@ -24,17 +29,22 @@ Please cite our BGW-TWAS paper if you use the tool:
 * Install required C++ libraries C++ libraries *zlib*, *gsl*, *eigen3*, *lapack*, *atlas*, *blas* are used to develop this tool. Please install these libraries to your system and include the library path `-I[path to libraries]` accordingly in the C++ compilation command line in the `Makefile`.
 
 * Compile C++ library *./libStatGen/libStatGen.a* under your system by using the following commands:
+
 ```
-cd libStatGen
-make clean
+cd BGW-TWAS/libStatGen/;
+make clean;
 make
 ```
 
-* Compile C++ source code for *./bin/Estep_mcmc* that will be used to run the Estep MCMC algorithm to estimate eQTL effect sizes and the posterior causal probabilities (PCP) to be an eQTL, by using the following commands under `BGW-TWAS/` directory:
+* Compile C++ source code for the executible file *./bin/Estep_mcmc* that will be used to run the Estep MCMC algorithm to estimate eQTL effect sizes and the posterior causal probabilities (PCP) to be an eQTL, by using the following commands under `BGW-TWAS/` directory:
+
 ```
-make clean
+cd BGW-TWAS/;
+make clean ;
 make
 ```
+
+* Even though a compiled executible file *./bin/Estep_mcmc* from our cluster is provided on GITHUB, please still compile one for your own system.
 
 ### 2. Additional Requirements
 * Tool [**tabix**](https://www.htslib.org/doc/tabix.html)
@@ -73,15 +83,19 @@ A file containing gene expression levels for training samples as in `./Example/E
 ### Set up Tool Directories and Input Arguments:
 
 ```
-## Variables for Step 1
+## Variables for Step 1. 
+
+### Please update tool directory and use different working and LD file directories from below
 BGW_dir=~/GIT/BGW-TWAS # tool directory
+wkdir=${BGW_dir}/Example/ExampleWorkDir
+LDdir=${BGW_dir}/Example/ExampleData/LDdir
+
+### The following variables can stay the same for the testing purpose
 GeneExpFile=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt
 gene_name=ABCA7
 geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
 Genome_Seg_Filehead=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
 GTfield=DS # specify genotype field "GT" for genotype
-wkdir=${BGW_dir}/Example/ExampleWorkDir
-LDdir=${BGW_dir}/Example/ExampleData/LDdir
 num_cores=2 # number of cores to be used
 
 ## Varables for Step 2
@@ -89,7 +103,7 @@ p_thresh=0.001 # p-value threshold
 max_blocks=100 # maximum blocks
 
 ## Variables for Step 3
-N=499 # sample size
+N=499 # Training sample size
 hfile=${BGW_dir}/Example/hypval.txt
 PCP_thresh=0.0001
 
@@ -101,7 +115,9 @@ test_pheno=${BGW_dir}/Example/ExampleData/Test_pheno.txt
 GTfield_test=GT #or DS
 ```
 
+#### Remarks
 * It is important to include the complete directory starting with `/home/` for all input files.
+* Please set up working directory `${wkdir}` and LD file directory `${LDdir}` differently from the above examples, so that you may examine how your test outputs  be dimightfferent from the provided example outputs.
 * It is recommended to test the following steps one by one, instead of directly running the `./Run_BGW.sh` script.
 
 ### Step 1. Obtain Summary Statistics
@@ -220,7 +236,7 @@ ${BGW_dir}/bin/Step4_get_test_grex.sh --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
 --BGW_weight ${BGW_weight} --test_geno_dir ${test_geno_dir} \
 --test_geno_filehead ${test_geno_filehead} \
---GTfield ${GTfield} --test_pheno ${test_pheno} \
+--GTfield ${GTfield_test} --test_pheno ${test_pheno} \
 --num_cores ${num_cores}
 ```
 
