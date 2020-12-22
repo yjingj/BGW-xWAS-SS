@@ -35,6 +35,7 @@ cd BGW-TWAS/libStatGen/;
 make clean;
 make
 ```
+A compiled library file *./libStatGen/libStatGen.a* and generated 
 
 * Compile C++ source code for the executible file *./bin/Estep_mcmc* that will be used to run the Estep MCMC algorithm to estimate eQTL effect sizes and the posterior causal probabilities (PCP) to be an eQTL, by using the following commands under `BGW-TWAS/` directory:
 

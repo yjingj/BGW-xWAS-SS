@@ -70,7 +70,7 @@ else
 fi
 
 # Grep gene info from ${GeneExpFile}
-gene_info=$(grep ${gene_name} ${GeneExpFile})
+gene_info=$(grep -w ${gene_name} ${GeneExpFile} | head -n1)
 target_chr=$( echo ${gene_info} | awk 'FS {print $1}');
 start_pos=$(echo ${gene_info} | awk 'FS {print $2}');
 start_pos=$((start_pos - 1000000))
@@ -89,7 +89,7 @@ cat ${gene_name}_ranked_segments.txt | while read line ; do
     comp_pval=$(awk -v pval=$pval -v p_thresh=$p_thresh 'BEGIN{ print (pval+0)<(p_thresh+0) }')
     # echo Compare if $pval less than $p_thresh gives comp_pval = $comp_pval ...
 
-    row_1=$(zcat ${filehead}.score.txt | head -n 2 | tail -n1)
+    row_1=$(zcat ${filehead}.score.txt | grep -v "#CHROM" | head -n 1)
     chr=$(echo ${row_1} | awk '{print $1}' )
     start=$(echo ${row_1} | awk '{print $2}')
 
