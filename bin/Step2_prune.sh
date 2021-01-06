@@ -17,7 +17,7 @@
 
 #################################
 VARS=`getopt -o "" -a -l \
-wkdir:,gene_name:,GeneExpFile:,Genome_Seg_Filehead:,p_thresh:,max_blocks: \
+wkdir:,gene_name:,GeneExpFile:,Genome_Seg_Filehead:,p_thresh:,max_blocks:,clean_output: \
 -- "$@"`
 
 if [ $? != 0 ]
@@ -37,6 +37,7 @@ do
         --Genome_Seg_Filehead|-Genome_Seg_Filehead) Genome_Seg_Filehead=$2; shift 2;;
         --p_thresh|-p_thresh) p_thresh=$2; shift 2;;
         --max_blocks|-max_blocks) max_blocks=$2; shift 2;;
+        --clean_output|-clean_output) clean_output=$2; shift 2;;
         --) shift;break;;
         *) echo "Wrong input arguments!";exit 1;;
         esac
@@ -47,6 +48,7 @@ done
 ##########################################
 p_thresh=${p_thresh:-0.00001}
 max_blocks=${max_blocks:-100}
+clean_output=${clean_output:-0}
 
 echo ${gene_name} with up to ${max_blocks} genome blocks and p-value threshold ${p_thresh}
 
@@ -55,13 +57,17 @@ Score_dir=${wkdir}/${gene_name}_scores
 cd ${Score_dir}
 
 if [ -s ${Genome_Seg_Filehead} ]; then
-
 > ${gene_name}_ranked_segments.txt
 cat ${Genome_Seg_Filehead} | while read filehead ; do
 if [ -s  ${filehead}.score.txt.gz ] ; then
-    zcat ${filehead}.score.txt | awk -v var=$filehead 'NR == 2 {line = $0; min = $13}; NR >2 && $13 < min {line = $0; min = $13}; END{print var, min}' >> ${gene_name}_ranked_segments.txt
+    nsnp=$(zcat ${filehead}.score.txt | wc -l)
+    if [ "$nsnp" -gt 1 ] ; then
+        zcat ${filehead}.score.txt | awk -v var=$filehead 'NR == 2 {line = $0; min = $13}; NR >2 && $13 < min {line = $0; min = $13}; END{print var, min}' >> ${gene_name}_ranked_segments.txt
     else
-    	echo a non-empty ${filehead}.score.txt.gz file dose not exist !
+        echo ${filehead}.score.txt.gz do not have any SNPs...
+    fi
+else
+    echo A non-empty ${filehead}.score.txt.gz file dose not exist !
 fi
 done
 else
@@ -85,7 +91,7 @@ echo ${gene_name} from CHR $target_chr ranging from $start_pos to $end_pos
 cat ${gene_name}_ranked_segments.txt | while read line ; do
 
     filehead=$(echo $line | awk -F " " '{print $1}' )
-    pval=$(echo $line | awk -F " " '{print $2}' )
+    pval=$(echo $line | awk -F " " '{if(NF>1) print $2}' )
     comp_pval=$(awk -v pval=$pval -v p_thresh=$p_thresh 'BEGIN{ print (pval+0)<(p_thresh+0) }')
     # echo Compare if $pval less than $p_thresh gives comp_pval = $comp_pval ...
 
@@ -113,7 +119,6 @@ cat ${gene_name}_ranked_segments.txt | while read line ; do
 
 done
 
-
 n_cis=$(wc -l ${gene_name}_cis_segments.txt | awk '{print $1}')
 n_trans=$(wc -l ${gene_name}_trans_segments.txt | awk '{print $1}')
 max_trans_blocks=$((max_blocks - n_cis))
@@ -125,7 +130,9 @@ if [ "$n_trans" -gt "$max_trans_blocks" ] ; then
         sort -g -k 2 -u ${gene_name}_trans_segments.txt >> ${gene_name}_select_segments.txt
 fi
 
-rm -f ${gene_name}_cis_segments.txt  ${gene_name}_trans_segments.txt ${gene_name}_ranked_segments.txt
+if [ $clean_output -eq 1  ]; then
+   rm -f ${gene_name}_cis_segments.txt  ${gene_name}_trans_segments.txt ${gene_name}_ranked_segments.txt
+fi
 
 echo Complete Step2 for pruning genome blocks!
 
