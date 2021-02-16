@@ -52,7 +52,7 @@ num_cores=${num_cores:-1}
 clean_output=${clean_output:-1}
 
 ### Grep gene info from ${GeneExpFile}
-gene_info=$(grep ${gene_name} ${GeneExpFile})
+gene_info=$(grep -w ${gene_name} ${GeneExpFile})
 target_chr=$( echo ${gene_info} | awk 'FS {print $1}');
 start_pos=$(echo ${gene_info} | awk 'FS {print $2}');
 # start_pos=$((start_pos - 1000000))

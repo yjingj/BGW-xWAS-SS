@@ -70,7 +70,7 @@ ref=$(echo $line | awk -F'[\t ]' '{print $4}' )
 alt=$(echo $line | awk -F'[\t ]' '{print $5}' )
 #echo ${chr}:${pos}-${pos} $ref $alt
 
-file_temp=$(grep CHR${chr} $test_geno_filehead | awk '{print }' )
+file_temp=$(grep -w CHR${chr} $test_geno_filehead | awk '{print }' )
 #echo ${file_temp}.vcf.gz
 # tabix ${test_geno_dir}/${file_temp}.vcf.gz ${chr}:${pos}-${pos} >> ./${gene_name}_grex.vcf
 tabix ${test_geno_dir}/${file_temp}.vcf.gz ${chr}:${pos}-${pos} | awk -v ref=${ref} -v alt=${alt} -F"\t" '($4==ref && $5==alt) || ($4==alt && $5==ref) {print }' >> ${wkdir}/${gene_name}_GReX/${gene_name}_grex.vcf
