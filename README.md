@@ -5,7 +5,7 @@ Tool **BGW-TWAS** tool is developed for leveraging both **cis-** and **trans-** 
 Please cite our BGW-TWAS paper if you use the tool:
 >[*Bayesian Genome-wide TWAS Method to Leverage both cis- and trans-eQTL Information through Summary Statistics.* 2020 AJHG.](https://www.cell.com/ajhg/pdfExtended/S0002-9297(20)30291-3)
 
-Please contact **Jingjing Yang (<jingjing.yang@emory.edu>)** if there is any issue. 
+Please contact **Jingjing Yang (<jingjing.yang@emory.edu>)** if there is any issue.
 
 
 ---
@@ -20,7 +20,7 @@ Please contact **Jingjing Yang (<jingjing.yang@emory.edu>)** if there is any iss
 	- [Step 2. Prune Genome Segments](#step-2-prune-genome-segments)
 	- [Step 3. Training Gene Expression Prediction Model](#step-3-training-gene-expression-prediction-model)
 	- [Step 4. Predict Bayesian GReX](#step-4-predict-bayesian-grex)
-	
+
 ---
 
 ## Software Installation
@@ -35,7 +35,7 @@ cd BGW-TWAS/libStatGen/;
 make clean;
 make
 ```
-A compiled library file *./libStatGen/libStatGen.a* and generated 
+A compiled library file *./libStatGen/libStatGen.a* and generated
 
 * Compile C++ source code for the executible file *./bin/Estep_mcmc* that will be used to run the Estep MCMC algorithm to estimate eQTL effect sizes and the posterior causal probabilities (PCP) to be an eQTL, by using the following commands under `BGW-TWAS/` directory:
 
@@ -74,7 +74,7 @@ A file containing gene expression levels for training samples as in `./Example/E
 
 ### 3. Test Individual-level GWAS Data
 
-* **Test [VCF Genotype files](http://samtools.github.io/hts-specs/VCFv4.1.pdf)** are required for predicting GReX values of test samples. Different from the training VCF genotype files, these test genotype files should be one per chromosome containing `CHR[chr_num]` in their file name, sorted by position, zipped by `bgzip`, and indexed by `tabix`. For example, see `./Example/ExampleData/genotype_data_files/Test_CHR*.vcf.gz`.
+* **Test [VCF Genotype files](http://samtools.github.io/hts-specs/VCFv4.1.pdf)** are required for predicting GReX values of test samples. Different from the training VCF genotype files, these test genotype files should be one per chromosome containing `_CHR[chr_num]_` in their file name, sorted by position, zipped by `bgzip`, and indexed by `tabix`. For example, see `./Example/ExampleData/genotype_data_files/Test_CHR*_geno.vcf.gz`.
 
 * **Test phenotype file** contains two columns without header: the first column is a list of sample IDs that have genotype data in the test VCF files, and the second column is phenotype values. Second column will not be used for predicting GReX values, thus random values from `N(0, 1)` can also be used here without known phenotype values. For example, see `./Example/ExampleData/Test_pheno.txt`
 
@@ -84,7 +84,7 @@ A file containing gene expression levels for training samples as in `./Example/E
 ### Set up Tool Directories and Input Arguments:
 
 ```
-## Variables for Step 1. 
+## Variables for Step 1.
 
 ### Please update tool directory and use different working and LD file directories from below
 BGW_dir=~/GIT/BGW-TWAS # tool directory
@@ -213,7 +213,7 @@ Bayesian estimates of eQTL PCP and effect sizes from the final EM-MCMC iteration
 [//]: <> (Numerous arguments can be used to modify the EM-MCMC algorithm in Step 3, but should be done with caution. These arguments are detailed in Yang et al. 2017 https://github.com/yjingj/bfGWAS/blob/master/bfGWAS_Manual.pdf)
 
 ### Step 4. Predict Bayesian GReX
-Step 4 will use the BGW weight file (`${gene_name}_BGW_eQTL_weights.txt`) generated from Step 3 and provided individual-level GWAS data to predict GReX values for test samples. Both test genotype VCF files (saved per chromosome, each file name containing `CHR[chr_num]`) and test phenotype file should be provided.
+Step 4 will use the BGW weight file (`${gene_name}_BGW_eQTL_weights.txt`) generated from Step 3 and provided individual-level GWAS data to predict GReX values for test samples. Both test genotype VCF files (saved per chromosome, each file name containing the pattern of `_CHR[chr_num]_`) and test phenotype file should be provided.
 
 The product of eQTL PCP and effect size will give an expected eQTL effect size that will be used as SNP weight for estimating the GReX values in Step 4.
 

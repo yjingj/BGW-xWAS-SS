@@ -70,10 +70,17 @@ ref=$(echo $line | awk -F'[\t ]' '{print $4}' )
 alt=$(echo $line | awk -F'[\t ]' '{print $5}' )
 #echo ${chr}:${pos}-${pos} $ref $alt
 
-file_temp=$(grep -w CHR${chr} $test_geno_filehead | awk '{print }' )
+n_file=$(grep _CHR${chr}_ $test_geno_filehead | wc -l | awk '{print $1}')
+
+if [ $n_file -eq 1 ] ; then
 #echo ${file_temp}.vcf.gz
-# tabix ${test_geno_dir}/${file_temp}.vcf.gz ${chr}:${pos}-${pos} >> ./${gene_name}_grex.vcf
+file_temp=$(grep _CHR${chr}_ $test_geno_filehead)
 tabix ${test_geno_dir}/${file_temp}.vcf.gz ${chr}:${pos}-${pos} | awk -v ref=${ref} -v alt=${alt} -F"\t" '($4==ref && $5==alt) || ($4==alt && $5==ref) {print }' >> ${wkdir}/${gene_name}_GReX/${gene_name}_grex.vcf
+else
+    echo There is no file head or multiple file heads with the pattern of _CHR${chr}_ in $test_geno_filehead.
+    echo $file_temp
+    echo Please combine all genotype in the same chromorome into one VCF file with the pattern of \"_CHR${chr}_\" in the filename and update it in $test_geno_filehead.
+fi
 done
 
 echo ${wkdir}/${gene_name}_GReX/${gene_name}_grex.vcf is created.

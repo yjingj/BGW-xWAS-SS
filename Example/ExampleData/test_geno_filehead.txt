@@ -1,3 +1,2 @@
-Test_CHR15
-Test_CHR19
-
+Test_CHR15_geno
+Test_CHR19_geno

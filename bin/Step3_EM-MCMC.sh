@@ -51,9 +51,9 @@ PCP_thresh=${PCP_thresh:-0.0001}
 num_cores=${num_cores:-1}
 clean_output=${clean_output:-1}
 
-### Grep gene info from ${GeneExpFile}
-gene_info=$(grep -w ${gene_name} ${GeneExpFile})
-target_chr=$( echo ${gene_info} | awk 'FS {print $1}');
+### Extract gene info from ${GeneExpFile}
+gene_info=$(awk -F'\t' -v gene=${gene_name} '$5==gene{print ; exit; }'  ${GeneExpFile})
+target_chr=$(echo ${gene_info} | awk 'FS {print $1}');
 start_pos=$(echo ${gene_info} | awk 'FS {print $2}');
 # start_pos=$((start_pos - 1000000))
 end_pos=$(echo ${gene_info} | awk 'FS {print $3}');

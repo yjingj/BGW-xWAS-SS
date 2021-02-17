@@ -90,8 +90,10 @@ cd ${wkdir}
 # the following creates a phenotype file for target gene expression trait that includes subject IDs in the first column and gene expression levels in the second column.
 if [ -s ${GeneExpFile} ] ; then
     head -1 ${GeneExpFile} | awk '{$1=$2=$3=$4=$5=""; print substr($0,6)}' | tr ' ' '\n' > temp_ID.txt
-    grep -w ${gene_name} ${GeneExpFile} | awk '{$1=$2=$3=$4=$5=""; print substr($0,6)}' | tr ' ' '\n' > exp_temp.txt
+
+    awk -F'[\t]' -v gene=${gene_name} '$5==gene{$1=$2=$3=$4=$5=""; print substr($0,6); exit; }' ${GeneExpFile} | tr ' ' '\n' > exp_temp.txt
     paste temp_ID.txt exp_temp.txt > ${wkdir}/${gene_name}_exp_trait.txt
+
     pheno=${wkdir}/${gene_name}_exp_trait.txt
 else
     echo ${GeneExpFile} is empty. Please provide a valid gene expression file.
