@@ -210,11 +210,9 @@ ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 * Intermediate output will be deleted unless with input argument `--clean_output 0`. Keeping intermediate outputs is recommended only for testing purpose.
 
 #### Output files
-* Bayesian estimates of eQTL PCP and effect sizes from the final EM-MCMC iteration will saved in the output `${gene_name}_BGW_eQTL_weights.txt` file under specified `${wkdir}` that lists all SNPs with `PCP>${PCP_thresh}`. The BGW weight file (`${gene_name}_BGW_eQTL_weights.txt`) will be used for predicting GReX values with individual-level GWAS data as in Step 4 or conducting gene-based association test with GWAS summary statistics.
+* Bayesian estimates of eQTL PCP and effect sizes from the final EM-MCMC iteration will saved in the output `${gene_name}_BGW_eQTL_weights.txt` file under specified `${wkdir}` that lists all SNPs with `PCP>${PCP_thresh}`.
 
-* Note that the eQTL weights estimated BGW are using only centered gene expressions and genotype data but not standardized to have standard deviation 1. For a valid TWAS using GWAS summary statistics, the S-PrediXcan test statistic with genotype covariance matrix in the denominator must be used, as the FUSION test statistic with genotype correlation matrix in the denominator assumes eQTL weights are derived from standardized gene expressions and genotype data.
-
-
+* The BGW weight file (`${gene_name}_BGW_eQTL_weights.txt`) will be used for predicting GReX values with individual-level GWAS data as in Step 4 or conducting gene-based association test with GWAS summary statistics. See instructions in Step 5 for TWAS procedure.
 
 
 
@@ -257,6 +255,15 @@ ${BGW_dir}/bin/Step4_get_test_grex.sh --BGW_dir ${BGW_dir} \
 * Predicted GReX values are saved in `${wkdir}/${gene_name}_pred_grex.txt`, which can be used to calculate prediction R2 and test the association between _GReX_ and _Phenotype of Interest_ (i.e., TWAS).
 
 * File '${wkdir}/${gene_name}\_sumPCP' contains the sum of posterior causal probabilities (PCP) of all analyzed SNPs, the sum of cis-SNPs, and the sum of trans-SNPs, which are the expected number of total eQTL, cis-eQTL, and trans-eQTL for the target gene.
+
+### Step 5. Association Studies (TWAS)
+
+* If using summary-level GWAS data for TWAS, Step 4 will not need to be implemented. One can use the weight files `${wkdir}/${gene_names}_BGW_eQTL_weights.txt` with our other [TIGAR](https://github.com/yanglab-emory/TIGAR) tool to obtain TWAS results.
+
+* Note that the eQTL weights estimated BGW are using only centered gene expressions and genotype data but not standardized to have standard deviation 1. For a valid TWAS using GWAS summary statistics, the S-PrediXcan test statistic with genotype covariance matrix in the denominator must be used, as the FUSION test statistic with genotype correlation matrix in the denominator assumes eQTL weights are derived from standardized gene expressions and genotype data (as implemented by [TIGAR](https://github.com/yanglab-emory/TIGAR)).
+
+* If using individual-level GWAS data for TWAS, Step 4 will need to be implemented to obtain predicted GReX values for all test samples. Then a simple single variant association test between _GReX_ and _Phenotype of Interest_ will result in the TWAS results.
+
 
 ## Options to save disk storage
 
