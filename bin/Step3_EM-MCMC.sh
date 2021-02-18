@@ -104,6 +104,7 @@ fi
 
 if [ $clean_output -eq 1  ]; then
     rm -rf ${wkdir}/${gene_name}_EM_MCMC
+    rm -f ${wkdir}/${gene_name}_exp_trait.txt ${wkdir}/${gene_name}_exp_var.txt
 fi
 
 exit

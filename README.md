@@ -147,15 +147,17 @@ ${BGW_dir}/bin/Step1_get_sumstat.sh --BGW_dir ${BGW_dir} \
 * Rare variants with MAF <0.5% will be excluded from analysis by default.
 
 #### Output files
-- This shell script will create a directory called `${gene}_scores/` under the specified working directory `${wkdir}/`, where results for each genome segment will be stored.
+* This shell script will create a directory called `${gene}_scores/` under the specified working directory `${wkdir}/`, where results for each genome segment will be stored.
 
-- This script will also generate LD files under `${LDdir}/` for all genome blocks, if the LD files do not exist under `${LDdir}/`. Since LD files will be the same per genome block, these files will only be generated once and used for training prediction models for all gene expression traits.
+* This script will also generate LD files under `${LDdir}/` for all genome blocks, if the LD files do not exist under `${LDdir}/`. Since LD files will be the same per genome block, these files will only be generated once and used for training prediction models for all gene expression traits.
 
-- These summary statistics files and LD files will be used for implementing the *EM-MCMC* algorithm to fit the Bayesian model
+* These summary statistics files and LD files will be used for implementing the *EM-MCMC* algorithm to fit the Bayesian model in Step 3.
+
+* Gene expression phenotype file `${wkdir}/${gene_name}_exp_trait.txt` and variance file `${wkdir}/${gene_name}_exp_var.txt` will be used in Step 3.
 
 
 ### Step 2. Prune Genome Segments
-Step 2 selects a subset of genome blocks (up to `${max_blocks}`) for joint model training by BGW-TWAS, where Cis blocks are always selected. Trans blocks with minimum single-variant eQTL `p-value < ${p_thresh}` will first be ranked by the smallest p-value within block (from the smallest to the largest), where top ranked trans blocks will be selected up to `${max_blocks}`.
+Step 2 selects a subset of genome blocks (up to `${max_blocks}`) for joint model training by BGW-TWAS, where cis blocks are always selected. Trans blocks with minimum single-variant eQTL `p-value < ${p_thresh}` will first be ranked by the smallest p-value within block (from the smallest to the largest), where top ranked trans blocks will be selected up to `${max_blocks}`.
 
 
 #### Input arguments
@@ -175,7 +177,7 @@ ${BGW_dir}/bin/Step2_prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 
 
 #### Output files
-A list of filehead of selected genome blocks and the corresponding minimum within-block single eQTL analysis p-values are given (one genome block per row) in the file of `${wkdir}/${gene_name}_scores/${gene_name}_select_segments.txt`, which will be used in step 4 (model training).
+* A list of filehead of selected genome blocks and the corresponding minimum within-block single eQTL analysis p-values are given (one genome block per row) in the file of `${wkdir}/${gene_name}_scores/${gene_name}_select_segments.txt`, which will be used in step 3 (model training).
 
 ### Step 3. Training Gene Expression Prediction Model
 Step 3 will use summary statistics generated from Step 1 for genome blocks pruned from Step 2 to carry out Bayesian variable selection regression with EM-MCMC algorithm, with the goal of fitting a gene expression prediction model. Bayesian posterior causal probability (PCP) to be an eQTL and effect sizes for SNPs with `PCP>${PCP_thresh}` will be saved for predicting GReX.
@@ -208,9 +210,16 @@ ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 * Intermediate output will be deleted unless with input argument `--clean_output 0`. Keeping intermediate outputs is recommended only for testing purpose.
 
 #### Output files
-Bayesian estimates of eQTL PCP and effect sizes from the final EM-MCMC iteration will result in the output `${gene_name}_BGW_eQTL_weights.txt` file under specified `${wkdir}` that lists all SNPs with `PCP>${PCP_thresh}`. The BGW weight file (`${gene_name}_BGW_eQTL_weights.txt`) will be used for predicting GReX values with individual-level GWAS data as in Step 4 or conducting gene-based association test with GWAS summary statistics.
+* Bayesian estimates of eQTL PCP and effect sizes from the final EM-MCMC iteration will saved in the output `${gene_name}_BGW_eQTL_weights.txt` file under specified `${wkdir}` that lists all SNPs with `PCP>${PCP_thresh}`. The BGW weight file (`${gene_name}_BGW_eQTL_weights.txt`) will be used for predicting GReX values with individual-level GWAS data as in Step 4 or conducting gene-based association test with GWAS summary statistics.
+
+* Note that the eQTL weights estimated BGW are using only centered gene expressions and genotype data but not standardized to have standard deviation 1. For a valid TWAS using GWAS summary statistics, the S-PrediXcan test statistic with genotype covariance matrix in the denominator must be used, as the FUSION test statistic with genotype correlation matrix in the denominator assumes eQTL weights are derived from standardized gene expressions and genotype data.
+
+
+
+
 
 [//]: <> (Numerous arguments can be used to modify the EM-MCMC algorithm in Step 3, but should be done with caution. These arguments are detailed in Yang et al. 2017 https://github.com/yjingj/bfGWAS/blob/master/bfGWAS_Manual.pdf)
+
 
 ### Step 4. Predict Bayesian GReX
 Step 4 will use the BGW weight file (`${gene_name}_BGW_eQTL_weights.txt`) generated from Step 3 and provided individual-level GWAS data to predict GReX values for test samples. Both test genotype VCF files (saved per chromosome, each file name containing the pattern of `_CHR[chr_num]_`) and test phenotype file should be provided.
@@ -245,7 +254,16 @@ ${BGW_dir}/bin/Step4_get_test_grex.sh --BGW_dir ${BGW_dir} \
 
 
 #### Output
-This step will generate predicted GReX values in `${gene_name}_pred_grex.txt` and the sum of PCP (estimating the expected number of eQTL) with respect to cis-, trans-, all eQTL as in `${gene_name}_sumPCP.txt`.
+* Predicted GReX values are saved in `${wkdir}/${gene_name}_pred_grex.txt`, which can be used to calculate prediction R2 and test the association between _GReX_ and _Phenotype of Interest_ (i.e., TWAS).
 
+* File '${wkdir}/${gene_name}\_sumPCP' contains the sum of posterior causal probabilities (PCP) of all analyzed SNPs, the sum of cis-SNPs, and the sum of trans-SNPs, which are the expected number of total eQTL, cis-eQTL, and trans-eQTL for the target gene.
 
+## Options to save disk storage
+### Files from Steps1-3 for training gene expression prediction model
+
+* By default setting, temporary directories such as `${wkdir}/${gene_name}\_scores/output/` and `${wkdir}/${gene_name}\_EM\_MCMC/`, and intermediate files `${wkdir}/${gene_name}_exp_trait.txt` and variance file `${wkdir}/${gene_name}_exp_var.txt` would be deleted. If not, you can delete those.
+
+* All score statistics files under `${wkdir}/${gene_name}_scores/` contain all single variant eQTL analysis test summary statistics, which is optional to be either saved for other usage or deleted.
+
+* The weight files `${wkdir}/${gene_names}_BGW_eQTL_weights.txt` are the only file needed for TWAS, which can be gzipped to save storage.
 
