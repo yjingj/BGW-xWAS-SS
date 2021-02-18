@@ -20,6 +20,7 @@ Please contact **Jingjing Yang (<jingjing.yang@emory.edu>)** if there is any iss
 	- [Step 2. Prune Genome Segments](#step-2-prune-genome-segments)
 	- [Step 3. Training Gene Expression Prediction Model](#step-3-training-gene-expression-prediction-model)
 	- [Step 4. Predict Bayesian GReX](#step-4-predict-bayesian-grex)
+	- [Step 5. Association Studies](#step-5-association-studies)
 
 ---
 
