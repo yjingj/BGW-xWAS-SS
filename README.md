@@ -20,7 +20,7 @@ Please contact **Jingjing Yang (<jingjing.yang@emory.edu>)** if there is any iss
 	- [Step 2. Prune Genome Segments](#step-2-prune-genome-segments)
 	- [Step 3. Training Gene Expression Prediction Model](#step-3-training-gene-expression-prediction-model)
 	- [Step 4. Predict Bayesian GReX](#step-4-predict-bayesian-grex)
-	- [Step 5. Association Studies (TWAS)](#step-5-association-studies)
+	- [Step 5. Association Studies](#step-5-association-studies)
 
 ---
 
@@ -257,7 +257,7 @@ ${BGW_dir}/bin/Step4_get_test_grex.sh --BGW_dir ${BGW_dir} \
 
 * File '${wkdir}/${gene_name}\_sumPCP' contains the sum of posterior causal probabilities (PCP) of all analyzed SNPs, the sum of cis-SNPs, and the sum of trans-SNPs, which are the expected number of total eQTL, cis-eQTL, and trans-eQTL for the target gene.
 
-### Step 5. Association Studies (TWAS)
+### Step 5. Association Studies
 
 * If using summary-level GWAS data for TWAS, Step 4 will not need to be implemented. One can use the weight files `${wkdir}/${gene_names}_BGW_eQTL_weights.txt` with our other [TIGAR](https://github.com/yanglab-emory/TIGAR) tool to obtain TWAS results.
 
