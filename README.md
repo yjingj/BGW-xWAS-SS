@@ -259,9 +259,8 @@ ${BGW_dir}/bin/Step4_get_test_grex.sh --BGW_dir ${BGW_dir} \
 * File '${wkdir}/${gene_name}\_sumPCP' contains the sum of posterior causal probabilities (PCP) of all analyzed SNPs, the sum of cis-SNPs, and the sum of trans-SNPs, which are the expected number of total eQTL, cis-eQTL, and trans-eQTL for the target gene.
 
 ## Options to save disk storage
-### Files from Steps1-3 for training gene expression prediction model
 
-* By default setting, temporary directories such as `${wkdir}/${gene_name}\_scores/output/` and `${wkdir}/${gene_name}\_EM\_MCMC/`, and intermediate files `${wkdir}/${gene_name}_exp_trait.txt` and variance file `${wkdir}/${gene_name}_exp_var.txt` would be deleted. If not, you can delete those.
+* By default setting, temporary directories such as `${wkdir}/${gene_name}\_scores/output/`, `${wkdir}/${gene_name}\_EM\_MCMC/`, `${wkdir}/${gene_name}_GReX/`, and intermediate files `${wkdir}/${gene_name}_exp_trait.txt`, `${wkdir}/${gene_name}_exp_var.txt`, `${wkdir}/ABCA7_grex.geno` would be deleted. If not, you can delete those.
 
 * All score statistics files under `${wkdir}/${gene_name}_scores/` contain all single variant eQTL analysis test summary statistics, which is optional to be either saved for other usage or deleted.
 

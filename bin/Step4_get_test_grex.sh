@@ -115,8 +115,7 @@ else
 fi
 
 if [ $clean_output -eq 1 ] ; then
-    rm -rf ${wkdir}/${gene_name}_GReX/output/
-    rm -f ${wkdir}/${gene_name}_GReX/**
+    rm -rf ${wkdir}/${gene_name}_GReX/
     rm -f ${wkdir}/ABCA7_grex.geno
 fi
 
