@@ -9,7 +9,7 @@
 
 #################################
 VARS=`getopt -o "" -a -l \
-BGW_dir:,wkdir:,gene_name:,GeneExpFile:,LDdir:,N:,hfile:,em:,burnin:,Nmcmc:,PCP_thresh:,num_cores:,clean_output: \
+BGW_dir:,wkdir:,gene_name:,GeneExpFile:,select_filehead:,LDdir:,Score_dir:,N:,hfile:,em:,burnin:,Nmcmc:,PCP_thresh:,num_cores:,clean_output: \
 -- "$@"`
 
 if [ $? != 0 ]
@@ -27,7 +27,9 @@ do
         --wkdir|-wkdir) wkdir=$2; shift 2;;
         --gene_name|-gene_name) gene_name=$2; shift 2;;
         --GeneExpFile|-GeneExpFile) GeneExpFile=$2; shift 2;;
+        --select_filehead|-select_filehead) select_filehead=$2; shift 2;;
         --LDdir|-LDdir) LDdir=$2; shift 2;;
+        --Score_dir|-Score_dir) Score_dir=$2; shift 2;;
         --N|-N) N=$2; shift 2;;
 		--hfile|-hfile) hfile=$2; shift 2;;
 		--em|-em) em=$2; shift 2;;
@@ -64,12 +66,10 @@ echo ${gene_name} from CHR $target_chr ranging from $start_pos to $end_pos
 pv=`awk 'NR==1{print $2}' ${wkdir}/${gene_name}_geneExp_var.txt`
 
 ### Fileheads of segmented genome blocks
-if [ -s ${wkdir}/${gene_name}_scores/${gene_name}_select_segments.txt ] ; then
-	cut -f1 ${wkdir}/${gene_name}_scores/${gene_name}_select_segments.txt > ${wkdir}/${gene_name}_scores/${gene_name}_select_filehead.txt
-	filehead=${wkdir}/${gene_name}_scores/${gene_name}_select_filehead.txt
-else
-	echo "Selected genome blocks for BGW-TWAS is empty. Please check your pruning Step 2 ... "
-	exit
+if [ -z ${select_filehead} ] ; then
+	echo "Selected filehead txt file is not provided."
+    select_filehead=${wkdir}/${gene_name}_select_filehead.txt
+    echo Default Selected filehead txt file : ${select_filehead}
 fi
 
 ### Specify output make file directory and generate makefile
@@ -77,13 +77,20 @@ fi
 mkdir -p ${wkdir}/${gene_name}_EM_MCMC
 cd ${wkdir}/${gene_name}_EM_MCMC
 
+if [ -z ${Score_dir} ] ; then
+    Score_dir=${wkdir}/${gene_name}_scores
+    echo Default summary score statistics file directory: $Score_dir
+else
+    echo Summary Score statistics file directory is provided as ${Score_dir} ;
+fi
+
 mkfile="${wkdir}/${gene_name}_EM_MCMC/${gene_name}_BGW.mk"
 
 ${BGW_dir}/bin/gen_mkf.pl \
 --BGW_dir ${BGW_dir} --hyp ${hfile} \
 -n ${N} --pv ${pv} \
 -w ${wkdir}/${gene_name}_EM_MCMC --geno sumstat \
--f ${filehead} -l local \
+-f ${select_filehead} -l local \
 --targ ${target_chr} --start ${start_pos} --end ${end_pos} \
 --LDdir ${LDdir} --Scoredir ${wkdir}/${gene_name}_scores \
 -j BGW_${gene_name} --em ${em} -b ${burnin} -N ${Nmcmc} \

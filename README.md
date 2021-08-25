@@ -97,7 +97,7 @@ GeneExpFile=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt
 gene_name=ABCA7
 geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
 Genome_Seg_Filehead=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
-GTfield=DS # specify genotype field "GT" for genotype
+GTfield=GT # specify genotype field "DS" or the corresponding field name in the VCF file for dosage genotype
 num_cores=2 # number of cores to be used
 
 ## Varables for Step 2
@@ -166,19 +166,21 @@ Step 2 selects a subset of genome blocks (up to `${max_blocks}`) for joint model
 - `--gene_name` : Gene name that should be the same used in `GeneExpFile`
 - `-GeneExpFile` : Gene expression file directory
 - `--Genome_Seg_Filehead` : Directory of the file containing a list of fileheads of segmented genotype files
+- `--Score_dir` : Specify summary score statistic file directory, default `${wkdir}/${gene_name}_scores`
 - `--p_thresh` : Specify p-value threshold for pruning, default `1e-5`
-- `--max_blocks` : Specify the maximum number of genome blocks for jointly training gene expression prediction models, default `100`
+- `--max_blocks` : Specify the maximum number of genome blocks for jointly training gene expression prediction models, default `50`
 
 #### Example command:
 ```
 ${BGW_dir}/bin/Step2_prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 --GeneExpFile ${GeneExpFile} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
+--Score_dir ${Score_dir} \
 --p_thresh ${p_thresh} --max_blocks ${max_blocks}
 ```
 
 
 #### Output files
-* A list of filehead of selected genome blocks and the corresponding minimum within-block single eQTL analysis p-values are given (one genome block per row) in the file of `${wkdir}/${gene_name}_scores/${gene_name}_select_segments.txt`, which will be used in step 3 (model training).
+* A list of filehead of selected genome blocks and the corresponding minimum within-block single eQTL analysis p-values are given (one genome block per row) in the file of `${wkdir}/${gene_name}_select_filehead.txt`, which will be used in step 3 (model training).
 
 ### Step 3. Training Gene Expression Prediction Model
 Step 3 will use summary statistics generated from Step 1 for genome blocks pruned from Step 2 to carry out Bayesian variable selection regression with EM-MCMC algorithm, with the goal of fitting a gene expression prediction model. Bayesian posterior causal probability (PCP) to be an eQTL and effect sizes for SNPs with `PCP>${PCP_thresh}` will be saved for predicting GReX.
@@ -189,6 +191,8 @@ Step 3 will use summary statistics generated from Step 1 for genome blocks prune
 - `-GeneExpFile` : Gene expression file directory
 - `--gene_name` : Study gene name that should be the same used in `GeneExpFile`
 - `--LDdir` : Directory of all LD files with writting access
+- `--Score_dir` : Specify summary score statistic file directory, default `${wkdir}/${gene_name}_scores`
+- `--select_filehead` : File with selected genome block fileheads, default `${wkdir}/${gene_name}_select_filehead.txt`
 - `--N` : Number of sample size used in Step 1 to generate eQTL summary statistics
 - `--hfile` : Hyper parameter file as in `./Example/hypval.txt`, specifing the prior causal probability (_pi_) and effect size variance (_sigma2_) for cis (row 1) and trans (row 2) eQTL
 - `--em` : Number of EM iterations. Default `3`.
@@ -203,6 +207,7 @@ Step 3 will use summary statistics generated from Step 1 for genome blocks prune
 ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
 --GeneExpFile ${GeneExpFile} --LDdir ${LDdir} \
+--Score_dir ${Score_dir} --select_filehead ${select_filehead} \
 --N ${N} --hfile ${hfile} \
 --em 3 --burnin 10000 --Nmcmc 10000 \
 --PCP_thresh ${PCP_thresh} --num_cores ${num_cores}
@@ -214,8 +219,6 @@ ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 * Bayesian estimates of eQTL PCP and effect sizes from the final EM-MCMC iteration will saved in the output `${gene_name}_BGW_eQTL_weights.txt` file under specified `${wkdir}` that lists all SNPs with `PCP>${PCP_thresh}`.
 
 * The BGW weight file (`${gene_name}_BGW_eQTL_weights.txt`) will be used for predicting GReX values with individual-level GWAS data as in Step 4 or conducting gene-based association test with GWAS summary statistics. See instructions in Step 5 for TWAS procedure.
-
-
 
 [//]: <> (Numerous arguments can be used to modify the EM-MCMC algorithm in Step 3, but should be done with caution. These arguments are detailed in Yang et al. 2017 https://github.com/yjingj/bfGWAS/blob/master/bfGWAS_Manual.pdf)
 
@@ -255,20 +258,30 @@ ${BGW_dir}/bin/Step4_get_test_grex.sh --BGW_dir ${BGW_dir} \
 #### Output
 * Predicted GReX values are saved in `${wkdir}/${gene_name}_pred_grex.txt`, which can be used to calculate prediction R2 and test the association between _GReX_ and _Phenotype of Interest_ (i.e., TWAS).
 
-* File '${wkdir}/${gene_name}\_sumPCP' contains the sum of posterior causal probabilities (PCP) of all analyzed SNPs, the sum of cis-SNPs, and the sum of trans-SNPs, which are the expected number of total eQTL, cis-eQTL, and trans-eQTL for the target gene.
+* File `${wkdir}/${gene_name}\_sumPCP` contains the sum of posterior causal probabilities (PCP) of all analyzed SNPs, the sum of cis-SNPs, and the sum of trans-SNPs, which are the expected number of total eQTL, cis-eQTL, and trans-eQTL for the target gene.
 
 ### Step 5. Association Studies
 
-* If using summary-level GWAS data for TWAS, Step 4 will not need to be implemented. One can use the weight files `${wkdir}/${gene_names}_BGW_eQTL_weights.txt` with our other [TIGAR](https://github.com/yanglab-emory/TIGAR) tool to obtain TWAS results.
+* If using summary-level GWAS data for TWAS, Step 4 will not need to be implemented. One can use the weight files `${wkdir}/${gene_names}_BGW_eQTL_weights.txt` to select the test SNPs presenting in this weight file. 
 
-* Note that the eQTL weights estimated BGW are using only centered gene expressions and genotype data but not standardized to have standard deviation 1. For a valid TWAS using GWAS summary statistics, the S-PrediXcan test statistic with genotype covariance matrix in the denominator must be used, as the FUSION test statistic with genotype correlation matrix in the denominator assumes eQTL weights are derived from standardized gene expressions and genotype data (as implemented by [TIGAR](https://github.com/yanglab-emory/TIGAR)).
+* Note that the eQTL weights estimated BGW are using only centered gene expressions and genotype data but not standardized to have standard deviation `1`. For a valid TWAS using GWAS summary statistics, the S-PrediXcan test statistic with genotype covariance matrix in the denominator must be used, as the FUSION test statistic with genotype correlation matrix in the denominator assumes eQTL weights are derived from standardized gene expressions and genotype data.
+
+* With summary-level GWAS Z-score statistics <img src="https://render.githubusercontent.com/render/math?math=Z_i, i=1, \cdots, m"> for single SNP tests, eQTL effect sizes (i.e., weights `w`) estimated by BGW-TWAS method for `m` test SNPs
+	*  "S-PrediXcan" TWAS Z score statistic is given by
+<img src="https://render.githubusercontent.com/render/math?math=\frac{\sum_{i=1}^m \left(w_i \sigma^2_i Z_i \right) } {\sqrt{\mathbf{w'\Sigma w}}}">, with reference LD **Covariance matrix <img src="https://render.githubusercontent.com/render/math?math=\mathbf{\Sigma}">**, and reference genotype variance (diagonal values of the LD covariance matrix) of SNP `i` <img src="https://render.githubusercontent.com/render/math?math=\sigma^2_i">.
+	* "FUSION" TWAS Z score statistic is given by <img src="https://render.githubusercontent.com/render/math?math=\frac{\sum_{i=1}^m \left(w_i Z_i\right) } {\sqrt{\mathbf{w'Vw}}}">, with reference LD **Correlation matrix `V`**.
+	* One can use "TABIX" tool to extract reference genotype data of the test SNPs from external reference VCF files, for the purpose of calculating the reference covariance or correlation matrix more easily.
+
+* Or one can use our other [TIGAR](https://github.com/yanglab-emory/TIGAR) tool to obtain TWAS results, where both "S-PrediXcan" and "FUSION" TWAS Z score tests were implemented.
+
+
 
 * If using individual-level GWAS data for TWAS, Step 4 will need to be implemented to obtain predicted GReX values for all test samples. Then a simple single variant association test between _GReX_ and _Phenotype of Interest_ will result in the TWAS results.
 
 
 ## Options to save disk storage
 
-* By default setting, temporary directories such as `${wkdir}/${gene_name}\_scores/output/`, `${wkdir}/${gene_name}\_EM\_MCMC/`, `${wkdir}/${gene_name}_GReX/`, and intermediate files `${wkdir}/${gene_name}_exp_trait.txt`, `${wkdir}/${gene_name}_exp_var.txt`, `${wkdir}/ABCA7_grex.geno` would be deleted. If not, you can delete those.
+* By default setting, temporary directories such as `${wkdir}/${gene_name}_scores/output/`, `${wkdir}/${gene_name}_EM_MCMC/`, `${wkdir}/${gene_name}_GReX/`, and intermediate files `${wkdir}/${gene_name}_exp_trait.txt`, `${wkdir}/${gene_name}_exp_var.txt`, `${wkdir}/ABCA7_grex.geno` would be deleted. If not, you can delete those.
 
 * All score statistics files under `${wkdir}/${gene_name}_scores/` contain all single variant eQTL analysis test summary statistics, which is optional to be either saved for other usage or deleted.
 

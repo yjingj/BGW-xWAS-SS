@@ -30,13 +30,14 @@ wkdir=${BGW_dir}/Example/ExampleWorkDir
 
 # Parent directory of all LD files
 LDdir=${BGW_dir}/Example/ExampleData/LDdir
+Score_dir=/home/jyang/GIT/BGW-TWAS/Example/ExampleWorkDir/ABCA7_scores
 
 # Number of cores/parallele_jobs to be used/implemented
 num_cores=2
 
 ### Varables for Step 2
 p_thresh=0.001 # p-value threshold
-max_blocks=100 # maximum blocks
+max_blocks=50 # maximum blocks
 
 ### Variables for Step 3
 N=499 # sample size
@@ -71,9 +72,11 @@ ${BGW_dir}/bin/Step1_get_sumstat.sh --BGW_dir ${BGW_dir} \
 # Top ranked trans blocks will be selected up to ${max_blocks}.
 ################################################################
 ################################################################
+Score_dir=${wkdir}/${gene_name}_scores
 
 ${BGW_dir}/bin/Step2_prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 --GeneExpFile ${GeneExpFile} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
+--Score_dir ${Score_dir} \
 --p_thresh ${p_thresh} --max_blocks ${max_blocks}
 
 ################################################################
@@ -81,10 +84,12 @@ ${BGW_dir}/bin/Step2_prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 # Step 3: Training BGW-TWAS/BVSR gene expression prediction model by EM-MCMC algorithm
 ################################################################
 ################################################################
+select_filehead=${wkdir}/${gene_name}_select_filehead.txt
 
 ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
 --GeneExpFile ${GeneExpFile} --LDdir ${LDdir} \
+--select_filehead ${select_filehead} \
 --N ${N} --hfile ${hfile} \
 --em 3 --burnin 10000 --Nmcmc 10000 \
 --PCP_thresh ${PCP_thresh} --num_cores ${num_cores}

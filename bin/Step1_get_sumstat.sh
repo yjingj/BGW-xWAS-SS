@@ -77,11 +77,12 @@ echo GTfield = $GTfield , number of cores = $num_cores
 #### Create work/output directory if not existed
 mkdir -p ${wkdir}
 mkdir -p ${LDdir}
+echo LD directory ${LDdir}
 
 # Set directory for single variant eQTL summary statistics (score statistics)
 mkdir -p ${wkdir}/${gene_name}_scores
 Score_dir=${wkdir}/${gene_name}_scores
-
+echo Summary score statistic directory ${Score_dir}
 cd ${wkdir}
 # echo ${wkdir}
 
