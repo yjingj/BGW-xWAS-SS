@@ -1,6 +1,6 @@
 # Bayesian Genome-wide (BGW) TWAS Software Usage
 
-Tool **BGW-TWAS** tool is developed for leveraging both **cis-** and **trans-** eQTL based on a Bayesian variable selection model to predict genetically regulated gene expression (**GReX**) and then conduct **TWAS**. This tool is implemented through several command-line argument described in this manual.
+Tool **BGW-TWAS** is developed for leveraging both **cis-** and **trans-** eQTL based on a Bayesian variable selection model to predict genetically regulated gene expression (**GReX**). The product of estimated **cis-** and **trans-** eQTL effect sizes (weights) and their corresponding posterior causal probabilities for being an eQTL can be used to conduct **TWAS**. This tool is implemented through several command-line scripts described in this manual.
 
 Please cite our BGW-TWAS paper if you use the tool:
 >[*Bayesian Genome-wide TWAS Method to Leverage both cis- and trans-eQTL Information through Summary Statistics.* 2020 AJHG.](https://www.cell.com/ajhg/pdfExtended/S0002-9297(20)30291-3)
@@ -27,16 +27,15 @@ Please contact **Jingjing Yang (<jingjing.yang@emory.edu>)** if there is any iss
 ## Software Installation
 
 ### 1. Compile **Estep_mcmc**
-* Install required C++ libraries C++ libraries *zlib*, *gsl*, *eigen3*, *lapack*, *atlas*, *blas* are used to develop this tool. Please install these libraries to your system and include the library path `-I[path to libraries]` accordingly in the C++ compilation command line in the `Makefile`.
+* Install required C++ libraries C++ libraries **zlib**, **gsl**, **eigen3**, **lapack**, **atlas**, **blas** are used to develop this tool. Please install these libraries to your system and include the library path `-I[path to libraries]` accordingly in the C++ compilation command line in the `Makefile`.
 
-* Compile C++ library *./libStatGen/libStatGen.a* under your system by using the following commands:
+* Compile C++ library `./libStatGen/libStatGen.a` under your system by using the following commands:
 
 ```
 cd BGW-TWAS/libStatGen/;
 make clean;
 make
 ```
-A compiled library file *./libStatGen/libStatGen.a* and generated
 
 * Compile C++ source code for the executible file *./bin/Estep_mcmc* that will be used to run the Estep MCMC algorithm to estimate eQTL effect sizes and the posterior causal probabilities (PCP) to be an eQTL, by using the following commands under `BGW-TWAS/` directory:
 
@@ -54,11 +53,16 @@ make
 
 ## Input Files
 
-The following information is required, stored in various text files with pre-defined formats: a gene expression file, genotype files for the training sample, a list of filenames for training genotype files, genotype files for the prediction sample, a list of filenames for prediction genotype files, and phenotype files for the prediction sample.
+Input files of **BGW-TWAS** tool are all tab-seperated text files with pre-defined formats:
+1. Reference transcriptomic data include gene expression file, genotype files of training samples, and a list of filenames for training genotype files, which are required for training Bayesian gene expression prediction models to estimate **cis-** and **trans-** eQTL effect sizes (weights) and their corresponding posterior causal probabilities for being an eQTL.
+2. Individual-level GWAS data of test samples include genotype VCF files for test samples, a list of filenames for test genotype VCF files, and a phenotype file for test samples.
+3. Summary-level GWAS data include a text file of Z-score statistics by single variant GWAS test.
 
 ### 1. Gene Expression File for Training
 
-A file containing gene expression levels for training samples as in `./Example/ExampleData/Gene_Exp_example.txt`, with one gene per row, and one sample per column starting from the 6th column. The first five columns are required to be gene annotation information including chromosome number, starting position, ending position, Gene ID, and Gene Name or second set of Gene ID. An example of one gene and first 6 columns is below:
+A file containing gene expression levels for training samples as in `./Example/ExampleData/Gene_Exp_example.txt`, with one gene per row, and one sample per column starting from the 6th column. The first five columns are required to be gene annotation information including chromosome number, starting position, ending position, Gene ID, and Gene Name or second set of Gene ID. The gene expression levels in this file should be the residuals of a linear regression model that regresses out other confounding variables such as age, sex, top 5 genotype PCs from the `log2(normalized_read_counts)` of raw RNAseq data.
+
+An example of one gene and first 6 columns is as follows:
 
 | CHROM |	GeneStart |	GeneEnd |	    TargetID     | GeneName |	 ROS20275399 |
 | ----- | --------- | ------- | ---------------- | -------- | ------------ |
@@ -67,13 +71,16 @@ A file containing gene expression levels for training samples as in `./Example/E
 
 ### 2. Training VCF Genotype Files
 
-* **[VCF Genotype files](http://samtools.github.io/hts-specs/VCFv4.1.pdf)** are required for training gene expression prediction models. The VCF genotype files should be one per genome block (variants of the same chromosome should be in the same block), sorted by position, and then zipped by `bgzip` (file names are of `[filehead].vcf.gz`), e.g., `./Example/ExampleData/genotype_data_files/Cis_geno_block.vcf.gz`. Genome blocks are expected to be approximately independent with ~5K-10K SNPs per block. All VCF genotype files should be put under the same parent directory, `${geno_dir}`, which should also be provided. For example, see `./Example/ExampleData/genotype_data_files/*_geno_block.vcf.gz`.
+* **[VCF Genotype files](http://samtools.github.io/hts-specs/VCFv4.1.pdf)** are required for training gene expression prediction models. The VCF genotype files should be one per genome block (variants of the same chromosome should be in the same block), sorted by position, and then zipped by `bgzip` (file names are of `[filehead].vcf.gz`), e.g., `./Example/ExampleData/genotype_data_files/Cis_geno_block.vcf.gz`. All VCF genotype files should be put under the same parent directory, `${geno_dir}`, which should also be provided. For example, see `./Example/ExampleData/genotype_data_files/*_geno_block.vcf.gz`.
+	* **BGW-TWAS** scripts will determine **cis-** or **trans-** SNPs based on the gene start/end information provided in the gene expression file.
+	* Genotype files are supposed to be segmented based on LD. Genome blocks are expected to be approximately independent with ~5K-10K SNPs per block.
+	* The same set of segmented genotype files work for all genes.
+	* Example segmentation information derived by [LDetect](https://bitbucket.org/nygcresearch/ldetect/src/master/) are provided in `./Example/ExampleData/genotype_data_files/lddetect_1KG_*_hg19.bed ` for EUR, AFR, and ASN populations.
 
 * **List of file heads** of VCF genotype files as in `./Example/ExampleData/geno_block_filehead.txt` is required. Each row of the list file is the file head of the VCF file of one genome block as in `[filehead].vcf.gz`. Note that the VCF file extension suffix `.vcf.gz` should not be included.
 
-* Genotype blocks can be generated by [LDetect](https://bitbucket.org/nygcresearch/ldetect/src/master/). Genome block segmentation information (BED files) can be downloaded from (https://bitbucket.org/nygcresearch/ldetect-data/src/master/) for European, African, and Asian popultations.
 
-### 3. Test Individual-level GWAS Data
+### 3. Individual-level GWAS Data for Test Samples
 
 * **Test [VCF Genotype files](http://samtools.github.io/hts-specs/VCFv4.1.pdf)** are required for predicting GReX values of test samples. Different from the training VCF genotype files, these test genotype files should be one per chromosome containing `_CHR[chr_num]_` in their file name, sorted by position, zipped by `bgzip`, and indexed by `tabix`. For example, see `./Example/ExampleData/genotype_data_files/Test_CHR*_geno.vcf.gz`.
 
