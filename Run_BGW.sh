@@ -22,7 +22,7 @@ geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
 # File with fileheads of all VCF files as in ${geno_dir}/[filehead].vcf.gz of all genome blocks
 Genome_Seg_Filehead=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
 # Specify the genotype field "GT" (called genotype) or "DS" (imputation dosage) to be used from the VCF files
-GTfield=DS
+GTfield=GT
 
 # Working directory to write intermediate files and output files, unique per gene
 wkdir=${BGW_dir}/Example/ExampleWorkDir

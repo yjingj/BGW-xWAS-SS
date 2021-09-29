@@ -1,6 +1,6 @@
 # Bayesian Genome-wide (BGW) TWAS Software Usage
 
-Tool **BGW-TWAS** is developed for leveraging both **cis-** and **trans-** eQTL based on a Bayesian variable selection model to predict genetically regulated gene expression (**GReX**). The product of estimated **cis-** and **trans-** eQTL effect sizes (weights) and their corresponding posterior causal probabilities for being an eQTL can be used to conduct **TWAS**. This tool is implemented through several command-line scripts described in this manual.
+Tool **BGW-TWAS** is developed for leveraging both **cis-** and **trans-** eQTL based on a Bayesian variable selection model to predict genetically regulated gene expression (**GReX**). The product of estimated **cis-** and **trans-** eQTL effect sizes and their corresponding posterior causal probabilities (PCP) of being an eQTL will be taken as variant weights to conduct **TWAS** –– gene-based association test. This tool is implemented through several command-line scripts described in this manual. Example shell commands are provided in `./Run_BGW.sh`.
 
 Please cite our BGW-TWAS paper if you use the tool:
 >[*Bayesian Genome-wide TWAS Method to Leverage both cis- and trans-eQTL Information through Summary Statistics.* 2020 AJHG.](https://www.cell.com/ajhg/pdfExtended/S0002-9297(20)30291-3)
@@ -53,16 +53,17 @@ make
 
 ## Input Files
 
-Input files of **BGW-TWAS** tool are all tab-seperated text files with pre-defined formats:
-1. Reference transcriptomic data include gene expression file, genotype files of training samples, and a list of filenames for training genotype files, which are required for training Bayesian gene expression prediction models to estimate **cis-** and **trans-** eQTL effect sizes (weights) and their corresponding posterior causal probabilities for being an eQTL.
-2. Individual-level GWAS data of test samples include genotype VCF files for test samples, a list of filenames for test genotype VCF files, and a phenotype file for test samples.
-3. Summary-level GWAS data include a text file of Z-score statistics by single variant GWAS test.
+Input files of **BGW-TWAS** tool are all tab-seperated text files:
 
-### 1. Gene Expression File for Training
+* Reference transcriptomic data include gene expression file, genotype files of training samples, and a list of filenames for training genotype files, which are required for training Bayesian gene expression prediction models to estimate **cis-** and **trans-** eQTL effect sizes and their corresponding posterior causal probabilities of being an eQTL.
+* Individual-level GWAS data of test samples include genotype VCF files for test samples, a list of filenames for test genotype VCF files, and a phenotype file for test samples.
+* Summary-level GWAS data include a text file of Z-score statistics by single variant GWAS test.
 
-A file containing gene expression levels for training samples as in `./Example/ExampleData/Gene_Exp_example.txt`, with one gene per row, and one sample per column starting from the 6th column. The first five columns are required to be gene annotation information including chromosome number, starting position, ending position, Gene ID, and Gene Name or second set of Gene ID. The gene expression levels in this file should be the residuals of a linear regression model that regresses out other confounding variables such as age, sex, top 5 genotype PCs from the `log2(normalized_read_counts)` of raw RNAseq data.
+### 1. Training Gene Expression File
 
-An example of one gene and first 6 columns is as follows:
+* A file containing gene expression levels of training samples as in `./Example/ExampleData/Gene_Exp_example.txt`, with one gene per row, and one sample per column starting from the 6th column. The first five columns are required to be gene annotation information including chromosome number, starting position, ending position, Gene ID, and Gene Name or second set of Gene ID. 
+* The gene expression levels in this file should be the residuals of a linear regression model that regresses out other confounding variables such as age, sex, top 5 genotype PCs from the `log2(normalized_read_counts)` of raw RNAseq data.
+* Example row of the first 6 columns of gene `ABCA7` is as follows:
 
 | CHROM |	GeneStart |	GeneEnd |	    TargetID     | GeneName |	 ROS20275399 |
 | ----- | --------- | ------- | ---------------- | -------- | ------------ |
@@ -71,8 +72,9 @@ An example of one gene and first 6 columns is as follows:
 
 ### 2. Training VCF Genotype Files
 
-* **[VCF Genotype files](http://samtools.github.io/hts-specs/VCFv4.1.pdf)** are required for training gene expression prediction models. The VCF genotype files should be one per genome block (variants of the same chromosome should be in the same block), sorted by position, and then zipped by `bgzip` (file names are of `[filehead].vcf.gz`), e.g., `./Example/ExampleData/genotype_data_files/Cis_geno_block.vcf.gz`. All VCF genotype files should be put under the same parent directory, `${geno_dir}`, which should also be provided. For example, see `./Example/ExampleData/genotype_data_files/*_geno_block.vcf.gz`.
-	* **BGW-TWAS** scripts will determine **cis-** or **trans-** SNPs based on the gene start/end information provided in the gene expression file.
+* **[VCF Genotype files](http://samtools.github.io/hts-specs/VCFv4.1.pdf)** are required for training gene expression prediction models. The VCF genotype files should be one per genome block (variants of the same chromosome should be in the same block), sorted by position, and then zipped by `bgzip` (file names are of `[filehead].vcf.gz`), e.g., `./Example/ExampleData/genotype_data_files/Cis_geno_block.vcf.gz`. 
+	- All VCF genotype files should be put under the same parent directory, `${geno_dir}`, which should also be provided. For example, see `./Example/ExampleData/genotype_data_files/*_geno_block.vcf.gz`.
+	* **BGW-TWAS** tool will determine **cis-** or **trans-** SNPs based on the gene start/end information provided in the gene expression file.
 	* Genotype files are supposed to be segmented based on LD. Genome blocks are expected to be approximately independent with ~5K-10K SNPs per block.
 	* The same set of segmented genotype files work for all genes.
 	* Example segmentation information derived by [LDetect](https://bitbucket.org/nygcresearch/ldetect/src/master/) are provided in `./Example/ExampleData/genotype_data_files/lddetect_1KG_*_hg19.bed ` for EUR, AFR, and ASN populations.
@@ -82,7 +84,7 @@ An example of one gene and first 6 columns is as follows:
 
 ### 3. Individual-level GWAS Data for Test Samples
 
-* **Test [VCF Genotype files](http://samtools.github.io/hts-specs/VCFv4.1.pdf)** are required for predicting GReX values of test samples. Different from the training VCF genotype files, these test genotype files should be one per chromosome containing `_CHR[chr_num]_` in their file name, sorted by position, zipped by `bgzip`, and indexed by `tabix`. For example, see `./Example/ExampleData/genotype_data_files/Test_CHR*_geno.vcf.gz`.
+* **Test [VCF Genotype files](http://samtools.github.io/hts-specs/VCFv4.1.pdf)** are required for predicting GReX values of test samples that have individual-level GWAS data. Different from the training VCF genotype files, these test genotype files should be one per chromosome containing `_CHR[chr_num]_` in their file name, sorted by position, zipped by `bgzip`, and indexed by `tabix`. For example, see `./Example/ExampleData/genotype_data_files/Test_CHR*_geno.vcf.gz`.
 
 * **Test phenotype file** contains two columns without header: the first column is a list of sample IDs that have genotype data in the test VCF files, and the second column is phenotype values. Second column will not be used for predicting GReX values, thus random values from `N(0, 1)` can also be used here without known phenotype values. For example, see `./Example/ExampleData/Test_pheno.txt`
 
@@ -97,7 +99,8 @@ An example of one gene and first 6 columns is as follows:
 ### Please update tool directory and use different working and LD file directories from below
 BGW_dir=~/GIT/BGW-TWAS # tool directory
 wkdir=${BGW_dir}/Example/ExampleWorkDir
-LDdir=${BGW_dir}/Example/ExampleData/LDdir
+LDdir=${BGW_dir}/Example/ExampleData/LDdir # shared by all genes
+Score_dir=${BGW_dir}/Example/ExampleWorkDir/ABCA7_scores
 
 ### The following variables can stay the same for the testing purpose
 GeneExpFile=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt
@@ -109,7 +112,7 @@ num_cores=2 # number of cores to be used
 
 ## Varables for Step 2
 p_thresh=0.001 # p-value threshold
-max_blocks=100 # maximum blocks
+max_blocks=50 # maximum blocks
 
 ## Variables for Step 3
 N=499 # Training sample size
@@ -121,13 +124,14 @@ BGW_weight=${wkdir}/${gene_name}_BGW_eQTL_weights.txt
 test_geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
 test_geno_filehead=${BGW_dir}/Example/ExampleData/test_geno_filehead.txt
 test_pheno=${BGW_dir}/Example/ExampleData/Test_pheno.txt
-GTfield_test=GT #or DS
+GTfield_test=GT # or DS if doseage data to be used
 ```
 
 #### Remarks
 * It is important to include the complete directory starting with `/home/` for all input files.
 * Please set up working directory `${wkdir}` and LD file directory `${LDdir}` differently from the above examples, so that you may examine how your test outputs  be dimightfferent from the provided example outputs.
-* It is recommended to test the following steps one by one, instead of directly running the `./Run_BGW.sh` script.
+* `${LDdir}` stays the same for all genes.
+* Please do not directly run the `./Run_BGW.sh` script. Instead, test the bash commands of the following steps one by one.
 
 ### Step 1. Obtain Summary Statistics
 Shell script `Step1_get_sum_stat.sh` will generate single variant eQTL summary statistics (aka Score Statistics) in required formats.
@@ -179,6 +183,8 @@ Step 2 selects a subset of genome blocks (up to `${max_blocks}`) for joint model
 
 #### Example command:
 ```
+Score_dir=${wkdir}/${gene_name}_scores
+
 ${BGW_dir}/bin/Step2_prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 --GeneExpFile ${GeneExpFile} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
 --Score_dir ${Score_dir} \
@@ -211,6 +217,8 @@ Step 3 will use summary statistics generated from Step 1 for genome blocks prune
 
 #### Example commands:
 ```
+select_filehead=${wkdir}/${gene_name}_select_filehead.txt
+
 ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
 --GeneExpFile ${GeneExpFile} --LDdir ${LDdir} \

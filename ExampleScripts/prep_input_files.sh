@@ -1,3 +1,4 @@
+
 ###### Segment VCF files according to genome block segmentation information provided by lddetect
 bed_file=lddetect_1KG_EUR_hg19.bed
 
