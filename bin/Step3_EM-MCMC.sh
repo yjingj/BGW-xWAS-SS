@@ -92,7 +92,7 @@ ${BGW_dir}/bin/gen_mkf.pl \
 -w ${wkdir}/${gene_name}_EM_MCMC --geno sumstat \
 -f ${select_filehead} -l local \
 --targ ${target_chr} --start ${start_pos} --end ${end_pos} \
---LDdir ${LDdir} --Scoredir ${wkdir}/${gene_name}_scores \
+--LDdir ${LDdir} --Scoredir ${Score_dir} \
 -j BGW_${gene_name} --em ${em} -b ${burnin} -N ${Nmcmc} \
 --mf ${mkfile}
 
