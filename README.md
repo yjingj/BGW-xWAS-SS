@@ -225,7 +225,8 @@ ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 --Score_dir ${Score_dir} --select_filehead ${select_filehead} \
 --N ${N} --hfile ${hfile} \
 --em 3 --burnin 10000 --Nmcmc 10000 \
---PCP_thresh ${PCP_thresh} --num_cores ${num_cores}
+--PCP_thresh ${PCP_thresh} --num_cores ${num_cores} \
+--clean_output 0
 ```
 
 * Intermediate output will be deleted unless with input argument `--clean_output 0`. Keeping intermediate outputs is recommended only for testing purpose.
