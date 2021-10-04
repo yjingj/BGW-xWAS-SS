@@ -32,7 +32,7 @@ fi
 
 if [ -s ${geno_dir}/${line}.vcf.gz ] ; then
 	### With input genotype file in VCF format
-	${BGW_dir}/bin/Estep_mcmc -vcf ${geno_dir}/${line}.vcf.gz -p ${gene_exp_trait} -maf 0 -o ${line} -LDwindow ${LDwindow} -GTfield ${GTfield} -saveSS -zipSS
+	${BGW_dir}/bin/Estep_mcmc -vcf ${geno_dir}/${line}.vcf.gz -p ${gene_exp_trait} -maf 0.01 -o ${line} -LDwindow ${LDwindow} -GTfield ${GTfield} -saveSS -zipSS
 	mv -f ${Score_dir}/output/${line}.score.txt.gz ${Score_dir}/
 	mv -f ${Score_dir}/output/${line}.score.txt.gz.tbi ${Score_dir}/
 	echo Score statistics file ${Score_dir}/${line}.score.txt.gz were generated.

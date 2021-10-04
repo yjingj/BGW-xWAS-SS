@@ -80,8 +80,8 @@ mkdir -p ${LDdir}
 echo LD directory ${LDdir}
 
 # Set directory for single variant eQTL summary statistics (score statistics)
-mkdir -p ${wkdir}/${gene_name}_scores
 Score_dir=${wkdir}/${gene_name}_scores
+mkdir -p ${Score_dir}
 echo Summary score statistic directory ${Score_dir}
 cd ${wkdir}
 # echo ${wkdir}

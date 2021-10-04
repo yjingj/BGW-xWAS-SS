@@ -1,18 +1,120 @@
 ####### Functions for logistic model
 options(stringsAsFactors=F)
+library(tidyverse)
 library(data.table)
-library(ggplot2)
+
+##############
+myManPlot_PCP <- function(manPlot_dt, title = "Manhantton Plot",
+	chr_vec = 1:22, ntop = 3, sig_level = 2.5e-6, size = 20, chrGAP = 10){
+    # manPlot is a data frame containing columns: #CHROM, POS, PCP
+   # Setup ploting positions
+    # chr_vec = sort(unique(manPlot$CHR))
+    colnames(manPlot_dt)[1] = "CHR"
+    endPos = 0;
+    plotPos = NULL; temp_dt = NULL;
+    chrEnd = NULL; LabBreaks = NULL; xlabels = NULL;
+    for (chr in chr_vec) {
+        # print(chr)
+        temp = manPlot_dt[manPlot_dt$CHR == chr, ]
+        temp$POS = order(temp$POS)
+        if(nrow(temp)>0){
+            temp_dt = rbind(temp_dt, temp)
+
+            chrPos = (temp$POS - min(temp$POS, na.rm = TRUE) ) + endPos + 1
+            endPos = max(chrPos, na.rm = TRUE) + chrGAP
+            plotPos = c(plotPos, chrPos)
+
+            yline_pos = max(chrPos, na.rm = TRUE) + chrGAP/2
+            chrEnd = c(chrEnd, yline_pos)
+            LabBreaks = c(LabBreaks, mean(chrPos, na.rm = TRUE) )
+            xlabels = c(xlabels, chr)
+        }
+    }
+    manPlot_dt_sort = data.frame(temp_dt, plotPos = plotPos)
+
+    ggplot(manPlot_dt_sort, aes(plotPos, PCP, color = factor(CHR))) +
+    geom_point() + guides(color = FALSE) +
+    labs(x = "Chromosome", y = "eQTL PCP", title = title) +
+    scale_x_continuous(breaks = LabBreaks, labels = xlabels, limits = range(plotPos)) +
+    theme(text = element_text(size = size), axis.text.x = element_text(angle = -45, face = "bold", vjust=-0.5))
+}
+
+myManPlot_beta <- function(manPlot_dt, title = "Manhantton Plot",
+	chr_vec = 1:22, ntop = 3, sig_level = 2.5e-6, size = 20, chrGAP = 10){
+    # manPlot is a data frame containing columns: #CHROM, POS, PCP
+   # Setup ploting positions
+    # chr_vec = sort(unique(manPlot$CHR))
+    colnames(manPlot_dt)[1] = "CHR"
+    endPos = 0;
+    plotPos = NULL; temp_dt = NULL;
+    chrEnd = NULL; LabBreaks = NULL; xlabels = NULL;
+    for (chr in chr_vec) {
+        # print(chr)
+        temp = manPlot_dt[manPlot_dt$CHR == chr, ]
+        temp$POS = order(temp$POS)
+        if(nrow(temp)>0){
+            temp_dt = rbind(temp_dt, temp)
+
+            chrPos = (temp$POS - min(temp$POS, na.rm = TRUE) ) + endPos + 1
+            endPos = max(chrPos, na.rm = TRUE) + chrGAP
+            plotPos = c(plotPos, chrPos)
+
+            yline_pos = max(chrPos, na.rm = TRUE) + chrGAP/2
+            chrEnd = c(chrEnd, yline_pos)
+            LabBreaks = c(LabBreaks, mean(chrPos, na.rm = TRUE) )
+            xlabels = c(xlabels, chr)
+        }
+    }
+    manPlot_dt_sort = data.frame(temp_dt, plotPos = plotPos)
+
+    ggplot(manPlot_dt_sort, aes(plotPos, beta, color = factor(CHR))) +
+    geom_point() + guides(color = FALSE) +
+    labs(x = "Chromosome", y = "eQTL effect size", title = title) +
+    scale_x_continuous(breaks = LabBreaks, labels = xlabels, limits = range(plotPos)) +
+    theme(text = element_text(size = size), axis.text.x = element_text(angle = -45, face = "bold", vjust=-0.5))
+}
+
+myManPlot_weight <- function(manPlot_dt, title = "Manhantton Plot",
+	chr_vec = 1:22, ntop = 3, sig_level = 2.5e-6, size = 20, chrGAP = 10){
+    # manPlot is a data frame containing columns: #CHROM, POS, PCP
+   # Setup ploting positions
+    # chr_vec = sort(unique(manPlot$CHR))
+    colnames(manPlot_dt)[1] = "CHR"
+    endPos = 0;
+    plotPos = NULL; temp_dt = NULL;
+    chrEnd = NULL; LabBreaks = NULL; xlabels = NULL;
+    for (chr in chr_vec) {
+        # print(chr)
+        temp = manPlot_dt[manPlot_dt$CHR == chr, ]
+        temp$POS = order(temp$POS)
+        if(nrow(temp)>0){
+            temp_dt = rbind(temp_dt, temp)
+
+            chrPos = (temp$POS - min(temp$POS, na.rm = TRUE) ) + endPos + 1
+            endPos = max(chrPos, na.rm = TRUE) + chrGAP
+            plotPos = c(plotPos, chrPos)
+
+            yline_pos = max(chrPos, na.rm = TRUE) + chrGAP/2
+            chrEnd = c(chrEnd, yline_pos)
+            LabBreaks = c(LabBreaks, mean(chrPos, na.rm = TRUE) )
+            xlabels = c(xlabels, chr)
+        }
+    }
+    manPlot_dt_sort = data.frame(temp_dt, plotPos = plotPos)
+    manPlot_dt_sort$weight = manPlot_dt_sort$PCP * manPlot_dt_sort$beta
+
+    ggplot(manPlot_dt_sort, aes(plotPos, weight, color = factor(CHR))) +
+    geom_point() + guides(color = FALSE) +
+    labs(x = "Chromosome", y = "eQTL weights", title = title) +
+    scale_x_continuous(breaks = LabBreaks, labels = xlabels, limits = range(plotPos)) +
+    theme(text = element_text(size = size), axis.text.x = element_text(angle = -45, face = "bold", vjust=-0.5))
+}
+
+
 
 LoadEMdata <- function(filename, header = FALSE){
     paramdata = fread(filename, sep = "\t", header = header)
     setnames(paramdata, c("chr", "bp", "ID", "ref", "alt", "maf", "func", "pi", "beta", "SE_beta", "Chisq", "pval_chisq", "rank"))
-    setkey(paramdata, "ID")
-    return(paramdata)
-}
-
-LoadEMdata_bfgwas <- function(filename, header = FALSE){
-    paramdata = fread(filename, sep = "\t", header = header)
-    setnames(paramdata, c("ID", "chr", "bp", "ref", "alt", "maf", "func", "beta", "pi", "Zscore", "SE_beta", "LRT", "pval_LRT", "rank"))
     setkey(paramdata, "ID")
     return(paramdata)
 }
@@ -148,11 +250,6 @@ PlotRatio <- function(comp_dat, tit ="", pdfname = "", size = 28, ymode = 1, wid
 }
 
 ### Load Annotation file
-LoadAnnodata <- function(filename, header = FALSE){
-    Annodata = fread(filename, sep = "\t", header = header)
-    setnames(Annodata, c("ID", "chr", "bp", "ref", "alt", "Annotation"))
-    return(Annodata)
-}
 
 getPi <- function(lambda, A){
 	lambda <- matrix(lambda, ncol = 1)
@@ -185,9 +282,6 @@ FisherInfo_lambda <- function(lambda, A){
 }
 
 ###########
-weight <- function(x){
-	return(x/sum(x))
-}
 
 loglike_v <- function(v, r, beta, tau, W, a, b){
 	s = (W) %*% v

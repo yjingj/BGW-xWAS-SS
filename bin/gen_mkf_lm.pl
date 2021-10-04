@@ -34,7 +34,7 @@ Options:
   --pheno    phenotype file
   -f         file with a list of fileheads for genotype files
   -G         genotype format: GT(genotype data 0/0, 0/1, 1/1) or EC (dosage data)
-  --maf      maf threshold: default 0.5% 
+  --maf      maf threshold: default 1% 
   --lm       specify lm mode: 1, 2, 3, 4
   --mem      specify maximum memory usage: default 3000MB
   --time     specify time of runing MCMC per block per MCMC iteration: default 24hr
@@ -70,7 +70,7 @@ my $pheno="";
 my $filelist = "/net/fantasia/home/yjingj/GIT/SFBA_example/ExData/fileheads_4region.txt";
 
 my $GTfield="GT";
-my $maf="0.005";
+my $maf="0.01";
 
 my $maxmem = "3000";
 my $time = "24:00:00";
