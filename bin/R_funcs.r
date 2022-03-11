@@ -114,7 +114,7 @@ myManPlot_weight <- function(manPlot_dt, title = "Manhantton Plot",
 
 LoadEMdata <- function(filename, header = FALSE){
     paramdata = fread(filename, sep = "\t", header = header)
-    setnames(paramdata, c("chr", "bp", "ID", "ref", "alt", "maf", "func", "pi", "beta", "SE_beta", "Chisq", "pval_chisq", "rank"))
+    setnames(paramdata, c("#CHROM", "POS", "ID", "REF", "ALT", "MAF", "Trans", "PCP", "beta", "SE_beta", "LRT", "pval_LRT", "Rank"))
     setkey(paramdata, "ID")
     return(paramdata)
 }
