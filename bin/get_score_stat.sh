@@ -19,11 +19,11 @@ cd ${Score_dir}
 line=$(head -n $block $filehead | tail -n1)
 echo Generate sumamry stat for block ${line}
 
-#if [ -s ${LDdir}/${line}.LDcorr.txt.gz ] ; then
-#echo ${LDdir}/${line}.LDcorr.txt.gz exists!
-#LDwindow=1
-#fi
-#echo LDwindow is $LDwindow
+if [ -s ${LDdir}/${line}.LDcorr.txt.gz ] ; then
+echo ${LDdir}/${line}.LDcorr.txt.gz exists!
+LDwindow=1
+fi
+echo LDwindow is $LDwindow
 
 if [ ! -s ${gene_exp_trait} ] ; then
 echo ${gene_exp_trait} is empty. Please check.
