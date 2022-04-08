@@ -143,7 +143,7 @@ if [ "$n_trans" -gt "$max_trans_blocks" ] ; then
 fi
 
 ### Fileheads of segmented genome blocks
-if [ -s ${wkdir}/${gene_name}_scores/${gene_name}_select_segments.txt ] ; then
+if [ -s ${wkdir}/${gene_name}_select_segments.txt ] ; then
     cut -f1 ${wkdir}/${gene_name}_select_segments.txt > ${wkdir}/${gene_name}_select_filehead.txt
     filehead=${wkdir}/${gene_name}_select_filehead.txt
 else
