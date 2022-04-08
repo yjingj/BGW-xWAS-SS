@@ -144,7 +144,7 @@ fi
 
 ### Fileheads of segmented genome blocks
 if [ -s ${wkdir}/${gene_name}_scores/${gene_name}_select_segments.txt ] ; then
-    cut -f1 ${wkdir}/${gene_name}_scores/${gene_name}_select_segments.txt > ${wkdir}/${gene_name}_select_filehead.txt
+    cut -f1 ${wkdir}/${gene_name}_select_segments.txt > ${wkdir}/${gene_name}_select_filehead.txt
     filehead=${wkdir}/${gene_name}_select_filehead.txt
 else
     echo "Selected genome blocks for BGW-TWAS is empty. Please check gene annotation."
