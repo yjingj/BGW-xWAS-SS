@@ -26,7 +26,7 @@ rand_seed=$RANDOM
 # echo using tool ${toolE} for Estep with $line $N $pv $hfile $start_pos $end_pos $target_chr
 
 ${toolE} -inputSS \
--score ${Scoredir}/${line}.score.txt.gz \
+-score ${Scoredir}/${line}.Zscore.txt.gz \
 -LDcorr ${LDdir}/${line}.LDcorr.txt.gz \
 -target_chr ${target_chr} -start_pos ${start_pos} -end_pos ${end_pos} \
 -hfile ${hfile} -n ${N} -pv ${pv} -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 \

@@ -79,9 +79,9 @@ cd ${wkdir}/${gene_name}_EM_MCMC
 
 if [ -z ${Score_dir} ] ; then
     Score_dir=${wkdir}/${gene_name}_scores
-    echo Default summary score statistics file directory: $Score_dir
+    echo Default summary Zscore statistics file directory: $Score_dir
 else
-    echo Summary Score statistics file directory is provided as ${Score_dir} ;
+    echo Summary ZScore statistics file directory is provided as ${Score_dir} ;
 fi
 
 mkfile="${wkdir}/${gene_name}_EM_MCMC/${gene_name}_BGW.mk"

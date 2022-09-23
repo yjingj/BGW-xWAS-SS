@@ -63,23 +63,23 @@ cd ${wkdir}
 
 if [ -z ${Score_dir} ] ; then
     Score_dir=${wkdir}/${gene_name}_scores
-    echo Default summary score statistics file directory: $Score_dir
+    echo Default summary Zscore statistics file directory: $Score_dir
 else
-    echo Summary Score statistics file directory is provided as ${Score_dir} ;
+    echo Summary ZScore statistics file directory is provided as ${Score_dir} ;
 fi
 
 if [ -s ${Genome_Seg_Filehead} ]; then
 > ${wkdir}/${gene_name}_ranked_segments.txt
 cat ${Genome_Seg_Filehead} | while read filehead ; do
-if [ -s  ${Score_dir}/${filehead}.score.txt.gz ] ; then
-    nsnp=$(zcat ${Score_dir}/${filehead}.score.txt | wc -l)
+if [ -s  ${Score_dir}/${filehead}.Zscore.txt.gz ] ; then
+    nsnp=$(zcat ${Score_dir}/${filehead}.Zscore.txt | wc -l)
     if [ "$nsnp" -gt 1 ] ; then
-        zcat ${Score_dir}/${filehead}.score.txt | awk -v var=$filehead 'NR == 2 {line = $0; min = $13}; NR >2 && $13 < min {line = $0; min = $13}; END{print var, min}' >> ${wkdir}/${gene_name}_ranked_segments.txt
+        zcat ${Score_dir}/${filehead}.Zscore.txt | awk -v var=$filehead 'NR == 2 {line = $0; min = $13}; NR >2 && $13 < min {line = $0; min = $13}; END{print var, min}' >> ${wkdir}/${gene_name}_ranked_segments.txt
     else
-        echo ${Score_dir}/${filehead}.score.txt.gz do not have any SNPs...
+        echo ${Score_dir}/${filehead}.Zscore.txt.gz do not have any SNPs...
     fi
 else
-    echo A non-empty ${Score_dir}/${filehead}.score.txt.gz file dose not exist !
+    echo A non-empty ${Score_dir}/${filehead}.Zscore.txt.gz file dose not exist !
 fi
 done
 else
@@ -107,13 +107,13 @@ cat ${wkdir}/${gene_name}_ranked_segments.txt | while read line ; do
     comp_pval=$(awk -v pval=$pval -v p_thresh=$p_thresh 'BEGIN{ print (pval+0)<(p_thresh+0) }')
     # echo Compare if $pval less than $p_thresh gives comp_pval = $comp_pval ...
 
-    row_1=$(zcat ${Score_dir}/${filehead}.score.txt | grep -v "#CHROM" | head -n 1)
+    row_1=$(zcat ${Score_dir}/${filehead}.Zscore.txt | grep -v "#CHROM" | head -n 1)
     chr=$(echo ${row_1} | awk '{print $1}' )
     start=$(echo ${row_1} | awk '{print $2}')
 
     if [ "$chr" -eq "${target_chr}" ] ; then
 
-        end=$( zcat ${Score_dir}/${filehead}.score.txt | tail -n1 | awk '{print $2}' )
+        end=$( zcat ${Score_dir}/${filehead}.Zscore.txt | tail -n1 | awk '{print $2}' )
 
         if [ "$end" -gt "$start_pos" ] && [ "$start" -lt "$start_pos" ] ; then
             echo -e "${filehead}\t${pval}" >> ${gene_name}_cis_segments.txt

@@ -9,7 +9,9 @@ LDwindow=$6
 
 module load tabix
 
-bfGWAS_SS_dir="/home/jluningham/Projects/bfGWAS_SS"
+# changed to standardized TWAS
+# bfGWAS_SS_dir="/home/jluningham/Projects/bfGWAS_SS"
+bfGWAS_SS_dir="/home/lwang/BGW-TWAS-Lei"
 # geno_dir=/home/jyang/Collaborations/IrwinSAGE/BU_GWASs_CDSymptomDimensions/lddetect_Dosage_Files
 
 echo ${SGE_TASK_ID}
@@ -45,10 +47,10 @@ fi
 echo LDwindow is $LDwindow
 
 ### With input genotype file in dosage format
-${bfGWAS_SS_dir}/bin/Estep_mcmc -vcf ${geno_dir}/${line}.vcf.gz -p ${pheno} -maf 0 -o ${line} -LDwindow ${LDwindow} -GTfield DS -saveSS -zipSS
+# ${bfGWAS_SS_dir}/bin/Estep_mcmc -vcf ${geno_dir}/${line}.vcf.gz -p ${pheno} -maf 0 -o ${line} -LDwindow ${LDwindow} -GTfield DS -saveSS -zipSS
 
 ### With input genotype file in VCF format
-# ${bfGWAS_SS_dir}/bin/Estep_mcmc -vcf ${geno_dir}/${line}.vcf.gz -p ${pheno} -maf 0 -o ${line} -LDwindow ${LDwindow} -saveSS -zipSS
+${bfGWAS_SS_dir}/bin/Estep_mcmc -vcf ${geno_dir}/${line}.vcf.gz -p ${pheno} -maf 0 -o ${line} -LDwindow ${LDwindow} -saveSS -zipSS
 
 echo Run BFGWAS Successfully to generate summary statistics!
 

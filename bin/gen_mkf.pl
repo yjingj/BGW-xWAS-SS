@@ -92,12 +92,20 @@ my $usextxld=0;
 my $r2_level="0.001";
 my $N="499";
 my $pv="0.56";
-my $BGW_dir="/home/jyang/GIT/BGW-TWAS";
-my $wkDir="${BGW_dir}/Example/ExampleWorkDir";
+#Change to Lei's
+my $BGW_dir="/home/lwang/BGW-TWAS-Lei";
+my $wkDir="${BGW_dir}/Leitest";
 my $hyppar="${BGW_dir}/Example/hypval.txt";
 my $filelist = "${BGW_dir}/Example/ExampleData/geno_block_filehead.txt";
-my $LDdir="${BGW_dir}/Example/ExampleData/LDdir";
-my $Scoredir="${BGW_dir}/Example/ExampleWorkDir/ABCA7_scores";
+my $LDdir="${BGW_dir}/LEIExample/ExampleData/LDdir";
+my $Scoredir="${BGW_dir}/Leitest/ABCA7_scores";
+
+#my $BGW_dir="/home/jyang/GIT/BGW-TWAS";
+#my $wkDir="${BGW_dir}/Example/ExampleWorkDir";
+#my $hyppar="${BGW_dir}/Example/hypval.txt";
+#my $filelist = "${BGW_dir}/Example/ExampleData/geno_block_filehead.txt";
+#my $LDdir="${BGW_dir}/Example/ExampleData/LDdir";
+#my $Scoredir="${BGW_dir}/Example/ExampleWorkDir/ABCA7_scores";
 
 ## parameters that do not used by BGW-TWAS
 my $genoDir="";
