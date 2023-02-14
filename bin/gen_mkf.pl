@@ -28,23 +28,21 @@ Options:
 =item B<-help>
 
   --wkdir         work directory : location for all output files
-  --tool_dir         directory for the C++ executable file for Estep (running MCMC)
+  --BGW_dir         directory for the C++ executable file for Estep (running MCMC)
   --LDdir       directory of LD correlation files
   --Zscore_dir    directory of GWAS single variant Zscore statistic files
   --filehead         text file with a list of fileheads for genome blocks
-  --anno_dir       annotation file directory
-  --AnnoNumber  number of annotations
   --hfile      initial hyper parameter value file
   --Nsample       sample size
-  --maf      maf threshold: default 0.5% 
+  --maf      maf threshold: default 1%
   --Nburnin         number of burn ins: default 10,000
   --Nmcmc         number of MCMC iterations: default 10,000
-  --NmcmcLast       number of MCMC iterations for the last EM iteration: default 50,000
+  --NmcmcLast       number of MCMC iterations for the last EM iteration: default 10,000
   --win      window size of the neighborhood: default 100
   --initype  specify initial model (1:start with top signal), (2: start with genome-wide significant signals), or default (3: stepwise selected signals)
   --smin     minimum number of variates per block in the model: default 0
-  --smax     maximum number of variates per block in the model: default 5
-  --em       number of EM iterations: default 3
+  --smax     maximum number of variates per block in the model: default 10
+  --em       number of EM iterations: default 2
   --mf       output make file
 
 =back
@@ -61,7 +59,7 @@ my $verbose;
 my $debug;
 my $man;
 my $launchMethod = "local";
-my $makeFile = "BFGWAS.mk";
+my $makeFile = "BGW.mk";
 
 my $tool_dir="";
 my $wkdir=getcwd();
@@ -72,10 +70,10 @@ my $anno_dir="";
 my $hfile="";
 my $Nsample="1000";
 
-my $EM=3;
-my $maf="0.001";
+my $EM=2;
+my $maf="0.01";
 my $smin="0";
-my $smax="5";
+my $smax="10";
 my $win="100";
 my $burnin="10000";
 my $Nmcmc="10000";
@@ -88,10 +86,9 @@ my $AnnoNumber="1";
 Getopt::Long::Configure ('bundling');
 
 if(!GetOptions ('h'=>\$help, 'v'=>\$verbose, 'd'=>\$debug, 'm'=>\$man,
-                'wkdir:s'=>\$wkdir, 'tool_dir:s' =>\$tool_dir, 
+                'wkdir:s'=>\$wkdir, 'BGW_dir:s' =>\$BGW_dir,
                 'LDdir:s'=>\$LDdir, 'Zscore_dir:s'=>\$Zscore_dir,
-                'filehead:s'=>\$filehead, 'anno_dir:s'=>\$anno_dir, 
-                'AnnoNumber:s'=>\$AnnoNumber,
+                'filehead:s'=>\$filehead,
                 'hfile:s'=>\$hfile, 'maf:s'=>\$maf, 'Nsample:s'=>\$Nsample,
                 'Nburnin:s'=>\$burnin, 'Nmcmc:s'=>\$Nmcmc, 'NmcmcLast:s'=>\$NmcmcLast,
                 'a_gamma:s'=>\$a_gamma, 'b_gamma:s'=>\$b_gamma,
@@ -124,8 +121,8 @@ elsif($man) {
     }
 
 
-my $toolE="${tool_dir}/bin/Estep_mcmc";
-my $rs="${tool_dir}/bin/Mstep.r";
+my $toolE="${BGW_dir}/bin/Estep_mcmc";
+my $rs="${BGW_dir}/bin/Mstep.r";
 
 ##############
 #print options
@@ -136,7 +133,6 @@ printf("launch method : %s\n", $launchMethod);
 printf("work directory : %s\n", $wkdir);
 print "Estep: ", $toolE, "\n", "Rscript: ", $rs, "\n"; 
 print "Zscore_dir: ", $Zscore_dir, "\n", "LDdir: ", $LDdir, "\n",
-        "anno_dir: ", $anno_dir, "; AnnoNumber: ", $AnnoNumber,  "\n",
         "hfile: ", $hfile, "\nfilehead text file: ", $filehead, "\n",
         "Nsample ", $Nsample, "; maf ", $maf, "; smin ", $smin, "\n",
         "smax ", $smax, "; win ", $win, "\n", 
@@ -202,7 +198,7 @@ for(my $j=0; $j< @filehead; ++$j)
         $tgt = "$wkdir/OUT/$line.$i.OK";
         $dep = "$wkdir/pre_em.OK";
 
-        @cmd = "$toolE -inputSS -Zscore ${Zscore_dir}/${line}.Zscore.txt.gz -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -a ${anno_dir}/Anno_${line}.txt.gz -hfile ${hypcurrent} -maf ${maf} -n ${Nsample} -bvsrm -smin ${smin} -smax ${smax} -win $win -o ${line} -w ${burnin} -s ${Nmcmc} -AnnoNumber ${AnnoNumber} -seed 2022 > ${wkdir}/OUT/${line}.output.txt";
+        @cmd = "$toolE -inputSS -Zscore ${Zscore_dir}/${line}.Zscore.txt.gz -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -hfile ${hypcurrent} -maf ${maf} -n ${Nsample} -bvsrm -smin ${smin} -smax ${smax} -win $win -o ${line} -w ${burnin} -s ${Nmcmc} -seed 2022 > ${wkdir}/OUT/${line}.output.txt";
         makeJob($tgt, $dep, @cmd);
     }
 
@@ -212,9 +208,9 @@ my $logfile="$wkdir/Eoutput/log$i.txt";
 
 $tgt = "$wkdir/Eoutput/cp_param$i.OK";
 $dep = "$premcmcOK";
-  @cmd = "cat \`ls -d -1 $wkdir/output/** | grep paramtemp | head -n1 \` | head -n1 > $paramfile";
+  @cmd = "zcat \`ls -d -1 $wkdir/output/**.gz | grep paramtemp | head -n1 \` | head -n1 > $paramfile";
   push(@cmd, "cat \`ls -d -1 $wkdir/output/** | grep hyptemp | head -n1 \` | head -n1 > $hypfile");
-  push(@cmd, "cat \`ls -d -1 $wkdir/output/** | grep paramtemp | sort  \` |  grep -v \"#\" | sort -nk1 -nk2 >> $paramfile");
+  push(@cmd, "zcat \`ls -d -1 $wkdir/output/**.gz | grep paramtemp | sort  \` |  grep -v \"#\" | sort -nk1 -nk2 >> $paramfile");
   push(@cmd, "cat \`ls -d -1 $wkdir/output/** | grep hyptemp | sort \`| grep -v \"#\"  >> $hypfile");
   push(@cmd, "cat \`ls -d -1 $wkdir/output/** | grep log | sort \` > $logfile");
   push(@cmd, "bgzip -f $paramfile");
@@ -240,9 +236,9 @@ for $i (1..$EM){
         $tgt = "$wkdir/OUT/$line.$i.OK";
         $dep = "$wkdir/R$ipre.OK";
         if($i < $EM){
-          @cmd = "$toolE -inputSS -Zscore ${Zscore_dir}/${line}.Zscore.txt.gz -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -a ${anno_dir}/Anno_${line}.txt.gz -hfile ${hypcurrent} -n $Nsample -maf ${maf} -bvsrm -smin $smin -smax $smax -win $win -o ${line} -w ${burnin} -s ${Nmcmc} -AnnoNumber ${AnnoNumber} -seed 2022 > ${wkdir}/OUT/${line}.output.txt" ;
+          @cmd = "$toolE -inputSS -Zscore ${Zscore_dir}/${line}.Zscore.txt.gz -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -hfile ${hypcurrent} -n $Nsample -maf ${maf} -bvsrm -smin $smin -smax $smax -win $win -o ${line} -w ${burnin} -s ${Nmcmc} -seed 2022 > ${wkdir}/OUT/${line}.output.txt" ;
         } elsif ($i == $EM){
-            @cmd = "$toolE -inputSS -Zscore ${Zscore_dir}/${line}.Zscore.txt.gz -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -a ${anno_dir}/Anno_${line}.txt.gz -hfile ${hypcurrent} -n $Nsample -maf ${maf} -bvsrm -smin $smin -smax $smax -win $win -o ${line} -w ${burnin} -s ${NmcmcLast} -AnnoNumber ${AnnoNumber} -seed 2022 > ${wkdir}/OUT/${line}.output.txt";
+            @cmd = "$toolE -inputSS -Zscore ${Zscore_dir}/${line}.Zscore.txt.gz -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -hfile ${hypcurrent} -n $Nsample -maf ${maf} -bvsrm -smin $smin -smax $smax -win $win -o ${line} -w ${burnin} -s ${NmcmcLast} -seed 2022 > ${wkdir}/OUT/${line}.output.txt";
       }
         makeJob($tgt, $dep, @cmd);
     }
@@ -253,9 +249,9 @@ for $i (1..$EM){
 
   $tgt = "$wkdir/Eoutput/cp_param$i.OK";
   $dep = "$premcmcOK";
-  @cmd = "cat \`ls -d -1 $wkdir/output/** | grep paramtemp | head -n1 \` | head -n1 > $paramfile";
+  @cmd = "zcat \`ls -d -1 $wkdir/output/** | grep paramtemp | head -n1 \` | head -n1 > $paramfile";
   push(@cmd, "cat \`ls -d -1 $wkdir/output/** | grep hyptemp | head -n1 \` | head -n1 > $hypfile");
-  push(@cmd, "cat \`ls -d -1 $wkdir/output/** | grep paramtemp | sort \` |  grep -v \"#\" | sort -nk1 -nk2  >> $paramfile");
+  push(@cmd, "zcat \`ls -d -1 $wkdir/output/** | grep paramtemp | sort \` |  grep -v \"#\" | sort -nk1 -nk2  >> $paramfile");
   push(@cmd, "cat \`ls -d -1 $wkdir/output/** | grep hyptemp | sort\`| grep -v \"#\"  >> $hypfile");
   push(@cmd, "cat \`ls -d -1 $wkdir/output/** | grep log | sort\` > $logfile");
   push(@cmd, "bgzip -f $paramfile");

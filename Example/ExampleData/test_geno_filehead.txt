@@ -1,2 +1,0 @@
-Test_CHR15_geno
-Test_CHR19_geno

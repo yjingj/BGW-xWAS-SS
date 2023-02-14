@@ -2,9 +2,9 @@
 
 ################################################################
 ################################################################
-# Step 1: obtain summary statistics (aka Score Statistics)
-# Runs single-variant GWAS on the training sample genotypes and available expression data.
-# first extracts gene location information for target gene from geneFile.
+# Step 1: obtain summary eQTL data (aka single variant ZScore Statistics and LD files)
+# Run single-variant test on the training genotypes and expression data.
+# First extracts gene location information for target gene from geneFile.
 ################################################################
 ################################################################
 
@@ -24,7 +24,6 @@
 VARS=`getopt -o "" -a -l \
 BGW_dir:,wkdir:,gene_name:,GeneExpFile:,geno_dir:,LDdir:,Genome_Seg_Filehead:,GTfield:,num_cores:,clean_output: \
 -- "$@"`
-
 
 if [ $? != 0 ]
 then
@@ -64,25 +63,25 @@ if [ -s ${Genome_Seg_Filehead} ]; then
     if [ $num_segments -gt 0 ] ; then
         echo ${gene_name} with ${num_segments} genome blocks
     else
-        echo ${Genome_Seg_Filehead} has no genome blocks, one per row. Expecting at least one genome block.
+        echo "${Genome_Seg_Filehead} has no genome blocks (one per row). Expecting at least one genome block."
         exit
     fi
 else
-    echo ${Genome_Seg_Filehead} is empty. Please check.
+    echo "${Genome_Seg_Filehead} is empty. Please check."
     exit
 fi
 
-echo GTfield = $GTfield , number of cores = $num_cores
+echo GTfield = $GTfield , Number of cores = $num_cores
 
 #### Create work/output directory if not existed
 mkdir -p ${wkdir}
 mkdir -p ${LDdir}
 echo LD directory ${LDdir}
 
-# Set directory for single variant eQTL summary statistics (score statistics)
-Score_dir=${wkdir}/${gene_name}_scores
-mkdir -p ${Score_dir}
-echo Summary score statistic directory ${Score_dir}
+# Set directory for single variant eQTL summary statistics (Zscore statistics)
+ZScore_dir=${wkdir}/${gene_name}_Zscores
+mkdir -p ${ZScore_dir}
+echo Summary eQTL Zscore statistic directory ${ZScore_dir}
 cd ${wkdir}
 # echo ${wkdir}
 
@@ -95,24 +94,24 @@ if [ -s ${GeneExpFile} ] ; then
     awk -F'[\t]' -v gene=${gene_name} '$5==gene{$1=$2=$3=$4=$5=""; print substr($0,6); exit; }' ${GeneExpFile} | tr ' ' '\n' > exp_temp.txt
     paste temp_ID.txt exp_temp.txt > ${wkdir}/${gene_name}_exp_trait.txt
 
-    pheno=${wkdir}/${gene_name}_exp_trait.txt
+    gene_exp_trait=${wkdir}/${gene_name}_exp_trait.txt
 else
     echo ${GeneExpFile} is empty. Please provide a valid gene expression file.
 fi
 
 # calculate variance of the gene expression trait
-pv=$(awk '{delta=$2; sum+=$2; ssq+=(delta - avg/NR)^2} END {print ssq/(NR-1)}' ${wkdir}/${gene_name}_exp_trait.txt)
-echo quantitative gene expression trait variance = $pv
-echo -e ${gene_name} '\t' ${pv} > ${wkdir}/${gene_name}_geneExp_var.txt
+# pv=$(awk '{delta=$2; sum+=$2; ssq+=(delta - avg/NR)^2} END {print ssq/(NR-1)}' ${wkdir}/${gene_name}_exp_trait.txt)
+#echo quantitative gene expression trait variance = $pv
+#echo -e ${gene_name} '\t' ${pv} > ${wkdir}/${gene_name}_geneExp_var.txt
 rm -f temp_ID.txt exp_temp.txt
 
 ## Run in parallele with specified number of processes by -P
-seq 1 ${num_segments}  | xargs -I % -n 1 -P ${num_cores} sh ${BGW_dir}/bin/get_score_stat.sh ${pheno} ${geno_dir} ${Score_dir} ${BGW_dir} ${LDdir} ${Genome_Seg_Filehead} % ${GTfield}
+seq 1 ${num_segments}  | xargs -I % -n 1 -P ${num_cores} sh ${BGW_dir}/bin/get_eqtl_sumstat.sh ${gene_exp_trait} ${geno_dir} ${ZScore_dir} ${BGW_dir} ${LDdir} ${Genome_Seg_Filehead} % ${GTfield}
 
 if [ $clean_output -eq 1 ] ; then
-rm -fr ${wkdir}/${gene_name}_scores/output
+rm -fr ${ZScore_dir}/output
 fi
 
-echo Step 1 complete for generating eQTL summary statistics!
+echo Step 1 complete for generating eQTL summary statistics under ${ZScore_dir} and ${LDdir} !
 
 exit

@@ -1,6 +1,6 @@
-                                                                                                                                                                                                                                                                     /*
-    Bayesian Functional GWAS --- MCMC (BFGWAS:MCMC)
-    Copyright (C) 2018  Jingjing Yang
+/*
+    Bayesian Genome-wide TWAS with Summary eQTL reference data --- MCMC (BGW-TWAS:MCMC)
+    Copyright (C) 2023  Jingjing Yang
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -290,7 +290,7 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
     ofstream outfile (file_str.c_str(), ofstream::out);
     if (!outfile) {cout<<"error writing file: "<<file_str.c_str()<<endl; return;}
 
-    outfile<<"#CHR\tPOS\tID\tREF\tALT\tMAF\tAnnoFunc_code\tPi\tBeta\tmBeta\tChisqTest\tPval_svt\tRank" << endl;
+    outfile<<"#CHR\tPOS\tID\tREF\tALT\tMAF\tTrans_eQTL\tPi\tBeta\tmBeta\tChisqTest\tPval_svt\tRank" << endl;
 
     size_t r, n_causal;
     vector<size_t> rank_vec; // Save positions of potential causal SNPs
@@ -1753,7 +1753,7 @@ void BVSRM::WriteHyptemp(gsl_vector *LnPost){
     file_hyp += ".hyptemp";
 
     ofstream outfile_hyp;
-    // GV: phenotype variation explained by genotypes, r2
+    // GV: expression variation explained by genotypes, h2
 
     // write *.hyptemp
     outfile_hyp.open (file_hyp.c_str(), ofstream::out);
@@ -1827,8 +1827,8 @@ void BVSRM::MCMC (gsl_matrix *X, const gsl_vector *y, bool original_method) {
     gsl_blas_ddot(z, z, &ztz); // ztz is the sum square of total SST
     pheno_var = ztz / ((double)(ni_test-1)) ;
 
-    //cout << "ztz = " << ztz << "; phenotype variance = " << ztz / pheno_var <<endl;
-    gsl_vector_scale(z, 1.0 / sqrt(pheno_var)); // standardize phenotype z
+    //cout << "ztz = " << ztz << "; expression variance = " << ztz / pheno_var <<endl;
+    gsl_vector_scale(z, 1.0 / sqrt(pheno_var)); // standardize expression z
     gsl_blas_ddot(z, z, &ztz); // calculate ztz for one more time after standardization
     
     //Initialize variables for MH
@@ -2229,7 +2229,7 @@ void BVSRM::MCMC (gsl_matrix *X, const gsl_vector *y, bool original_method) {
     //Save temp EM results
     WriteHyptemp(LnPost);
     WriteParam(beta_g, snp_pos, pos_loglr, Z_scores, pval_lrt);
-    //# include a function to calculate and save fitted phenotype values
+    //# include a function to calculate and save fitted expression values
 
 
     WriteMCMC(snps_mcmc); // save all active SNPs from MCMC
@@ -2869,8 +2869,8 @@ gsl_ran_discrete_t * BVSRM::MakeProposalSS(const size_t &pos, double *p_cond, co
 // MCMC_SS function (Updated 06/15/2022 JY)
 void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &mbeta) {
     
-    cout << "\nRunning MCMC with Summary Statistics: LD correlation matrix and marginal effect sizes. \n";
-    cout << "Assuming the marginal effect sizes were obtained with standardized genotype and phenotype vectors." << endl;
+    cout << "\nRunning MCMC with Summary eQTL Statistics: LD correlation matrix and marginal eQTL effect sizes. \n";
+    cout << "Assuming the marginal effect sizes were obtained with standardized genotype and expression vectors." << endl;
     //cout << "Unique function types = " << n_type << endl;
     //cout << "ni_test = " << ni_test << endl;
     //cout << "ns_test = " << ns_test << endl;

@@ -1,6 +1,6 @@
 /*
-	Bayesian Functional GWAS with Summary Statistics --- MCMC (BFGWAS_SS:MCMC)
-    Copyright (C) 2018  Jingjing Yang
+    Bayesian Genome-wide TWAS with Summary eQTL reference data --- MCMC (BGW-TWAS:MCMC)
+    Copyright (C) 2023  Jingjing Yang
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ void CALCSS::GetSS(gsl_matrix *X, gsl_vector *y, vector< vector<double> > &LD, v
     double yty;
     gsl_blas_ddot(y, y, &yty);
     pheno_var = yty / ((double)(ni_test-1)) ;
-    cout << "Standardized pheno_var = " << pheno_var << "\n";
+    cout << "Standardized expression variance = " << pheno_var << "\n";
 
     // define used variables 
     gsl_vector *xvec_i = gsl_vector_alloc(ni_test);
@@ -78,7 +78,7 @@ void CALCSS::GetSS(gsl_matrix *X, gsl_vector *y, vector< vector<double> > &LD, v
 
     if( isnan(pheno_var)==1 || pheno_var == 0 )
     {
-        cout << "Phenotype variance = 0. Only save LDcorr file...\n";
+        cout << "Gene expression variance = 0. Only save LDcorr file...\n";
         for (size_t i=0; i<ns_test; ++i) {
         //Lei's change
             gsl_matrix_get_row(xvec_i, X, snp_pos[i].pos);
@@ -106,7 +106,7 @@ void CALCSS::GetSS(gsl_matrix *X, gsl_vector *y, vector< vector<double> > &LD, v
             //Lei's change
             gsl_matrix_get_row(xvec_i, X, snp_pos[i].pos);
             //calculate effect-size
-            if(xvec_i->size != y->size){cerr << "Genotype length dose not equal to phenotype length!\n Some samples in the genotype file may not have genotype data!\n Please check your phenotype and genotype input files!\n"; exit(-1);}
+            if(xvec_i->size != y->size){cerr << "Genotype length dose not equal to gene expression variable length!\n Some samples in the genotype file may not have genotype data!\n Please check your gene expression and genotype input files!\n"; exit(-1);}
             gsl_blas_ddot(xvec_i, y, &xty);
             beta_i = xty / ((double)ni_test);
             beta.push_back(beta_i); // effect size
@@ -232,7 +232,7 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
         }
     }
     else{
-        cout << "\nPhenotype variance = 0. Only write LDcorr file. \n";
+        cout << "\nGene expression variance = 0. Only write LDcorr file. \n";
         if(zipSS){
             cov_file_str +=".LDcorr.txt.gz";
             cov_out = ifopen(cov_file_str, "w", InputFile::BGZF);

@@ -1,6 +1,6 @@
 /*
-	Bayesian Functional GWAS --- MCMC (BFGWAS:MCMC)
-    Copyright (C) 2018  Jingjing Yang
+	Bayesian Genome-wide TWAS with Summary eQTL reference data --- MCMC (BGW-TWAS:MCMC)
+    Copyright (C) 2023  Jingjing Yang
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,17 +43,17 @@ using namespace std;
 
 
 BFGWAS::BFGWAS(void):	
-version("bfGWAS_SS_MCMC"), date("06/15/2018"), year("2018")
+version("BGW-TWAS-SS_MCMC"), date("02/14/2023"), year("2023")
 {}
 
 void BFGWAS::PrintHeader (void)
 {
 	cout<<endl;
 	cout<<"*********************************************************"<<endl;
-	cout<<"  Bayesian Functional GWAS --- MCMC (BFGWAS:MCMC) "<<endl;
+	cout<<"  Bayesian Genome-wide TWAS --- MCMC (BGW-TWAS:MCMC) "<<endl;
 	cout<<"  Version "<<version<<", "<<date<<"                              "<<endl;
 	cout<<"  Visit                                                 "<<endl;
-	cout<<"     https://github.com/yjingj/bfGWAS_SS      "<<endl;
+	cout<<"     https://github.com/yjingj/BGW-TWAS-SS      "<<endl;
 	cout<<"  For Possible Updates                                  "<<endl;
 	cout<<"  (C) "<<year<<" Jingjing Yang              "<<endl;
 	cout<<"  GNU General Public License                            "<<endl;
@@ -103,8 +103,8 @@ void BFGWAS::PrintHelp(size_t option)
 {
 	if (option==0) {
 		cout<<endl; 
-		cout<<" bfGWAS_MCMC version "<<version<<", released on "<<date<<endl;
-		cout<<" implemented by Jingjing Yang"<<endl; 
+		cout<<" BGW-TWAS-SS version "<<version<<", released on "<<date<<endl;
+		cout<<" developed by Jingjing Yang"<<endl;
 		cout<<endl;
 		cout<<" type ./Estep_mcmc -h [num] for detailed helps"<<endl;
 		cout<<" options: " << endl;
@@ -150,10 +150,10 @@ void BFGWAS::PrintHelp(size_t option)
 		cout<<"                  ..."<<endl;	
 		cout<<"          missing value: NA"<<endl<<endl;	
 
-		cout<<" -p        [filename]     "<<" Specify input phenotype file associated with -g and -vcf"<<endl;
+		cout<<" -p        [filename]     "<<" Specify input gene expression file associated with -g and -vcf"<<endl;
 		cout <<"                         "<<"Analyzed sampleIDs must also appear in genotype data!"<<endl;
-		cout<<"          format: individual_1_id    phenotype1"<<endl;	
-		cout<<"                  individual_2_id    phenotype2"<<endl;	
+		cout<<"          format: individual_1_id    expression_indi_1"<<endl;
+		cout<<"                  individual_2_id    expression_indi_2"<<endl;
 		cout<<"                  ..."<<endl;
 		cout<<"          missing value: NA"<<endl<<endl;
 
@@ -163,37 +163,23 @@ void BFGWAS::PrintHelp(size_t option)
 		cout << "-Zscore     [filename]   " <<"Specify input summary Zscore statistics file"<< endl <<endl;
 		cout << "-LDcorr     [filename]   " <<"Specify reference LD R2 info"<< endl <<endl;
 		cout << "-n     [sample size]   " <<"Specify sample size for using -inputSS "<< endl <<endl;
-		cout << "-pv     [phenotype variance]   " <<"Specify phenotype variance for using -inputSS"<< endl <<endl;
-
-		cout<<" -a        [filename]     "<<" Specify input annotation file name (optional)"<<endl;	
-		cout<<"          format: #CHROM, POS, ID, REF, ALT, anno1"<<endl;	
-		cout<<"                  #CHROM, POS, ID, REF, ALT, anno2"<<endl;	
-		cout<<"                  ..."<<endl;
-		cout<<"          in the same order as variants in the genotype file"<<endl;
-		cout<<"          missing value: NA or blank"<<endl<<endl;
-
-		cout<<" -fcode        [filename]     "<<" Specify annotation code file"<<endl<<endl;
 		cout<<" -hfile        [filename]     "<<" Specify hyper parameter values"<<endl<<endl;
 
-		//cout<<" -k        [filename]     "<<" Specify input kinship/relatedness matrix file name"<<endl<<endl;	
-
-		cout<<" -snps     [filename]     "<<" Specify the variant ids that are to be analyzed"<<endl;
-		cout << "-fsample  [filename]    "<<"Specify a list of sample IDs that are to be analyzed\n";
-		cout<<"          format: rsID#1"<<endl;	
-		cout<<"                  rsID#2"<<endl;	
-		cout<<"                  ..."<<endl<<endl;
-
+		//cout<<" -k        [filename]     "<<" Specify input kinship/relatedness matrix file name"<<endl<<endl;
+		//cout<<" -snps     [filename]     "<<" Specify the variant ids that are to be analyzed"<<endl;
+		//cout << "-fsample  [filename]    "<<"Specify a list of sample IDs that are to be analyzed\n";
+		//cout<<"          format: rsID#1"<<endl;
+		//cout<<"                  rsID#2"<<endl;
+		//cout<<"                  ..."<<endl<<endl;
 		cout<<" -silence                 "<<" Silent terminal display"<<endl<<endl;
-
 		//cout<<" -km       [num]          "<<" Specify input kinship/relatedness file type (default 1)."<<endl;
 		//cout<<"          options: 1: \"n by n matrix\" format"<<endl;
 		//cout<<"                   2: \"id  id  value\" format"<<endl<<endl;
-
 		//cout<<" -pace     [num]          "<<" Specify terminal display update pace (default 100000 variants or 100000 iterations)."<<endl<<endl;
 
 		cout<<" -o        [prefix]       "<<" Specify output file prefix (default \"result\")"<<endl;  
-		cout<<"          output: prefix.cXX.txt or prefix.sXX.txt from kinship/relatedness matrix estimation"<<endl;	
-		cout<<"          output: prefix.assoc.txt and prefix.log.txt form association tests"<<endl;	
+	//	cout<<"          output: [prefix].cXX.txt or [prefix].sXX.txt from kinship/relatedness matrix estimation"<<endl;
+	//	cout<<"          output: [prefix].assoc.txt and [prefix].log.txt form association tests"<<endl;
 		cout<<endl;
 	}
 	
@@ -227,9 +213,8 @@ void BFGWAS::PrintHelp(size_t option)
 	if (option==6) {
 		cout<<" BVSRM OPTIONS " << endl;	
 		cout<<" -bvsrm	   "<<" apply BVSR model "<<endl;
-
-		cout<<" -inputSS  "<<" specify whether to use summary statistics (LD coefficients, effect-sizes) as inputs " << endl;
-		cout<<" -refLD  "<<" specify whether LD correlation comes from seperate samples " << endl;
+		cout<<" -inputSS  "<<" specify whether to use summary statistics (LD correlation coefficients, single variant eQTL Zscore test statistics) as inputs " << endl;
+		cout<<" -LDcorr  "<<" specify LD correlation file directory " << endl;
 
 		//cout<<"   MCMC OPTIONS" << endl;
 		//cout<<"   Prior" << endl;
@@ -245,8 +230,6 @@ void BFGWAS::PrintHelp(size_t option)
 		cout<<" -win   [num]          "<<" specify the neighbourhood window size (default 100)" << endl; 
 		cout<<" -w        [num]          "<<" specify burn-in steps (default 100,000)" << endl; 
 		cout<<" -s        [num]          "<<" specify sampling steps (default 1,000,000)" << endl; 
-		cout<<" -comp                    "<<" specify whether to impement in-memory compression (default no comp flag)" << endl;
-		
 		cout<<" -initype     [num]          "<<" specify the initial model for MCMC: " << endl;
 		cout<<"          option 1: start with the most significant variant"<<endl;
 		cout<<"          option 2: start with the significant variants that acheive genome-wide significance"<<endl;
@@ -254,14 +237,13 @@ void BFGWAS::PrintHelp(size_t option)
 
 		cout<<" -seed     [num]          "<<" specify random seed (a random seed is generated by default)" << endl; 	
 		cout<<" -mh       [num]          "<<" specify number of MH steps in each iteration (default 10)" << endl; 
-		cout<<"          requires quantitative phenotypes (0/1 for case/control)"<<endl;
-
+		// cout<<"          requires quantitative phenotypes (0/1 for case/control)"<<endl;
 		cout<<endl<<endl;
 	}
 
 	if (option==7) {
 		cout<<" -saveGeno  "<<" specify whether to save a tab delimited genotype text file from the inpute genotype file" << endl;
-		cout<<" -saveSS  "<<" specify whether to save summary statistics (LD matrix, effect-sizes) from the analyzed variants" << endl;
+		cout<<" -saveSS  "<<" specify whether to save eQTL summary statistics (LD correlation matrix, single variant Zscore statistics) from the analyzed variants" << endl;
 		cout<<endl;
 	}
 	
@@ -340,20 +322,6 @@ void BFGWAS::Assign(int argc, char ** argv, PARAM &cPar)
 			str.clear();
 			str.assign(argv[i]);
 			cPar.file_pheno=str;
-		}
-		else if (strcmp(argv[i], "-a")==0) {
-			if(argv[i+1] == NULL || argv[i+1][0] == '-') {continue;}
-			++i;
-			str.clear();
-			str.assign(argv[i]);
-			cPar.file_anno=str;
-		}
-        else if (strcmp(argv[i], "-fcode")==0) {
-			if(argv[i+1] == NULL || argv[i+1][0] == '-') {continue;}
-			++i;
-			str.clear();
-			str.assign(argv[i]);
-			cPar.file_func_code=str;
 		}
 		else if (strcmp(argv[i], "-LDcorr")==0) {
 			if(argv[i+1] == NULL || argv[i+1][0] == '-') {continue;}
@@ -670,21 +638,14 @@ void BFGWAS::Assign(int argc, char ** argv, PARAM &cPar)
         else if (strcmp(argv[i], "-scaleN")==0) {
             if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.scaleN=1; }
         }
-        else if (strcmp(argv[i], "-usextxLD")==0) {
-            if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.use_xtx_LD=1; }
-        }
         else if (strcmp(argv[i], "-printLD")==0) {
             if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.printLD=1; }
         }
         else if (strcmp(argv[i], "-zipSS")==0) {
             if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.zipSS=1; }
         }
-        else if (strcmp(argv[i], "-comp")==0) {
-            if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.Compress_Flag=1;}
-        }
 		else {cout<<"error! unrecognized option: "<<argv[i]<<endl; cPar.error=true; continue;}
 	}
-	
 	return;
 }
 
@@ -701,11 +662,11 @@ void BFGWAS::BatchRun (PARAM &cPar)
 	if(!cPar.inputSS || cPar.final_EM){
 		//Read individual Files for the first time and filt variants
 		cPar.ReadFiles();
-		cout << "\nReading files first time cost " << (clock()-time_begin)/(double(CLOCKS_PER_SEC)*60.0) << " mints \n";
+		cout << "\nReading individual-level reference genotype/expression files first time cost " << (clock()-time_begin)/(double(CLOCKS_PER_SEC)*60.0) << " mints \n";
 	} else{
 		//Read Sum Stat Files
 		cPar.ReadSS();
-		cout << "\nReading Summary Stat files cost " << (clock()-time_begin)/(double(CLOCKS_PER_SEC)*60.0) << " mints \n\n";
+		cout << "\nReading reference eQTL Summary Stat files cost " << (clock()-time_begin)/(double(CLOCKS_PER_SEC)*60.0) << " mints \n\n";
 	}
 	
 	if (cPar.error==true) {cout<<"error! fail to read files. "<<endl; return;}
@@ -717,22 +678,21 @@ void BFGWAS::BatchRun (PARAM &cPar)
 
     //Save Genotype file 
     if(cPar.saveGeno){
-
 		//Save all genotypes
 		//cPar.indicator_snp.assign(cPar.ns_total, 1);
 		//cPar.indicator_idv.assign(cPar.ni_total, 1);
 		//cPar.ni_test = cPar.ni_total;
 		//cPar.ns_test = cPar.ns_total;
 		gsl_matrix *K=gsl_matrix_alloc (cPar.ni_test, cPar.ni_test);// kinship matrix
-		gsl_vector *y=gsl_vector_alloc (cPar.ni_test); // phenotype
+		gsl_vector *y=gsl_vector_alloc (cPar.ni_test); // expression response variable
 		
-		//set phenotype vector y		
-		cout << "copy phenotype success ... "<< endl;
+		//set expression response variable vector y
+		cout << "copy expression response variable success ... "<< endl;
 		cPar.CopyPheno (y);
 
 		//if ( (!cPar.file_vcf.empty()) || (!cPar.file_geno.empty()) ) {
         	// reorder y for reading vcf/genotype files
-        cout << "Reorder phenotype if needed ... "<< endl;
+        cout << "Reorder expression response variable if needed ... "<< endl;
         cPar.ReorderPheno(y); // setup VcfSampleID_test
     	//} // reorder y for reading vcf files
 
@@ -756,11 +716,11 @@ void BFGWAS::BatchRun (PARAM &cPar)
     if( (cPar.a_mode!=11) && (cPar.saveSS) ){
 
 		gsl_matrix *K=gsl_matrix_alloc (cPar.ni_test, cPar.ni_test); // kinship matrix
-		gsl_vector *y=gsl_vector_alloc (cPar.ni_test); // phenotype
+		gsl_vector *y=gsl_vector_alloc (cPar.ni_test); // expression response variable
 		
-		//set phenotype vector y		
-		// cout << "Copy phenotype success ... "<< endl;
-		cPar.CopyPheno(y); // standardize phenotype here
+		//set expression response variable vector y
+		// cout << "Copy expression response variable success ... "<< endl;
+		cPar.CopyPheno(y); // standardize expression response variable here
 
 		if ( (!cPar.file_vcf.empty()) || (!cPar.file_geno.empty()) ) {
         	// reorder y for reading vcf/genotype files
@@ -775,7 +735,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
         gsl_matrix *X_Genotype = gsl_matrix_alloc (cPar.ns_test, cPar.ni_test);
         cPar.ReadGenotypes (X_Genotype, K);
         // cout << " success standardize vector ";
-        cout << "Reading genotype data for the 2nd time costs " << (clock()-time_readfile)/(double(CLOCKS_PER_SEC)*60.0) << " mints\n";
+        cout << "Reading individual-level reference genotype data for the 2nd time costs " << (clock()-time_readfile)/(double(CLOCKS_PER_SEC)*60.0) << " mints\n";
 
         // initialize SS
         CALCSS SS;
@@ -791,7 +751,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
         gsl_matrix_free(K);
         gsl_vector_free(y);
 
-        cout << "Writting Summary Statistics Success ... \n "<< endl; 
+        cout << "Writting eQTL Summary Statistics Success ... \n "<< endl;
         //exit(EXIT_SUCCESS);
     }    
 	
@@ -823,7 +783,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
 	//LM
 	if (cPar.a_mode==51 || cPar.a_mode==52 || cPar.a_mode==53 || cPar.a_mode==54) {  
 
-		gsl_vector *Y=gsl_vector_alloc (cPar.ni_test); //set phenotype vector Y
+		gsl_vector *Y=gsl_vector_alloc (cPar.ni_test); //set expression response variable vector Y
 		gsl_matrix *W=gsl_matrix_alloc (cPar.ni_test, 1); // intercept column of 1's; or covariates
 		gsl_matrix_set_all(W, 1);
 
@@ -872,14 +832,14 @@ void BFGWAS::BatchRun (PARAM &cPar)
 
         if(! cPar.inputSS){
 
-        	gsl_vector *y=gsl_vector_alloc (cPar.ni_test); // phenotype
+        	gsl_vector *y=gsl_vector_alloc (cPar.ni_test); // expression response variable
 			gsl_matrix *K=gsl_matrix_alloc (cPar.ni_test, cPar.ni_test); // kinship matrix
 			
-			// set phenotype vector y		
-			cPar.CopyPheno (y); // phenotype is standardized here
+			// set expression response variable vector y
+			cPar.CopyPheno (y); // expression response variable is standardized here
 			cPar.pheno_var = 1.0;
 	        cPar.ReorderPheno(y);
-	        // cout << "first 10 phenotypes: "; PrintVector(y, 10);
+	        // cout << "first 10 expression response variable: "; PrintVector(y, 10);
 	        
 	        //read genotypes X 
 	        clock_t time_readfile = clock();
@@ -887,7 +847,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
         	gsl_matrix *X_Genotype = gsl_matrix_alloc (cPar.ns_test, cPar.ni_test);
         	cPar.ReadGenotypes (X_Genotype, K);
 			// cout << " success standardize vector ";
-	        cout << "Load genotype data cost " << (clock()-time_readfile)/(double(CLOCKS_PER_SEC)*60.0) << " mints\n";
+	        cout << "Load individual-level reference genotype data cost " << (clock()-time_readfile)/(double(CLOCKS_PER_SEC)*60.0) << " mints\n";
 	        gsl_matrix_free(K);
 
 	        // Calculate SS
@@ -899,12 +859,12 @@ void BFGWAS::BatchRun (PARAM &cPar)
         	cPar.trace_G = SS.trace_G;
 
 	        // calculate pheno_var; generate snp_pos
-	        cout << "Get SS costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
+	        cout << "Get eQTL Summary Statistics costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
 	        // save summary statistics; JY updated 06/15/2022
 	        if(cPar.saveSS){
 	        	time_start=clock();
 	        	SS.WriteSS(cPar.LD, cPar.mbeta, cPar.Z_SCORE, cPar.pval_vec);
-	        	cout << "Write SS costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
+	        	cout << "Write eQTL Summary Statistics costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
 	        }
 	        cBvsrm.CopyFromSS(SS);
 
@@ -976,7 +936,7 @@ void BFGWAS::WriteLog (int argc, char ** argv, PARAM &cPar)
 	  //ptm->tm_year<<":"<<ptm->tm_month<<":"<<ptm->tm_day":"<<ptm->tm_hour<<":"<<ptm->tm_min<<endl;
 	
 	outfile<<"##"<<endl;
-	outfile<<"## Sample Sizes and Test SNP Numbers :"<<endl;
+	outfile<<"## Reference Sample Sizes and SNP Numbers :"<<endl;
 	outfile<<"## number_of_total_individuals = "<<cPar.ni_total<<endl;	
 	outfile<<"## number_of_analyzed_individuals = "<<cPar.ni_test<<endl;
 	outfile<<"## number_of_total_SNPs = "<<cPar.ns_total<<endl;	
@@ -995,8 +955,8 @@ void BFGWAS::WriteLog (int argc, char ** argv, PARAM &cPar)
 		outfile<<"## Region_PIP = "<<(double)cPar.region_pip <<endl;
 
 	}else if (cPar.a_mode >= 51 && cPar.a_mode <= 54){
-		outfile<<"## Phenotype mean = "<<cPar.pheno_mean<<endl;	
-		outfile<<"## Phenotype_var = "<<cPar.pheno_var<<endl;	
+		outfile<<"## Expression mean = "<<cPar.pheno_mean<<endl;
+		outfile<<"## Expression_var = "<<cPar.pheno_var<<endl;
 	}
 	
 	outfile<<"##"<<endl;
