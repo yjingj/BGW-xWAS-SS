@@ -1,6 +1,6 @@
 /*
-	Bayesian Functional GWAS with Summary Statistics --- MCMC (bfGWAS_SS:MCMC)
-    Copyright (C) 2017  Jingjing Yang
+    Bayesian Genome-wide TWAS with Summary eQTL reference data --- MCMC (BGW-TWAS:MCMC)
+    Copyright (C) 2023  Jingjing Yang
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

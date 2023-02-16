@@ -1,6 +1,6 @@
 /*
-	Bayesian Functional GWAS --- MCMC (BFGWAS:MCMC)
-    Copyright (C) 2018  Jingjing Yang
+	Bayesian Genome-wide TWAS with Summary eQTL reference data --- MCMC (BGW-TWAS:MCMC)
+    Copyright (C) 2023  Jingjing Yang
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -107,8 +107,7 @@ logp_min(0.0), logp_max(0.0), logp_scale(-1),
 s_min(0), s_max(10), max_iter(1000), convergence(1e-7),
 w_step(50000),	s_step(500000), n_accept(0),
 n_mh(10), randseed(2016), error(false), ni_test(0),
-time_total(0.0), time_G(0.0), time_Omega(0.0),
-target_chr("12"), start_pos(241229212), end_pos(241315842), window_size(1000000)
+time_total(0.0), time_G(0.0), time_Omega(0.0), window_size(1000000)
 {}
 
 
@@ -199,16 +198,6 @@ void PARAM::ReadFiles (void)
 			UpdatePheno();
 		}
 
-	    if ( (!file_anno.empty()) && (!file_func_code.empty()) ) {
-	    	cout << "\nStart reading annotation files ...\n";
-	    	//cout << file_anno << " \nwith code file " << file_func_code << "\n";
-	        if (ReadFile_anno (file_anno, file_func_code, mapFunc2Code, indicator_snp, snpInfo, n_type, mFunc, mapID2num)==false) {error=true;}
-	    }
-	    else{
-	    	cout << "\nEmpty annotation file, all variants are treated as of one category!\n";
-	    	if (Empty_anno (indicator_snp, snpInfo, n_type, mFunc)==false) {error=true;}
-	    } 
-
 	return;
 }
 
@@ -268,10 +257,6 @@ void PARAM::CheckParam (void)
 
 	str=file_snps;
 	if (!str.empty() && stat(str.c_str(),&fileInfo)==-1 ) {cout<<"error! fail to open analyzed snps ID file: "<<str<<endl; error=true;}
-	
-	
-	str=file_anno;
-	if (!str.empty() && stat(str.c_str(),&fileInfo)==-1 ) {cout<<"error! fail to open annotation file: "<<str<<endl; error=true;}
 
 	str=file_kin;
 	if (!str.empty() && stat(str.c_str(),&fileInfo)==-1 ) {cout<<"error! fail to open relatedness matrix file: "<<str<<endl; error=true;}
@@ -327,9 +312,14 @@ void PARAM::CheckData (void) {
 			cout<<"## number of missing data = "<<np_miss<<endl;
 		}
 		CreateSnpPosVec(snp_pos, snpInfo, indicator_snp);
+
+		// Set cis- and trans- annotation
+		if(setANNOCode(start_pos, end_pos, target_chr, window_size, snp_pos, n_type, mFunc) == false)
+			{ error = true; }
+
     	// order snp_pos by chr/bp
     	stable_sort(snp_pos.begin(), snp_pos.end(), comp_snp);
-    	cout << "snp_pos size : " << snp_pos.size() << endl;
+    	// cout << "snp_pos size : " << snp_pos.size() << endl;
 
     	cout<<"\n## number of total individuals = "<<ni_total<<endl;
 		cout<<"## number of individuals with full phenotypes = "<<ni_test<<endl;
@@ -427,18 +417,9 @@ void PARAM::ReadSS (){
     		if(ReadFile_score(file_score, snp_pos, mapScoreKey2Pos, mapLDKey2Pos, pval_vec, pos_ChisqTest, Z_SCORE, ns_test, ns_total, mbeta, indicator_snp, ni_test, maf_level) == false)
     			{ error = true; }
 
-    		// read functional/annotation fule
-			if ( (!file_anno.empty()) && (!file_func_code.empty()) ) {
-		    	cout << "\nStart loading annotation files ... \n";
-		    	//cout << file_anno << " \nwith code file " << file_func_code << "\n";
-		        if (ReadFile_anno (file_anno, file_func_code, mapScoreKey2Pos, mapFunc2Code, snp_pos, n_type, mFunc)==false)
-		        	{error=true;}
-		    }
-        // remove new function for testing 11-17-18
-		    else {
-		    	if (Empty_anno (snp_pos, n_type, mFunc)==false)
-		    		{error=true;}
-		    } 
+    		// Set cis- and trans- annotation
+    		if(setANNOCode(start_pos, end_pos, target_chr, window_size, snp_pos, n_type, mFunc) == false)
+    			{ error = true; }
     }else{
     	cerr << "Need to specify summary score.txt and cov.txt files!";
     	error = true;
@@ -473,7 +454,7 @@ void PARAM::WriteGenotypes(gsl_matrix *X){
     
     //cout << "write variant information."<<endl;
     cout << "Test SNPs : " << ns_test << endl;
-    cout << "snp_pos size : " << snp_pos.size() << endl;
+//    cout << "snp_pos size : " << snp_pos.size() << endl;
  	cout << "indicator_snp size : " << indicator_snp.size() << endl;
 
     for (size_t i = 0; i< ns_test; ++i) {

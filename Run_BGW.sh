@@ -65,11 +65,11 @@ p_thresh=0.001
 max_blocks=50
 
 # eQTL summary Zscore file directory
-ZScore_dir=${wkdir}/${gene_name}_Zscores
+Zscore_dir=${wkdir}/${gene_name}_Zscores
 
 ${BGW_dir}/bin/Step2_prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 --GeneExpFile ${GeneExpFile} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
---ZScore_dir ${ZScore_dir} \
+--ZScore_dir ${Zscore_dir} \
 --p_thresh ${p_thresh} --max_blocks ${max_blocks} --clean_output 1
 
 
@@ -93,30 +93,47 @@ PCP_thresh=0.0001
 select_filehead=${wkdir}/${gene_name}_select_filehead.txt
 
 #### Test one genome block
+genome_block="Cis_geno_block"
+Zscore_dir=${wkdir}/${gene_name}_Zscores
+
+cd ${wkdir}/${gene_name}_EM_MCMC/
 ${BGW_dir}/bin/Estep_mcmc -inputSS \
 -Zscore ${Zscore_dir}/${genome_block}.Zscore.txt.gz \
 -LDcorr ${LDdir}/${genome_block}.LDcorr.txt.gz \
 -target_chr 19 -start_pos 1040101 -end_pos 1065571 \
 -hfile ${hfile} -maf 0.01 -n 499 -bvsrm -smin 0 -smax 10 \
--win 100 -o ${genome_block} -w 10 -s 10 -seed 2022
+-win 100 -o ${genome_block} -w 1000 -s 10000 -seed 2022
+
+#### Test generating make file
+mkfile="${wkdir}/${gene_name}_EM_MCMC/${gene_name}_BGW.mk"
+target_chr=19; start_pos=1040101; end_pos=1065571
+maf=0.01; em=2; burnin=10000; Nmcmc=10000
+
+${BGW_dir}/bin/gen_mkf.pl \
+--wkdir ${wkdir}/${gene_name}_EM_MCMC --BGW_dir ${BGW_dir} \
+--LDdir ${LDdir} --ZScore_dir ${Zscore_dir} --filehead ${select_filehead} \
+--hfile ${hfile} --Nsample ${N} --maf ${maf} \
+--targ ${target_chr} --start ${start_pos} --end ${end_pos} \
+--Nburnin ${burnin} --Nmcmc ${Nmcmc} \
+--em ${em} --mf ${mkfile}
 
 
-####
+#### test Step3_EM-MCMC.sh file
+Nsample=499
 ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
 --GeneExpFile ${GeneExpFile} --select_filehead ${select_filehead} \
---LDdir ${LDdir} --ZScore_dir ${ZScore_dir} \
---N ${N} --hfile ${hfile} \
---em 2 --burnin 10000 --Nmcmc 10000 \
+--LDdir ${LDdir} --Zscore_dir ${Zscore_dir} \
+--Nsample ${Nsample} --maf ${maf} --hfile ${hfile} \
+--em 2 --burnin 100 --Nmcmc 100 \
 --PCP_thresh ${PCP_thresh} --num_cores ${num_cores} \
---clean_output 1
+--clean_output 0
 
 ################################################################
 ################################################################
 # Step 4: Predict GReX for test samples with individual-level GWAS data
 ################################################################
 ################################################################
-
 
 ### Variables for Step 4
 BGW_weight=${wkdir}/${gene_name}_BGW_eQTL_weights.txt

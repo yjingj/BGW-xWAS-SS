@@ -658,7 +658,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
     //cout << "create UcharTable ...\n";
     //vector<pair<long long int, double> > UcharTable;
     //CreateUcharTable(UcharTable);
-    	
+
 	if(!cPar.inputSS || cPar.final_EM){
 		//Read individual Files for the first time and filt variants
 		cPar.ReadFiles();
@@ -668,8 +668,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
 		cPar.ReadSS();
 		cout << "\nReading reference eQTL Summary Stat files cost " << (clock()-time_begin)/(double(CLOCKS_PER_SEC)*60.0) << " mints \n\n";
 	}
-	
-	if (cPar.error==true) {cout<<"error! fail to read files. "<<endl; return;}
+	if (cPar.error==true) {cout<<"error! fail to read input data files. "<<endl; return;}
     
     cPar.CheckData(); // generate snp_pos
 	if (cPar.error==true) {cout<<"error! fail during check data. "<<endl; return;}

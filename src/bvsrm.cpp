@@ -290,7 +290,7 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
     ofstream outfile (file_str.c_str(), ofstream::out);
     if (!outfile) {cout<<"error writing file: "<<file_str.c_str()<<endl; return;}
 
-    outfile<<"#CHR\tPOS\tID\tREF\tALT\tMAF\tTrans_eQTL\tPi\tBeta\tmBeta\tChisqTest\tPval_svt\tRank" << endl;
+    outfile<<"#CHR\tPOS\tID\tREF\tALT\tMAF\tTrans\tPCP\tBeta\tmBeta\tChisqTest\tPval_svt\tRank" << endl;
 
     size_t r, n_causal;
     vector<size_t> rank_vec; // Save positions of potential causal SNPs
@@ -932,12 +932,7 @@ void BVSRM::setHyp(double theta_temp, double inv_subvar_temp){
                 nch = strchr(pch, '\t');
                 if(group_idx < n_type)
                     theta[group_idx] = strtod(pch, NULL);
-                if(nch == NULL)
-                {
-                 cerr << "Need input initial hyper parameter value for sigma2 \n";
-                 exit(-1);
-                } 
-                else{
+                if(nch != NULL){
                     pch = nch+1;
                 }
                 if(group_idx < n_type)

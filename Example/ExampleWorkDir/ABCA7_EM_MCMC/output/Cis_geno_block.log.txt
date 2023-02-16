@@ -1,12 +1,12 @@
 ##
-## Software Version = bfGWAS_SS_MCMC
+## Software Version = BGW-TWAS-SS_MCMC
 ##
-## Command Line Input = -inputSS -Zscore /home/jyang51/jyang/GITHUB/BGW-TWAS-SS/Example/ExampleWorkDir/ABCA7_Zscores/Cis_geno_block.Zscore.txt.gz -LDcorr /home/jyang51/jyang/GITHUB/BGW-TWAS-SS/Example/ExampleData/LDdir/Cis_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang51/jyang/GITHUB/BGW-TWAS-SS/bin/hypval.init.txt -maf 0.01 -n 499 -bvsrm -smin 0 -smax 10 -win 100 -o Cis_geno_block -w 10 -s 10 -seed 2022 
+## Command Line Input = -inputSS -Zscore /home/jyang51/jyang/GITHUB/BGW-TWAS-SS/Example/ExampleWorkDir/ABCA7_Zscores/Cis_geno_block.Zscore.txt.gz -LDcorr /home/jyang51/jyang/GITHUB/BGW-TWAS-SS/Example/ExampleData/LDdir/Cis_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang51/jyang/GITHUB/BGW-TWAS-SS/bin/hypval.init.txt -maf 0.01 -n 499 -bvsrm -smin 0 -smax 10 -win 100 -o Cis_geno_block -w 1000 -s 10000 -seed 2022 
 ##
-## Date = Tue Feb 14 15:14:09 2023
+## Date = Wed Feb 15 23:32:28 2023
 
 ##
-## Sample Sizes and Test SNP Numbers :
+## Reference Sample Sizes and SNP Numbers :
 ## number_of_total_individuals = 499
 ## number_of_analyzed_individuals = 499
 ## number_of_total_SNPs = 3553
@@ -15,16 +15,16 @@
 ## MCMC related:
 ## initial value of |gamma| = 1
 ## random seed = 2022
-## acceptance ratio = 0.05
-## Region_PIP = 0
+## acceptance ratio = 0.103182
+## Region_PIP = 0.1322
 ##
 ## Computation Time:
-## total computation time = 0.0397038 min 
+## total computation time = 0.0404151 min 
 ## computation time break down: 
-##      time on MCMC = 0.000338417 min 
-##      time on Proposal = 3.16667e-07 min 
-##      time on Posterior = 0.789077 min 
-Accept #add=0, total add step = 19
-Accept #delete=1, total delete step = 1
-Accept #switch=0, total switch step = 0
+##      time on MCMC = 0.00100777 min 
+##      time on Proposal = 0.000329567 min 
+##      time on Posterior = 438.235 min 
+Accept #add=488, total add step = 10019
+Accept #delete=489, total delete step = 491
+Accept #switch=158, total switch step = 490
 ##

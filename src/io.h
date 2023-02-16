@@ -1,6 +1,6 @@
 /*
-    Bayesian Functional GWAS --- MCMC (bfGWAS:MCMC)
-    Copyright (C) 2016  Jingjing Yang
+    Bayesian Genome-wide TWAS with Summary eQTL reference data --- MCMC (BGW-TWAS:MCMC)
+    Copyright (C) 2023  Jingjing Yang
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -128,7 +128,7 @@ bool ReadFile_score(const string &file_score, vector<SNPPOS> &snp_pos, map<strin
 // Read annotation file
 bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<string, size_t> &mapScoreKey2Pos, map<string, int> &mapFunc2Code, vector<SNPPOS> &snp_pos, size_t &n_type, vector<size_t> &mFunc);
 
-bool setANNOCode (long int &start_pos, long int &end_pos, const string &target_chr, long int &window_size, vector<bool> &indicator_snp, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc);
+bool setANNOCode (long int &start_pos, long int &end_pos, string &target_chr, long int &window_size, vector<SNPPOS> &snp_pos, size_t &n_type, vector<size_t> &mFunc);
 
 #endif
 

@@ -1,6 +1,6 @@
 /*
-	Bayesian Functional GWAS --- MCMC (bfGWAS:MCMC)
-    Copyright (C) 2016  Jingjing Yang
+	Bayesian Genome-wide TWAS with Summary eQTL reference data --- MCMC (BGW-TWAS:MCMC)
+    Copyright (C) 2023  Jingjing Yang
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ int main(int argc, char * argv[])
 	
 	ifstream check_dir("output/");
 	if (!check_dir) {
-		mkdir("output", S_IRWXU|S_IRGRP|S_IROTH);
+		mkdir("output", S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
 	}	
 	
 	cBFGWAS.Assign(argc, argv, cPar); 

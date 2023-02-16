@@ -1,6 +1,6 @@
 /*
- Bayesian Functional GWAS --- MCMC (bfGWAS:MCMC)
-Copyright (C) 2016  Jingjing Yang
+  Bayesian Genome-wide TWAS with Summary eQTL reference data --- MCMC (BGW-TWAS:MCMC)
+    Copyright (C) 2023  Jingjing Yang
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -180,7 +180,7 @@ public:
 class PARAM {
 public:
   //multiple functionrelated parameters
-  size_t n_type;
+  size_t n_type; // =2 , # of annotations, here are cis and trans
   vector<size_t> mFunc; // # of variants of each variant type
   double e; //hyper parameter in the prior gamma distribution
   double vscale;
