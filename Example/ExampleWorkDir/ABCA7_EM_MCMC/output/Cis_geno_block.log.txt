@@ -3,7 +3,7 @@
 ##
 ## Command Line Input = -inputSS -Zscore /home/jyang51/jyang/GITHUB/BGW-TWAS-SS/Example/ExampleWorkDir/ABCA7_Zscores/Cis_geno_block.Zscore.txt.gz -LDcorr /home/jyang51/jyang/GITHUB/BGW-TWAS-SS/Example/ExampleData/LDdir/Cis_geno_block.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /home/jyang51/jyang/GITHUB/BGW-TWAS-SS/bin/hypval.init.txt -maf 0.01 -n 499 -bvsrm -smin 0 -smax 10 -win 100 -o Cis_geno_block -w 1000 -s 10000 -seed 2022 
 ##
-## Date = Wed Feb 15 23:32:28 2023
+## Date = Tue Feb 21 11:52:29 2023
 
 ##
 ## Reference Sample Sizes and SNP Numbers :
@@ -19,11 +19,11 @@
 ## Region_PIP = 0.1322
 ##
 ## Computation Time:
-## total computation time = 0.0404151 min 
+## total computation time = 0.0399379 min 
 ## computation time break down: 
-##      time on MCMC = 0.00100777 min 
-##      time on Proposal = 0.000329567 min 
-##      time on Posterior = 438.235 min 
+##      time on MCMC = 0.00102145 min 
+##      time on Proposal = 0.000343417 min 
+##      time on Posterior = 433.048 min 
 Accept #add=488, total add step = 10019
 Accept #delete=489, total delete step = 491
 Accept #switch=158, total switch step = 490

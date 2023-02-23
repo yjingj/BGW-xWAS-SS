@@ -1,169 +1,155 @@
 Sys.setlocale('LC_ALL', 'C')
 options(stringsAsFactors=F)
-options(warn=-1)
 
-# Package names
-packages <- c("data.table", "tidyverse", "optimx")
-# Install packages not yet installed
-installed_packages <- packages %in% rownames(installed.packages())
-if (any(installed_packages == FALSE)) {
-  install.packages(packages[!installed_packages])
-}
-# Packages loading
-invisible(lapply(packages, library, character.only = TRUE, warn.conflicts = FALSE, quietly = TRUE))
-
-#################################
-ptm <- proc.time()
-
-######## Read input arguments
+######## Need to pass args(hypfile, paramfile, k, hypcurrent_file) from bash
 args <- commandArgs(TRUE)
-hypfile=args[[1]]
-k = as.numeric(args[[2]]) #the number of iterition
-a_gamma = as.numeric(args[[3]])
-b_gamma = as.numeric(args[[4]])
-gwas_n = as.numeric(args[[5]]) # GWAS sample size
-hypcurrent_file = args[[6]] # hyper.current
-# sum(gamma) and sum(gamma * beta^2) are saved in hypfile
-param_file = args[[7]] # Annotation data and gamma
+# print(args)
+
+
+hypfile=args[[1]]     # hyptemp file
+k=as.numeric(args[[2]]) # EM iteration number
+pp = as.numeric(args[[3]]) # for setting beta prior of CPP
+a_gamma = as.numeric(args[[4]]) # Setting IG prior of sigma2
+b_gamma = as.numeric(args[[5]])
+n_sample = as.numeric(args[[6]]) # sample size
+hypcurrent_file = args[[7]]    # hypval.current file
 EM_result_file = args[[8]] # Save EM_result_file
 
-########### Read prior hyper parameter values
-#rv is phenotype variance, rv = mean(hypdata[, "rv"])
-# hypcurrent_file = "/home/jyang51/YangLabData/jyang/BFGWAS_Test/test_sim/hypval.current"
-prehyp <- read.table(hypcurrent_file, header=F)
+
+print(c("a_gamma=", a_gamma, "b_gamma = ", b_bgamma, "sample size = ", n_sample))
+
+
+###### Define functions to be used
+
+## Calculate pi_hat and pi_se
+CI_fish_pi <- function(sum_gamma, p, a, b){
+  # p : number of cis or trans variants
+  pi_hat = (sum_gamma + a - 1.0) / (p + a + b - 2.0)
+  if(pi_hat <= 0 || pi_hat > 1){
+    pi_hat = a/(a+b) # set as prior value
+    se_pi = 0
+  }else{
+    pi_var = pi_hat * (1-pi_hat) / (p + a + b - 2.0)
+    if(pi_var > 0){
+      se_pi = sqrt(pi_var)
+    }else{se_pi=0}
+  }
+  return(c(pi_hat, se_pi))
+}
+
+## Calculate sigma2_hat and se_sigma2
+CI_fish_sigma2 <- function(sum_Ebeta2, sum_gamma, n_sample, a, b){
+  sigma2_hat = (sum_Ebeta2 * n_sample + 2 * b) / (sum_gamma + 2 * (a + 1))
+  temp_var = sum_Ebeta2 * n_sample / sigma2_hat - sum_gamma/2 - (a+1) + 2*b/sigma2_hat
+  if( temp_var < 0){
+    se_sigma2=0
+  }else{
+    se_sigma2 = sigma2_hat / sqrt(temp_var)
+  }
+  return(c(sigma2_hat, se_sigma2))
+}
+
+## log prior functions
+logprior_sigma <- function(a, b, x){ return(-(1+a) * log(x) - b/x) }
+logprior_pi <- function(a, b, x){ return((a-1) * log(x) + (b-1) * log(1 - x)) }
+
+
+ptm <- proc.time()
+########### Load hypfile ....
+# hypcurrent_file="/home/jyang51/jyang/GITHUB/BGW-TWAS-SS/Example/ExampleWorkDir/ABCA7_EM_MCMC/hypval.current"
+# hypfile="/home/jyang51/jyang/GITHUB/BGW-TWAS-SS/Example/ExampleWorkDir/ABCA7_EM_MCMC/Eoutput/hyptemp0.txt"
+# k=0; pp = 1e-5; a_gamma=2; b_gamma=1; n_sample = 499
+
+hypdata = read.table(hypfile, sep="\t", header=FALSE)
+n_type = 2
+print(paste(" Total Annotation categories : ", n_type))
+
+temp_col_names <- c("genome_block_prefix", "log_post_likelihood", "r2")
+for(i in 1:n_type){
+  temp_col_names <- c(temp_col_names,
+                      paste(c("mFunc", "sum_gamma", "sum_Ebeta2",), (i-1), sep = "_"))
+}
+colnames(hypdata) <-  temp_col_names
+
+########### Update hyper parameter values
+prehyp <- read.table(hypcurrent_file, header=TRUE)
 print("hyper parameter values before MCMC: ")
 print(prehyp)
-avec_old = str_split(prehyp[1, 2], ",") %>% unlist() %>% as.numeric()
-avec_0 = avec_old[1]
-avec_old=avec_old[-1]
-tau_beta_old = as.numeric(prehyp[2, 2])
 
-########## Read hyptemp file
-# hypfile = "/home/jyang51/YangLabData/jyang/BFGWAS_Test/test_sim/Eoutput/hyptemp3.txt"
-hyp_dt = fread(hypfile, sep = "\t", header = TRUE)
-sum_gamma = sum(hyp_dt$sum_gamma)
-sum_beta2 = sum(hyp_dt$sum_beta2)
-
-R2 = sum(hyp_dt$r2, na.rm = TRUE)
-loglike = sum(hyp_dt$log_post_likelihood, na.rm = TRUE)
-print(paste("Sum PIP = ", sum_gamma))
-print(paste("Regression R2 = ", R2))
-print(paste("Posterior log likelihood = ",  loglike))
-
-########## Read annotation data
-# param_file="/home/jyang51/YangLabData/jyang/BFGWAS_Test/test_sim/Eoutput/paramtemp3.txt.gz"
-param_dt = fread(param_file, sep="\t", header=TRUE)
-gamma_temp = param_dt$Pi
-Anno_df = param_dt[, -c(1:12)]
-Anum = ncol(Anno_df)
-A_temp = as.numeric(unlist(Anno_df)) %>% matrix(nrow = nrow(Anno_df))
-print(dim(A_temp)) # Number of SNPs in the row; Number of annotations in the column
-C0 = exp(avec_0)
-
-# gamma_A = gamma_temp * A_temp
-
-####################################################
-####### Solve for a_vec
-a_fn <- function(a) {
-  Ata = A_temp %*% a
-  asum = sum(gamma_temp * Ata - log(1 + exp(Ata + avec_0))) - 0.5 * sum(a * a)
-  return(-asum)
+######### Set hierarchical parameter values
+n_vec = rep(0, n_type) # number of variants per category
+for(i in 1:n_type){
+  n_vec[i] <- hypdata[, paste("mFunc", (i-1), sep="_")]
 }
 
-a_gr <- function(a) {
-  Ata = A_temp %*% a
-  C0expAta = exp(Ata + avec_0)
-  a_gr_sum = apply( ((gamma_temp - as.vector((C0expAta)/(1 + C0expAta))) * A_temp) , 2, sum) - a
-  return( as.vector(-a_gr_sum) )
+#### updating hyper pi and sigma2 values for each group
+# a_beta, b_beta will be set for cis- and trans- annotation
+hypcurrent <- NULL
+hypmat <- NULL
+
+for(i in 1:n_type){
+  # print(i)
+  if(n_vec[i] > 0){
+    a_beta = 2 * n_vec[i] * pp; b_beta = n_vec[i] - a_beta;
+  }else{a_beta=1; b_beta = 1e5 - 1;}
+
+  sum_gamma = hypdata[, paste("sum_gamma", (i-1), sep="_")]
+  pi_temp = CI_fish_pi(sum_gamma, n_vec[i], a_beta, b_beta)
+
+  sum_Ebeta2 = hypdata[, paste("sum_Ebeta2", (i-1), sep="_")]
+  sigma2_temp = CI_fish_sigma2(sum_Ebeta2, sum_gamma, n_sample, a_gamma, b_gamma)
+
+  hypcurrent <- c(hypcurrent, pi_temp, sigma2_temp)
+  # print(cbind(pi_temp, sigma2_temp))
+  hypmat <- rbind(hypmat, c(pi_temp[1], sigma2_temp[1]))
 }
 
-a_Hess <- function(a) {
-  a_num = length(a)
-  exp_Ata = exp(A_temp %*% a)
-  C0expAta = exp(Ata + avec_0)
-  a_Hess_sum = matrix(0, a_num, a_num)
-  for (i in 1:nrow(A_temp)) {
-    a_Hess_value = as.numeric( C0expAta[i] / ( 1 +  C0expAta[i] )^2 )  * outer(A_temp[i,], A_temp[i,])
-    a_Hess_sum = a_Hess_sum + a_Hess_value
-  }
-  a_Hess_sum = a_Hess_sum + diag(rep(1, a_num))
-  return( as.matrix(a_Hess_sum))
-}
 
-# avec_old = rep(0, 4)
-a_temp = optimx(avec_old, fn = a_fn, method='L-BFGS-B', gr = a_gr, # hess = a_Hess,
-              hessian = TRUE, lower = c(rep(0, Anum))
-              )
-# optimx(avec_old, fn = a_fn, method="Nelder-Mead", gr = a_gr)
-# optimx(avec_old, fn = a_fn, gr = a_gr, hess = a_Hess, method='L-BFGS-B', lower = c(rep(0, Anum)) )
+#### Summarize log-likelihood
+loglike_total = sum(hypdata$log_post_likelihood)
 
-print("Solve for a_vector: ")
-print(a_temp)
+for(i in 1:n_type){
+  if(sum(prehyp[i, ]>0)==2){
+    if(n_vec[i] > 0){
+      a_beta = 2 * n_vec[i] * pp; b_beta = 2 * n_vec[i] - a_beta;
+    }else{a_beta=1; b_beta = 1e5 - 1;}
 
-a_temp = a_temp[1:length(avec_old)]
-
-####################################################
-# gwas_n = 2453; a_gamma = 1.01; b_gamma = 1
-Est_tau_beta <- function(sum_gamma, sum_beta2, gwas_n, a, b){
-  tau_beta_hat =  ( sum_gamma + 2 * (a - 1)) / ( gwas_n * sum_beta2 + 2 * b)
-  if(tau_beta_hat > 1){
-    print(c("tau_beta_hat estimated to be ", tau_beta_hat, ">1. Will be set as 1."))
-    tau_beta_hat = 1;
-  }else if (tau_beta_hat < 0.01){
-    print(c("tau_beta_hat estimated to be ", tau_beta_hat, "<0.01. Will be set as 0.1."))
-    tau_beta_hat = 0.01
-  }
-  return(tau_beta_hat)
-}
-
-CI_fish_tau_beta <- function(sum_gamma, sum_beta2, gwas_n, a, b){
-  tau_beta_hat =  ( sum_gamma + 2 * (a - 1)) / ( gwas_n * sum_beta2 + 2 * b)
-  temp = 0.5 * sum_gamma + (a - 1)
-  if( temp  < 0){
-    se_tau_beta = 0
+    loglike_total = loglike_total +
+      logprior_pi(a_beta, b_beta, prehyp[i, 1]) +
+      logprior_sigma(a_gamma, b_gamma, prehyp[i, 2])
   }else{
-    se_tau_beta = tau_beta_hat / sqrt(temp)
+    print("pre-hyper-parameter <= 0... ")
   }
-  if(tau_beta_hat > 1){
-    print(c("tau_beta_hat estimated to be ", tau_beta_hat, ">1. Will be set as 1."))
-    tau_beta_hat = 1;
-  }else if (tau_beta_hat < 0.01){
-    print(c("tau_beta_hat estimated to be ", tau_beta_hat, "<0.01. Will be set as 0.1."))
-    tau_beta_hat = 0.01
-  }
-  return(c(tau_beta_hat, se_tau_beta))
 }
 
-#tau_beta_temp = Est_tau_beta(sum_gamma, sum_beta2, gwas_n, a_gamma, b_gamma)
-tau_beta_temp = tau_beta_old
-print(c("Fix tau_beta: ", tau_beta_temp))
-
-#####################################################
-hypmat <- data.table(`#hyper_parameter` = c("a", "tau_beta"), value = c(paste(c(avec_0, a_temp), collapse = ",") , tau_beta_temp))
 
 ########## Write out updated hyper parameter values
+colnames(hypmat) <- c("pi", "sigma2")
 print("hyper parameter values updates after MCMC: ")
 print(hypmat)
-# hypcurrent_file="/home/jyang/ResearchProjects/BFGWAS_QUANT_Test/Test_wkdir/hyper.current.txt"
-write.table(format(hypmat, scientific=TRUE), 
+write.table(format(hypmat, scientific=TRUE),
             file=hypcurrent_file,
             quote = FALSE, sep = "\t", row.names=FALSE, col.names=TRUE)
 
+
 ########## Write out updated hyper parameter values and se to EM_result_file
+# EM_result_file="/net/fantasia/home/yjingj/GIT/bfGWAS/1KG_example/Test_Wkdir/Eoutput/EM_result.txt"
+hypcurrent <- format(hypcurrent, scientific = TRUE)
+print("write to hypcurrent file with hyper parameter values after MCMC: ")
+print(c(k, hypcurrent))
 
-
-# EM_result_file="/home/jyang/ResearchProjects/BFGWAS_QUANT_Test/Test_wkdir/EM_result.txt"
 if(k==0){
-  write.table(data.frame(EM_iteration = k, R2 = R2, Loglike = loglike,
-                        tau_beta = tau_beta_temp, avec = paste(a_temp, collapse = ",")),
+  write.table(data.frame(EM_iteration = k, R2 = pve, Loglike = loglike_total,
+                        pi_0__sigma2_0__pi_1__sigma2_1 = paste(hypcurrent, collapse="," ),
               file = EM_result_file,
               sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE, append=FALSE)
 }else{
-  write.table(data.frame(EM_iteration = k, R2 = R2, Loglike = loglike,
-                        tau_beta = tau_beta_temp, avec = paste(a_temp, collapse = ",")),
+  write.table(data.frame(EM_iteration = k, R2 = pve, Loglike = loglike_total,
+                        pi_0__sigma2_0__pi_1__sigma2_1 = paste(hypcurrent, collapse="," ),
               file = EM_result_file,
               sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE, append=TRUE)
 }
+
 
 print("EM step time cost (in minutes) : ")
 print((proc.time() - ptm)/60)

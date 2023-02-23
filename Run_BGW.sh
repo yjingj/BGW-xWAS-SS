@@ -102,7 +102,7 @@ ${BGW_dir}/bin/Estep_mcmc -inputSS \
 -LDcorr ${LDdir}/${genome_block}.LDcorr.txt.gz \
 -target_chr 19 -start_pos 1040101 -end_pos 1065571 \
 -hfile ${hfile} -maf 0.01 -n 499 -bvsrm -smin 0 -smax 10 \
--win 100 -o ${genome_block} -w 1000 -s 10000 -seed 2022
+-win 100 -o ${genome_block} -w 10000 -s 10000 -seed 2022
 
 #### Test generating make file
 mkfile="${wkdir}/${gene_name}_EM_MCMC/${gene_name}_BGW.mk"

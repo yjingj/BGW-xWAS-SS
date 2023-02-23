@@ -83,6 +83,7 @@ my $Nmcmc="10000";
 my $NmcmcLast="10000";
 my $a_gamma="2"; # mode 1 in the gamma distribution
 my $b_gamma="1";
+my $pcp_prior="1e-5"; # prior causal probability
 
 #initialize options
 Getopt::Long::Configure ('bundling');
@@ -222,7 +223,7 @@ makeJob($tgt, $dep, @cmd);
 
 $tgt = "$wkdir/R$i.OK";
 $dep = "$wkdir/Eoutput/cp_param$i.OK $wkdir/pre_em.OK";
-@cmd = "Rscript --vanilla ${rs} $hypfile $i $a_gamma $b_gamma $Nsample $hypcurrent $paramfile.gz $wkdir/Eoutput/EM_result.txt >> $wkdir/Rout.txt 2>&1";
+@cmd = "Rscript --vanilla ${rs} $hypfile $i $pcp_prior $a_gamma $b_gamma $Nsample $hypcurrent $wkdir/Eoutput/EM_result.txt >> $wkdir/Rout.txt 2>&1";
 makeJob($tgt, $dep, @cmd);
 
 
@@ -263,7 +264,7 @@ for $i (1..$EM){
 
   $tgt = "$wkdir/R$i.OK";
   $dep = "$wkdir/Eoutput/cp_param$i.OK";
-  @cmd = "Rscript --vanilla $rs $hypfile $i $a_gamma $b_gamma $Nsample $hypcurrent $paramfile.gz $wkdir/Eoutput/EM_result.txt >> $wkdir/Rout.txt 2>&1";
+  @cmd = "Rscript --vanilla $rs $hypfile $i $pcp_prior $a_gamma $b_gamma $Nsample $hypcurrent $wkdir/Eoutput/EM_result.txt >> $wkdir/Rout.txt 2>&1";
   makeJob($tgt, $dep, @cmd);
 
 }
