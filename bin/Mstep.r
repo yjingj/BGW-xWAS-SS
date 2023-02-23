@@ -16,7 +16,7 @@ hypcurrent_file = args[[7]]    # hypval.current file
 EM_result_file = args[[8]] # Save EM_result_file
 
 
-print(c("a_gamma=", a_gamma, "b_gamma = ", b_bgamma, "sample size = ", n_sample))
+print(c("a_gamma=", a_gamma, "b_gamma = ", b_gamma, "sample size = ", n_sample))
 
 
 ###### Define functions to be used
@@ -62,14 +62,9 @@ ptm <- proc.time()
 
 hypdata = read.table(hypfile, sep="\t", header=FALSE)
 n_type = 2
-print(paste(" Total Annotation categories : ", n_type))
+# print(paste(" Total Annotation categories : ", n_type))
 
-temp_col_names <- c("genome_block_prefix", "log_post_likelihood", "r2")
-for(i in 1:n_type){
-  temp_col_names <- c(temp_col_names,
-                      paste(c("mFunc", "sum_gamma", "sum_Ebeta2",), (i-1), sep = "_"))
-}
-colnames(hypdata) <-  temp_col_names
+colnames(hypdata) <-  c("genome_block_prefix", "log_post_likelihood", "r2", "mFunc_cis", "sum_gamma_cis", "sum_Ebeta2_cis", "mFunc_trans", "sum_gamma_trans", "sum_Ebeta2_trans")
 
 ########### Update hyper parameter values
 prehyp <- read.table(hypcurrent_file, header=TRUE)
@@ -77,10 +72,9 @@ print("hyper parameter values before MCMC: ")
 print(prehyp)
 
 ######### Set hierarchical parameter values
-n_vec = rep(0, n_type) # number of variants per category
-for(i in 1:n_type){
-  n_vec[i] <- hypdata[, paste("mFunc", (i-1), sep="_")]
-}
+# number of variants per category
+n_vec <- c(sum(hypdata[, "mFunc_cis"]), sum(hypdata[, "mFunc_trans"]))
+print(c("number of variants: ", n_vec))
 
 #### updating hyper pi and sigma2 values for each group
 # a_beta, b_beta will be set for cis- and trans- annotation
@@ -90,17 +84,23 @@ hypmat <- NULL
 for(i in 1:n_type){
   # print(i)
   if(n_vec[i] > 0){
-    a_beta = 2 * n_vec[i] * pp; b_beta = n_vec[i] - a_beta;
+    a_beta = n_vec[i] * pp; b_beta = n_vec[i] - a_beta;
   }else{a_beta=1; b_beta = 1e5 - 1;}
 
-  sum_gamma = hypdata[, paste("sum_gamma", (i-1), sep="_")]
-  pi_temp = CI_fish_pi(sum_gamma, n_vec[i], a_beta, b_beta)
+  if(i == 1){
+    sum_gamma = sum(hypdata[, "sum_gamma_cis"])
+    sum_Ebeta2 = sum(hypdata[, "sum_Ebeta2_cis"])
+  }else{
+    sum_gamma = sum(hypdata[, "sum_gamma_trans"])
+    sum_Ebeta2 = sum(hypdata[, "sum_Ebeta2_trans"])
+  }
 
-  sum_Ebeta2 = hypdata[, paste("sum_Ebeta2", (i-1), sep="_")]
+  pi_temp = CI_fish_pi(sum_gamma, n_vec[i], a_beta, b_beta)
+ # print(c("pi_est and pi_se", round(pi_temp, 3)) )
   sigma2_temp = CI_fish_sigma2(sum_Ebeta2, sum_gamma, n_sample, a_gamma, b_gamma)
+ # print(c("sigma2_est and sigma2_se", round(sigma2_temp, 3)) )
 
   hypcurrent <- c(hypcurrent, pi_temp, sigma2_temp)
-  # print(cbind(pi_temp, sigma2_temp))
   hypmat <- rbind(hypmat, c(pi_temp[1], sigma2_temp[1]))
 }
 
@@ -111,7 +111,7 @@ loglike_total = sum(hypdata$log_post_likelihood)
 for(i in 1:n_type){
   if(sum(prehyp[i, ]>0)==2){
     if(n_vec[i] > 0){
-      a_beta = 2 * n_vec[i] * pp; b_beta = 2 * n_vec[i] - a_beta;
+      a_beta = n_vec[i] * pp; b_beta = n_vec[i] - a_beta;
     }else{a_beta=1; b_beta = 1e5 - 1;}
 
     loglike_total = loglike_total +
@@ -138,14 +138,22 @@ hypcurrent <- format(hypcurrent, scientific = TRUE)
 print("write to hypcurrent file with hyper parameter values after MCMC: ")
 print(c(k, hypcurrent))
 
+r2 = sum(hypdata[, "r2"])
+
 if(k==0){
-  write.table(data.frame(EM_iteration = k, R2 = pve, Loglike = loglike_total,
-                        pi_0__sigma2_0__pi_1__sigma2_1 = paste(hypcurrent, collapse="," ),
+  write.table(data.frame(EM_iteration = k, r2  = r2 , Loglike = loglike_total,
+                        pi_cis = hypcurrent[1], pi_cis_se = hypcurrent[2],
+                        sigma2_cis = hypcurrent[3], sigma2_cis_se = hypcurrent[4],
+                        pi_trans = hypcurrent[5], pi_trans_se = hypcurrent[6],
+                        sigma2_trans = hypcurrent[7], sigma2_trans_se = hypcurrent[8]),
               file = EM_result_file,
               sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE, append=FALSE)
 }else{
-  write.table(data.frame(EM_iteration = k, R2 = pve, Loglike = loglike_total,
-                        pi_0__sigma2_0__pi_1__sigma2_1 = paste(hypcurrent, collapse="," ),
+  write.table(data.frame(EM_iteration = k, r2  = r2 , Loglike = loglike_total,
+                        pi_cis = hypcurrent[1], pi_cis_se = hypcurrent[2],
+                        sigma2_cis = hypcurrent[3], sigma2_cis_se = hypcurrent[4],
+                        pi_trans = hypcurrent[5], pi_trans_se = hypcurrent[6],
+                        sigma2_trans = hypcurrent[7], sigma2_trans_se = hypcurrent[8]),
               file = EM_result_file,
               sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE, append=TRUE)
 }

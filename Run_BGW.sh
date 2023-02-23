@@ -109,15 +109,6 @@ mkfile="${wkdir}/${gene_name}_EM_MCMC/${gene_name}_BGW.mk"
 target_chr=19; start_pos=1040101; end_pos=1065571
 maf=0.01; em=2; burnin=10000; Nmcmc=10000
 
-${BGW_dir}/bin/gen_mkf.pl \
---wkdir ${wkdir}/${gene_name}_EM_MCMC --BGW_dir ${BGW_dir} \
---LDdir ${LDdir} --ZScore_dir ${Zscore_dir} --filehead ${select_filehead} \
---hfile ${hfile} --Nsample ${N} --maf ${maf} \
---targ ${target_chr} --start ${start_pos} --end ${end_pos} \
---Nburnin ${burnin} --Nmcmc ${Nmcmc} \
---em ${em} --mf ${mkfile}
-
-
 #### test Step3_EM-MCMC.sh file
 Nsample=499
 ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
@@ -125,13 +116,14 @@ ${BGW_dir}/bin/Step3_EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 --GeneExpFile ${GeneExpFile} --select_filehead ${select_filehead} \
 --LDdir ${LDdir} --Zscore_dir ${Zscore_dir} \
 --Nsample ${Nsample} --maf ${maf} --hfile ${hfile} \
---em 2 --burnin 100 --Nmcmc 100 \
+--em 2 --burnin 10000 --Nmcmc 10000 \
 --PCP_thresh ${PCP_thresh} --num_cores ${num_cores} \
 --clean_output 0
 
 ################################################################
 ################################################################
 # Step 4: Predict GReX for test samples with individual-level GWAS data
+## Need further test
 ################################################################
 ################################################################
 

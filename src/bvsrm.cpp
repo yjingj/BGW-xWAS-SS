@@ -290,7 +290,7 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
     ofstream outfile (file_str.c_str(), ofstream::out);
     if (!outfile) {cout<<"error writing file: "<<file_str.c_str()<<endl; return;}
 
-    outfile<<"#CHR\tPOS\tID\tREF\tALT\tMAF\tTrans\tPCP\tBeta\tmBeta\tChisqTest\tPval_svt\tRank" << endl;
+    outfile<<"#CHR\tPOS\tID\tREF\tALT\tMAF\tTrans\tCPP\tBeta\tmBeta\tChisqTest\tPval_svt\tRank" << endl;
 
     size_t r, n_causal;
     vector<size_t> rank_vec; // Save positions of potential causal SNPs
@@ -348,29 +348,27 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
             }else{
                 outfile << scientific << setprecision(3)  << snp_pos[i].maf << "\t";
             }
-            for (size_t j=0; j < n_type; j++) {
-                if (snp_pos[i].indicator_func[j]) {
-                    outfile << j << "\t";
-                    break;
-                }
-                else if(j == (n_type - 1)) {
-                    outfile << "NA" << "\t";
-                }
-            }
+
+            // Trans indicator
+            outfile << snp_pos[i].indicator_func[1] << "\t";
+
             if (beta_g[i].second > 0.0) {
                 pi_temp = beta_g[i].second/(double)s_step;
                 if(mapRank2Vec[r]){
                     beta_mcmc[i] = gsl_vector_get(beta_hat, mapRank2Vec[r]);
                 }else{
+                    pi_temp = 0.0;
                     beta_mcmc[i] = 0.0;
                 }
                 outfile << pi_temp << "\t" << beta_mcmc[i] << "\t" << mbeta[i]  << "\t" ;
-                for (size_t j=0; j < n_type; j++) {
-                    if (snp_pos[i].indicator_func[j]) {
-                        em_gamma[j] += pi_temp ;
-                        sumbeta2[j] += pi_temp * beta_mcmc[i] * beta_mcmc[i];
-                        break;
-                    }
+
+                if (snp_pos[i].indicator_func[1]) {
+                    em_gamma[1] += pi_temp ;
+                    sumbeta2[1] += pi_temp * beta_mcmc[i] * beta_mcmc[i];
+                }
+                else{
+                    em_gamma[0] += pi_temp ;
+                    sumbeta2[0] += pi_temp * beta_mcmc[i] * beta_mcmc[i];
                 }
             }
             else {
@@ -407,8 +405,8 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
                 outfile << pi_temp << "\t" << beta_mcmc[i] << "\t" << mbeta[i]  << "\t" ;
                 for (size_t j=0; j < n_type; j++) {
                     if (snp_pos[i].indicator_func[j]) {
-                        em_gamma[j] += pi_temp ;
-                        sumbeta2[j] += pi_temp * beta_mcmc[i] * beta_mcmc[i];
+                        em_gamma[j] += pi_temp ; //sum of gammas
+                        sumbeta2[j] += pi_temp * beta_mcmc[i] * beta_mcmc[i]; // sum of gamma * beta * beta
                         break;
                     }
                 }
@@ -2969,7 +2967,8 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &m
     //cout << "log_qtheta: "; PrintVector(log_qtheta);
     //cout << "mFunc : "; PrintVector(mFunc);
     
-    inv_subvar.assign(n_type, 0.0), log_subvar.assign(n_type, 0.0);
+    inv_subvar.assign(n_type, 0.0);
+    log_subvar.assign(n_type, 0.0);
     for(size_t i=0; i < n_type; i++){
         inv_subvar[i] = (1.0 / subvar[i]); 
         log_subvar[i] = (log(subvar[i])); 
@@ -3054,7 +3053,6 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &m
                     set_mgamma(cHyp_new, rank_new, snp_pos);
                     getSubVec(sigma_subvec_new, rank_new, snp_pos);
                     //cout << "sigma_subvec_new: "; PrintVector(sigma_subvec_new, rank_new.size());
-
                     loglikegamma = CalcLikegamma(cHyp_new);
                  //   cout << "loglikegamma = " << loglikegamma << " in the non-Null model \n";
                     logPost_new = CalcPosterior_SS (D_new, mbeta_new, beta_new, cHyp_new, sigma_subvec_new, Error_Flag) + loglikegamma;
@@ -3142,7 +3140,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &m
         else {
             //save loglikelihood to LnPost
             gsl_vector_set (LnPost, k_save_sample, logPost_old);
-            GV += cHyp_old.pve;
+            GV += cHyp_old.pve; // regression R2
 
             if (cHyp_old.n_gamma > 0){
                 region_pip += 1.0; //count increase if the model has >0 SNPs
@@ -3357,7 +3355,7 @@ double BVSRM::CalcPosterior_SS (const gsl_matrix *D, const gsl_vector *mbeta, gs
     gsl_vector *beta_hat=gsl_vector_alloc (s_size); // estimates based on multivariate model
 
     // Calculate Sigma_beta = (Omega)^(-1)
-    gsl_matrix_memcpy(Omega, &D_sub.matrix);
+    gsl_matrix_memcpy(Omega, &D_sub.matrix); // assign genotype correlation matrix
     gsl_vector_view Omega_diag = gsl_matrix_diagonal(Omega);
     gsl_vector_add(&Omega_diag.vector, sigma_subvec_inv);
     //cout << "Omega : "; PrintMatrix(Omega, s_size, s_size);
@@ -3392,7 +3390,7 @@ double BVSRM::CalcPosterior_SS (const gsl_matrix *D, const gsl_vector *mbeta, gs
 
     double bSb;
     gsl_blas_ddot (&mbeta_sub.vector, beta_hat, &bSb);
-    loglike = ni_test * bSb ;
+    loglike = (double)ni_test * bSb ;
     loglike = -0.5 * (logdet_O + logdet_V - loglike); // log posterior likelihood
    // cout << "Posterior Loglike  = " << loglike << endl;
 
