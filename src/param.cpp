@@ -108,7 +108,7 @@ s_min(0), s_max(10), max_iter(1000), convergence(1e-7),
 w_step(50000),	s_step(500000), n_accept(0),
 n_mh(10), randseed(2016), error(false), ni_test(0),
 time_total(0.0), time_G(0.0), time_Omega(0.0),
-target_chr("23"), start_pos(0), end_pos(1), window_size(1000000)
+target_chr("23"), start_pos(1), end_pos(1), window_size(1000000)
 {}
 
 
