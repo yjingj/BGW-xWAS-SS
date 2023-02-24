@@ -29,7 +29,7 @@ CI_fish_pi <- function(sum_gamma, p, a, b){
     pi_hat = a/(a+b) # set as prior value
     se_pi = 0
   }else{
-    pi_var = pi_hat * (1-pi_hat) / (p + a + b - 2.0)
+    pi_var = pi_hat * (1 - pi_hat) / (p + a + b - 2.0)
     if(pi_var > 0){
       se_pi = sqrt(pi_var)
     }else{se_pi=0}
@@ -84,8 +84,8 @@ hypmat <- NULL
 for(i in 1:n_type){
   # print(i)
   if(n_vec[i] > 0){
-    a_beta = n_vec[i] * pp; b_beta = n_vec[i] - a_beta;
-  }else{a_beta=1; b_beta = 1e5 - 1;}
+      a_beta = max(n_vec[i] * pp, 1.0001) ; b_beta = n_vec[i] - a_beta;
+    }else{a_beta=1.0001; b_beta = 1e5 - 1.0001;}
 
   if(i == 1){
     sum_gamma = sum(hypdata[, "sum_gamma_cis"])
@@ -111,8 +111,8 @@ loglike_total = sum(hypdata$log_post_likelihood)
 for(i in 1:n_type){
   if(sum(prehyp[i, ]>0)==2){
     if(n_vec[i] > 0){
-      a_beta = n_vec[i] * pp; b_beta = n_vec[i] - a_beta;
-    }else{a_beta=1; b_beta = 1e5 - 1;}
+      a_beta = max(n_vec[i] * pp, 1.0001) ; b_beta = n_vec[i] - a_beta;
+    }else{a_beta=1.0001; b_beta = 1e5 - 1.0001;}
 
     loglike_total = loglike_total +
       logprior_pi(a_beta, b_beta, prehyp[i, 1]) +

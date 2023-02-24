@@ -280,7 +280,7 @@ void BVSRM::WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPO
     return;
 }
 
-// updated (06/15/2022) by JY
+// updated (02/23/2023) by JY
 void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SNPPOS> &snp_pos, const vector<pair<size_t, double> > &pos_ChisqTest, const vector<double> pval, const vector< vector<double> > &LD)
 {
     string file_str;
