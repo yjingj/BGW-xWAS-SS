@@ -27,6 +27,8 @@ echo ${gene_exp_trait} is empty. Please check.
 exit
 fi
 
+# line=GTEx_WGS_CHR2_189882065_191973357
+# gene_exp_trait=/home/jyang51/jyang/BGW-TWAS_GTEx_Test/Brain_Cortex/TREM2/TREM2_exp_trait.txt
 if [ -s ${geno_dir}/${line}.vcf.gz ] ; then
 	### With input genotype file in VCF format
 	${BGW_dir}/bin/Estep_mcmc -vcf ${geno_dir}/${line}.vcf.gz -p ${gene_exp_trait} -maf 0.01 -o ${line} -LDwindow ${LDwindow} -GTfield ${GTfield} -saveSS -zipSS

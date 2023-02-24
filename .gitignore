@@ -48,6 +48,7 @@ Thumbs.db
 *.lo
 *.o
 *.obj
+*.sh~
 
 # Precompiled Headers
 *.gch

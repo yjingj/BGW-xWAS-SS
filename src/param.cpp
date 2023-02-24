@@ -107,7 +107,8 @@ logp_min(0.0), logp_max(0.0), logp_scale(-1),
 s_min(0), s_max(10), max_iter(1000), convergence(1e-7),
 w_step(50000),	s_step(500000), n_accept(0),
 n_mh(10), randseed(2016), error(false), ni_test(0),
-time_total(0.0), time_G(0.0), time_Omega(0.0), window_size(1000000)
+time_total(0.0), time_G(0.0), time_Omega(0.0),
+target_chr("23"), start_pos(0), end_pos(1), window_size(1000000)
 {}
 
 
@@ -193,7 +194,6 @@ void PARAM::ReadFiles (void)
 		  		cout << "\nStart reading dosage file first time ...\n";
 				if (ReadFile_geno (file_geno, setSnps, indicator_idv, indicator_snp, PhenoID2Pos, snpInfo, VcfSampleID, SampleVcfPos, maf_level, miss_level, hwe_level, ns_test, ns_total, ni_test, ni_total, mapID2num, GenoSampleID2Ind)==false) {error=true;}
 		  	}
-
 		  	// update ni_test, ni_total, PhenoID2Ind based on samples that also have geno data
 			UpdatePheno();
 		}
@@ -313,9 +313,8 @@ void PARAM::CheckData (void) {
 		}
 		CreateSnpPosVec(snp_pos, snpInfo, indicator_snp);
 
-		// Set cis- and trans- annotation
-		if(setANNOCode(start_pos, end_pos, target_chr, window_size, snp_pos, n_type, mFunc) == false)
-			{ error = true; }
+		// need to set cis- trans- annotation
+		if(setANNOCode(start_pos, end_pos, target_chr, window_size, snp_pos, n_type, mFunc) == false) {error = true;}
 
     	// order snp_pos by chr/bp
     	stable_sort(snp_pos.begin(), snp_pos.end(), comp_snp);
