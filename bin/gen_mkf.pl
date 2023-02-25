@@ -81,8 +81,8 @@ my $win="100";
 my $burnin="10000";
 my $Nmcmc="10000";
 my $NmcmcLast="10000";
-my $a_gamma="2"; # mode 1 in the gamma distribution
-my $b_gamma="1";
+my $a_gamma="1"; # shape parameter; mode 1 in the gamma distribution
+my $b_gamma="2"; # scale parameter
 my $pcp_prior="1e-5"; # prior causal probability
 
 #initialize options
@@ -269,10 +269,10 @@ for $i (1..$EM){
 
 }
 
-$tgt = "$wkdir/clean_output_files.OK";
-$dep = "$wkdir/Eoutput/cp_param$EM.OK";
-@cmd = "rm -f $wkdir/output/** $wkdir/OUT/*.output.txt";
-makeJob($tgt, $dep, @cmd);
+# $tgt = "$wkdir/clean_output_files.OK";
+# $dep = "$wkdir/Eoutput/cp_param$EM.OK";
+# @cmd = "rm -f $wkdir/output/** $wkdir/OUT/*.output.txt";
+# makeJob($tgt, $dep, @cmd);
 
 
 #*******************

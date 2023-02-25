@@ -18,6 +18,9 @@ EM_result_file = args[[8]] # Save EM_result_file
 
 print(c("a_gamma=", a_gamma, "b_gamma = ", b_gamma, "sample size = ", n_sample))
 
+pp_cis = 1e-4
+pp_trans = 1e-5
+
 
 ###### Define functions to be used
 
@@ -25,15 +28,15 @@ print(c("a_gamma=", a_gamma, "b_gamma = ", b_gamma, "sample size = ", n_sample))
 CI_fish_pi <- function(sum_gamma, p, a, b){
   # p : number of cis or trans variants
   pi_hat = (sum_gamma + a - 1.0) / (p + a + b - 2.0)
-  if(pi_hat <= 0 || pi_hat > 1){
+  pi_var = pi_hat * (1 - pi_hat) / (p + a + b - 2.0)
+  se_pi=0
+
+  if(pi_hat < (a/(a+b)) || pi_hat > 1){
     pi_hat = a/(a+b) # set as prior value
-    se_pi = 0
-  }else{
-    pi_var = pi_hat * (1 - pi_hat) / (p + a + b - 2.0)
-    if(pi_var > 0){
+  }else if(pi_var > 0){
       se_pi = sqrt(pi_var)
-    }else{se_pi=0}
   }
+
   return(c(pi_hat, se_pi))
 }
 
@@ -80,46 +83,35 @@ print(c("number of variants: ", n_vec))
 # a_beta, b_beta will be set for cis- and trans- annotation
 hypcurrent <- NULL
 hypmat <- NULL
+loglike_total = sum(hypdata$log_post_likelihood)
 
 for(i in 1:n_type){
   # print(i)
-  if(n_vec[i] > 0){
-      a_beta = max(n_vec[i] * pp, 1.0001) ; b_beta = n_vec[i] - a_beta;
-    }else{a_beta=1.0001; b_beta = 1e5 - 1.0001;}
-
   if(i == 1){
     sum_gamma = sum(hypdata[, "sum_gamma_cis"])
     sum_Ebeta2 = sum(hypdata[, "sum_Ebeta2_cis"])
+    a_beta = max(n_vec[i] * pp_cis, 1.0001) ;
+    b_beta = max(n_vec[i] - a_beta, 1e4 - a_beta);
   }else{
     sum_gamma = sum(hypdata[, "sum_gamma_trans"])
     sum_Ebeta2 = sum(hypdata[, "sum_Ebeta2_trans"])
+    a_beta = max(n_vec[i] * pp_trans, 1.0001) ;
+    b_beta = max(n_vec[i] - a_beta, 1e6 - a_beta);
   }
+
+  #### Summarize log-likelihood
+  loglike_total = loglike_total +
+          logprior_pi(a_beta, b_beta, prehyp[i, 1]) +
+          logprior_sigma(a_gamma, b_gamma, prehyp[i, 2])
 
   pi_temp = CI_fish_pi(sum_gamma, n_vec[i], a_beta, b_beta)
  # print(c("pi_est and pi_se", round(pi_temp, 3)) )
+
   sigma2_temp = CI_fish_sigma2(sum_Ebeta2, sum_gamma, n_sample, a_gamma, b_gamma)
  # print(c("sigma2_est and sigma2_se", round(sigma2_temp, 3)) )
 
   hypcurrent <- c(hypcurrent, pi_temp, sigma2_temp)
   hypmat <- rbind(hypmat, c(pi_temp[1], sigma2_temp[1]))
-}
-
-
-#### Summarize log-likelihood
-loglike_total = sum(hypdata$log_post_likelihood)
-
-for(i in 1:n_type){
-  if(sum(prehyp[i, ]>0)==2){
-    if(n_vec[i] > 0){
-      a_beta = max(n_vec[i] * pp, 1.0001) ; b_beta = n_vec[i] - a_beta;
-    }else{a_beta=1.0001; b_beta = 1e5 - 1.0001;}
-
-    loglike_total = loglike_total +
-      logprior_pi(a_beta, b_beta, prehyp[i, 1]) +
-      logprior_sigma(a_gamma, b_gamma, prehyp[i, 2])
-  }else{
-    print("pre-hyper-parameter <= 0... ")
-  }
 }
 
 

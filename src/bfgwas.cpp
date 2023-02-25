@@ -825,7 +825,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
 	
 	//BVSRM
 	if (cPar.a_mode==11) {
-        // LD and U_STAT are defined in cPar
+        // LD and mBeta are defined in cPar
         //perform BSVRM analysis
         BVSRM cBvsrm;
 

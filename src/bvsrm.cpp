@@ -316,7 +316,8 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
 
     size_t pos_i, pos_j;
     double xtx_ij;
-    if(r_size > 1) {
+
+    if(r_size > 0) {
         gsl_vector *inv_sigma_subvec = gsl_vector_alloc (r_size);
         get_InvSigmaVec(inv_sigma_subvec, rank_vec, snp_pos);
         // cout << "inv_sigma_subvec = "; PrintVector(inv_sigma_subvec);
@@ -335,11 +336,25 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
                 gsl_matrix_set(D_gamma, jj, ii, xtx_ij);
             }
         }
-        gsl_vector_view D_diag = gsl_matrix_diagonal(D_gamma);
-        gsl_vector_add(&D_diag.vector, inv_sigma_subvec);
+
+        //gsl_vector_view D_diag = gsl_matrix_diagonal(D_gamma);
+        //gsl_vector_add(&D_diag.vector, inv_sigma_subvec);
+        cout << "D_gamma : "; PrintMatrix(D_gamma, r_size, r_size);
+        cout << "mBeta: " ; PrintVector(mbeta_gamma, r_size);
+
         // posterior estimates of beta
         if(LapackSolve(D_gamma, mbeta_gamma, beta_hat)!=0)
             EigenSolve(D_gamma, mbeta_gamma, beta_hat);
+        cout << "Beta_hat: " ; PrintVector(beta_hat, r_size);
+
+        // calculate regression R2
+        gsl_vector *D_beta_hat = gsl_vector_alloc (r_size);
+    gsl_blas_dgemv(CblasNoTrans, 1, D_gamma, beta_hat, 0, D_beta_hat);
+        gsl_blas_ddot (D_beta_hat, beta_hat, &GV);
+        cout << "Regression R2 in selected model = " << GV << endl;
+
+        GV = GV * (double)s_step ; 
+
         for (size_t i=0; i<ns_test; ++i) {
             r = mapPos2Rank[i]; //map to rank
             outfile<<snp_pos[i].chr<<"\t"<<snp_pos[i].bp<<"\t"<<snp_pos[i].rs<<"\t"<< snp_pos[i].a_major<<"\t"<<snp_pos[i].a_minor<<"\t" ;
@@ -352,16 +367,10 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
             // Trans indicator
             outfile << snp_pos[i].indicator_func[1] << "\t";
 
-            if (beta_g[i].second > 0.0) {
-                pi_temp = beta_g[i].second/(double)s_step;
-                if(mapRank2Vec[r]){
-                    beta_mcmc[i] = gsl_vector_get(beta_hat, mapRank2Vec[r]);
-                }else{
-                    pi_temp = 0.0;
-                    beta_mcmc[i] = 0.0;
-                }
-                outfile << pi_temp << "\t" << beta_mcmc[i] << "\t" << mbeta[i]  << "\t" ;
-
+            pi_temp = beta_g[i].second/(double)s_step;
+            
+            if (pi_temp > 0.001) {
+                beta_mcmc[i] = gsl_vector_get(beta_hat, mapRank2Vec[r]);
                 if (snp_pos[i].indicator_func[1]) {
                     em_gamma[1] += pi_temp ;
                     sumbeta2[1] += pi_temp * beta_mcmc[i] * beta_mcmc[i];
@@ -371,17 +380,20 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
                     sumbeta2[0] += pi_temp * beta_mcmc[i] * beta_mcmc[i];
                 }
             }
-            else {
+            else{
                 pi_temp = 0.0;
-                outfile << 0.0 << "\t" << 0.0 << "\t" << mbeta[i] << "\t";
+                beta_mcmc[i] = 0.0;
             }
+
+            outfile << pi_temp << "\t" << beta_mcmc[i] << "\t" << mbeta[i]  << "\t" ;
             outfile << scientific << setprecision(3) << pos_ChisqTest[r].second << "\t"<< pval[r] << "\t" ;
             outfile << r << endl;
         }
         gsl_matrix_free(D_gamma);
         gsl_vector_free(mbeta_gamma);
         gsl_vector_free(beta_hat);
-    } else{
+    } 
+    else{
         for (size_t i=0; i<ns_test; ++i) {
             r = mapPos2Rank[i]; //map to rank
             outfile<<snp_pos[i].chr<<"\t"<<snp_pos[i].bp<<"\t"<<snp_pos[i].rs<<"\t"<< snp_pos[i].a_major<<"\t"<<snp_pos[i].a_minor<<"\t" ;
@@ -390,31 +402,12 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
             }else{
                 outfile << scientific << setprecision(3)  << snp_pos[i].maf << "\t";
             }
-            for (size_t j=0; j < n_type; j++) {
-                if (snp_pos[i].indicator_func[j]) {
-                    outfile << j << "\t";
-                    break;
-                }
-                else if(j == (n_type - 1)) {
-                    outfile << "NA" << "\t";
-                }
-            }
-            if (beta_g[i].second > 0.0) {
-                pi_temp = beta_g[i].second/(double)s_step;
-                beta_mcmc[i] = beta_g[i].first/(double)s_step;
-                outfile << pi_temp << "\t" << beta_mcmc[i] << "\t" << mbeta[i]  << "\t" ;
-                for (size_t j=0; j < n_type; j++) {
-                    if (snp_pos[i].indicator_func[j]) {
-                        em_gamma[j] += pi_temp ; //sum of gammas
-                        sumbeta2[j] += pi_temp * beta_mcmc[i] * beta_mcmc[i]; // sum of gamma * beta * beta
-                        break;
-                    }
-                }
-            }
-            else {
-                pi_temp = 0.0;
-                outfile << 0.0 << "\t" << 0.0 << "\t" << mbeta[i] << "\t";
-            }
+            
+            // Trans indicator
+            outfile << snp_pos[i].indicator_func[1] << "\t";
+
+            // gamma=0; beta_mcmc = 0
+            outfile << 0.0 << "\t" << 0.0 << "\t" << mbeta[i]  << "\t" ;
             outfile << scientific << setprecision(3) << pos_ChisqTest[r].second << "\t"<< pval[r] << "\t" ;
             outfile << r << endl;
         }
@@ -3356,6 +3349,7 @@ double BVSRM::CalcPosterior_SS (const gsl_matrix *D, const gsl_vector *mbeta, gs
 
     // Calculate Sigma_beta = (Omega)^(-1)
     gsl_matrix_memcpy(Omega, &D_sub.matrix); // assign genotype correlation matrix
+    
     gsl_vector_view Omega_diag = gsl_matrix_diagonal(Omega);
     gsl_vector_add(&Omega_diag.vector, sigma_subvec_inv);
     //cout << "Omega : "; PrintMatrix(Omega, s_size, s_size);
