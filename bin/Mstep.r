@@ -5,7 +5,6 @@ options(stringsAsFactors=F)
 args <- commandArgs(TRUE)
 # print(args)
 
-
 hypfile=args[[1]]     # hyptemp file
 k=as.numeric(args[[2]]) # EM iteration number
 pp = as.numeric(args[[3]]) # for setting beta prior of CPP
@@ -15,11 +14,9 @@ n_sample = as.numeric(args[[6]]) # sample size
 hypcurrent_file = args[[7]]    # hypval.current file
 EM_result_file = args[[8]] # Save EM_result_file
 
-
 print(c("a_gamma=", a_gamma, "b_gamma = ", b_gamma, "sample size = ", n_sample))
-
-pp_cis = 1e-4
-pp_trans = 1e-5
+pp_cis = 1e-5
+pp_trans = 1e-6
 
 
 ###### Define functions to be used
@@ -65,8 +62,6 @@ ptm <- proc.time()
 
 hypdata = read.table(hypfile, sep="\t", header=FALSE)
 n_type = 2
-# print(paste(" Total Annotation categories : ", n_type))
-
 colnames(hypdata) <-  c("genome_block_prefix", "log_post_likelihood", "r2", "mFunc_cis", "sum_gamma_cis", "sum_Ebeta2_cis", "mFunc_trans", "sum_gamma_trans", "sum_Ebeta2_trans")
 
 ########### Update hyper parameter values
@@ -91,12 +86,12 @@ for(i in 1:n_type){
     sum_gamma = sum(hypdata[, "sum_gamma_cis"])
     sum_Ebeta2 = sum(hypdata[, "sum_Ebeta2_cis"])
     a_beta = max(n_vec[i] * pp_cis, 1.0001) ;
-    b_beta = max(n_vec[i] - a_beta, 1e4 - a_beta);
+    b_beta = max(n_vec[i] - a_beta, (1/pp_cis) - a_beta);
   }else{
     sum_gamma = sum(hypdata[, "sum_gamma_trans"])
     sum_Ebeta2 = sum(hypdata[, "sum_Ebeta2_trans"])
     a_beta = max(n_vec[i] * pp_trans, 1.0001) ;
-    b_beta = max(n_vec[i] - a_beta, 1e6 - a_beta);
+    b_beta = max(n_vec[i] - a_beta, (1/pp_trans) - a_beta);
   }
 
   #### Summarize log-likelihood

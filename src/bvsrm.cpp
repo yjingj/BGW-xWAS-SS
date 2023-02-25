@@ -337,8 +337,8 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
             }
         }
 
-        //gsl_vector_view D_diag = gsl_matrix_diagonal(D_gamma);
-        //gsl_vector_add(&D_diag.vector, inv_sigma_subvec);
+        gsl_vector_view D_diag = gsl_matrix_diagonal(D_gamma);
+        gsl_vector_add(&D_diag.vector, inv_sigma_subvec);
         cout << "D_gamma : "; PrintMatrix(D_gamma, r_size, r_size);
         cout << "mBeta: " ; PrintVector(mbeta_gamma, r_size);
 
