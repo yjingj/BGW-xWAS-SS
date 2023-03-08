@@ -344,6 +344,7 @@ public:
   void CheckData ();	
   void PrintSummary ();
 	void ReadGenotypes (gsl_matrix *X, gsl_matrix *K);
+  void ReadGenotypes (gsl_matrix *X);
 	void WriteGenotypes(gsl_matrix *X);
   
   // summary statistics;
