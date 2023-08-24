@@ -2855,8 +2855,8 @@ gsl_ran_discrete_t * BVSRM::MakeProposalSS(const size_t &pos, double *p_cond, co
 // MCMC_SS function (Updated 06/15/2022 JY)
 void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &mbeta) {
     
-    cout << "\nRunning MCMC with Summary eQTL Statistics: LD correlation matrix and marginal eQTL effect sizes. \n";
-    cout << "Assuming the marginal effect sizes were obtained with standardized genotype and expression vectors." << endl;
+    cout << "\nRunning MCMC with Summary xQTL Statistics: LD correlation matrix and marginal xQTL effect sizes. \n";
+    cout << "Assuming the marginal effect sizes were obtained with standardized genotype and trait vectors." << endl;
     //cout << "Unique function types = " << n_type << endl;
     //cout << "ni_test = " << ni_test << endl;
     //cout << "ns_test = " << ns_test << endl;

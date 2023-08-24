@@ -1,6 +1,6 @@
 # BGW-xWAS-SS: Bayesian Genome-wide xWAS Using xQTL Summary Statistics
 
-Tool **BGW-TWAS-SS** is developed for leveraging **summary-level** **cis-** and **trans-** xQTL data based on a Bayesian variable selection model to predict genetically regulated molecular quantitative traits. The product of the estimated **cis-** and **trans-** xQTL effect sizes and their corresponding causal posterior probabilities (CPP) of being an xQTL will be taken as variant weights to conduct **xWAS** –– gene-based association test with test GWAS data. This tool is implemented through several command-line scripts described in this manual. Example shell commands are provided in `./Run_BGW.sh`.
+**BGW-xWAS-SS** is developed for leveraging **summary-level** **cis-** and **trans-** xQTL data based on a Bayesian variable selection model to predict genetically regulated molecular quantitative traits and conduct follow-up xWAS analysis. The product of the estimated **cis-** and **trans-** xQTL effect sizes and their corresponding causal posterior probabilities (CPP) of being an xQTL will be taken as variant weights (i.e., **xQTL weights**) to conduct **xWAS** –– gene-based association test with test GWAS data. This tool is implemented through several command-line scripts described in this manual. Example shell commands are provided in `./Run_BGW.sh`.
 
 Please cite our BGW-TWAS papers if you use the tool:
 >[*Bayesian Genome-wide TWAS Method to Leverage both cis- and trans-eQTL Information through Summary Statistics.* 2020 AJHG.](https://www.cell.com/ajhg/pdfExtended/S0002-9297(20)30291-3)
@@ -12,15 +12,16 @@ Please contact **Jingjing Yang (<jingjing.yang@emory.edu>)** if there is any iss
 
 - [Software Installation](#software-installation)
 - [Input Files](#input-files)
-	- [1. Training Gene Expression File](#1-training-gene-expression-file)
-	- [2. Training VCF Genotype Files](#2-training-vcf-genotype-files)
-	- [3. Test Individual-level GWAS Data](#3-test-individual-level-gwas-data)
+	- [1. Individual-level Training Data Files](#1.-individual-level-training-data-files)
+	- [2. xQTL Summary Statistic Files](#2.-xQTL-summary-statistic-files)
+	- [3. Individual-level Test GWAS Data Files](#3.-individual-level-test-gwas-data-files)
 - [Example Usage](#example-usage)
-	- [Step 1. Obtain Summary Statistics](#step-1-obtain-summary-statistics)
-	- [Step 2. Prune Genome Segments](#step-2-prune-genome-segments)
-	- [Step 3. Training Gene Expression Prediction Model](#step-3-training-gene-expression-prediction-model)
-	- [Step 4. Predict Bayesian GReX](#step-4-predict-bayesian-grex)
-	- [Step 5. Association Studies](#step-5-association-studies)
+	- [1. Set up Tool Directories and Input Arguments](#1.-set-up-tool-directories-and-input-arguments)
+	- [2. Generate xQTL Summary Statistics](#2.-generate-xQTL-summary-statistics)
+	- [3. Prune Genome Blocks](#3.-prune-genome-blocks)
+	- [4. Training xQTL Weights by EM-MCMC Algorithm](#4.-training-xQTL-weights-by-em-mcmc-algorithm)
+	- [5. Predict Genetically Regulated Molecular Traits](#5.-predict-genetically-regulated-molecular-traits)
+	- [6. Gene-based Association Test](#6.-gene-based-association-test)
 
 ---
 
@@ -142,17 +143,17 @@ Input files of **BGW-TWAS-SS** tool are all tab-seperated text files:
 
 ## Example Usage
 
-### 1. Set up Tool Directories and Input Arguments:
+### 1. Set up Tool Directories and Input Arguments
 
 ```
 ## Variables for training xQTL weights.
 
 ### Please update tool directory and use different working and LD file directories from below
-BGW_dir=~/GIT/BGW-TWAS-SS # Tool directory
+BGW_dir=~/GIT/BGW-xWAS-SS # Tool directory
 wkdir=${BGW_dir}/Example/ExampleWorkDir
 Genome_Seg_Filehead=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
 gene_name=ABCA7 # target gene
-GeneExpFile=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt # Gene annotation file or Molecular trait file
+GeneInfo=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt # Gene annotation file or Molecular trait file
 
 
 ### Directories for using summary-level xQTL data
@@ -165,11 +166,11 @@ num_cores=2 # Number of cores to be used
 geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files # Genotype VCF directory
 GTfield=GT # specify genotype field "DS" or the corresponding field name in the VCF file for dosage genotype
 
-## Varables for selecting genome blocks for Bayesian variable selection model
-p_thresh=0.00001 # p-value threshold
+## Varables for selecting genome blocks 
+p_thresh=0.001 # p-value threshold
 max_blocks=50 # maximum blocks
 
-## Variables for running MCMC to estimate xQTL weights with selected genome blocks
+## Variables for running EM-MCMC with selected genome blocks
 N=499 # Training sample size
 hfile=${BGW_dir}/Example/hypval.txt
 PCP_thresh=0.0001
@@ -188,7 +189,8 @@ GTfield_test=GT # or DS if doseage data to be used
 * LD file directory `${LDdir}` stays the same for all genes.
 * Please do not directly run the `./Run_BGW.sh` script. Instead, test the bash commands of the following steps one by one.
 
-### 2. Generate xQTL Summary Statistics if only Individual-level Training Data are Provided
+### 2. Generate xQTL Summary Statistics 
+- Generate xQTL summary statistics if only individual-level training data are provided
 
 #### 2.1. Shell script `get_sumstat.sh` will generate single variant xQTL summary statistics (i.e., Score Statistics) in required formats.
 
@@ -197,7 +199,7 @@ GTfield_test=GT # or DS if doseage data to be used
 - `--wkdir` : Specify a working directory with writing access
 - `--LDdir` : Directory of all LD files
 - `--Genome_Seg_Filehead` : Genome segmentation file
-- `-GeneExpFile` : Gene annotation or molecular trait file directory
+- `-GeneInfo` : Gene annotation or molecular trait file directory
 - `--gene_name` : Gene name as in the 5th column of `-GeneExpFile`
 - `--geno_dir` : Directory of individual-level genotype files
 - `--GTfield` : Specify the genotype format in the training vcf file that should be used. Default `GT` for assayed genotype. Alternative value `DS` for the inputed dosage genotype field by [Michigan Imputation Server](https://imputationserver.sph.umich.edu/index.html#!), or other genotype _FIELD_ name as used in the VCF file.
@@ -207,7 +209,7 @@ GTfield_test=GT # or DS if doseage data to be used
 #### 2.3. Example command:
 ```
 ${BGW_dir}/bin/get_sumstat.sh --BGW_dir ${BGW_dir} \
---wkdir ${wkdir} --gene_name ${gene_name} --GeneExpFile ${GeneExpFile} \
+--wkdir ${wkdir} --gene_name ${gene_name} --GeneInfo ${GeneInfo} \
 --geno_dir ${geno_dir} --LDdir ${LDdir} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
 --GTfield ${GTfield} --num_cores ${num_cores} --clean_output 1
 ```
@@ -240,8 +242,8 @@ ${BGW_dir}/bin/get_sumstat.sh --BGW_dir ${BGW_dir} \
 #### 3.3. Example command:
 ```
 ${BGW_dir}/bin/prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
---GeneExpFile ${GeneExpFile} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
---ZScore_dir ${Zscore_dir} \
+--GeneInfo ${GeneInfo} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
+--ZScore_dir ${ZScore_dir} \
 --p_thresh ${p_thresh} --max_blocks ${max_blocks} --clean_output 1
 ```
 

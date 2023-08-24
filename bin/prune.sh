@@ -1,24 +1,26 @@
 #!/usr/bin/bash
 
 ################################################################
-# Step 2: Prune genome blocks
-# Select a subset of genome blocks (up to ${max_blocks}) for joint model training by BGW-TWAS
+# Prune genome blocks
+# Select a subset of genome blocks (up to ${max_blocks}) for joint multivariable model training based on a Bayesian Variable Selection Model
 # Cis blocks are always selected
-# Rank trans blocks with minimum single-variant eQTL p-value < ${p_thresh} by the smallest p-value within block (from the smallest to the largest), and select top ranked trans blocks up to ${max_blocks}.
+# Rank trans blocks with minimum single-variant xQTL p-value < ${p_thresh} by the smallest p-value within block (from the smallest to the largest), and select top ranked trans blocks up to ${max_blocks}.
 ################################################################
 
 # Variable needed for pruning genome blocks
 ###
 # --wkdir : Specify a working directory
 # --gene_name : Specify the gene name/id that should be the same used in `GeneExpFile`
-# --GeneExpFilehead : Directory of the file containing a list of fileheads of segmented genotype files
-# --ZScore_dir : Specify summary score statistic file directory
+# --GeneInfo : Directory of gene annotation or molecular trait file
+# --Genome_Seg_Filehead : Directory of the file containing a list of fileheads of segmented genotype files
+# --Zscore_dir : Specify summary score statistic file directory
 # --p_thresh : Specify p-value threshold
 # --max_blocks : Specify maximum genome block number
+# --clean_output : Remove intermediate files
 
 #################################
 VARS=`getopt -o "" -a -l \
-wkdir:,gene_name:,GeneExpFile:,Genome_Seg_Filehead:,ZScore_dir:,p_thresh:,max_blocks:,clean_output: \
+wkdir:,gene_name:,GeneInfo:,Genome_Seg_Filehead:,Zscore_dir:,p_thresh:,max_blocks:,clean_output: \
 -- "$@"`
 
 if [ $? != 0 ]
@@ -34,9 +36,9 @@ do
     case "$1" in
         --wkdir|-wkdir) wkdir=$2; shift 2;;
         --gene_name|-gene_name) gene_name=$2; shift 2;;
-        --GeneExpFile|-GeneExpFile) GeneExpFile=$2; shift 2;;
+        --GeneInfo|-GeneInfo) GeneInfo=$2; shift 2;;
         --Genome_Seg_Filehead|-Genome_Seg_Filehead) Genome_Seg_Filehead=$2; shift 2;;
-        --ZScore_dir|-ZScore_dir) ZScore_dir=$2; shift 2;;
+        --Zscore_dir|-Zscore_dir) Zscore_dir=$2; shift 2;;
         --p_thresh|-p_thresh) p_thresh=$2; shift 2;;
         --max_blocks|-max_blocks) max_blocks=$2; shift 2;;
         --clean_output|-clean_output) clean_output=$2; shift 2;;
@@ -51,31 +53,31 @@ done
 ##########################################
 p_thresh=${p_thresh:-0.00001}
 max_blocks=${max_blocks:-50}
-clean_output=${clean_output:-0}
+clean_output=${clean_output:-1}
 
 echo Prune for gene ${gene_name} to select up to ${max_blocks} genome blocks, with min p-value less than the threshold ${p_thresh} ...
 
 cd ${wkdir}
 
-if [ -z ${ZScore_dir} ] ; then
-    ZScore_dir=${wkdir}/${gene_name}_Zscores
-    echo Default summary eQTL Zscore statistics file directory: $ZScore_dir
+if [ -z ${Zscore_dir} ] ; then
+    Zscore_dir=${wkdir}/${gene_name}_Zscores
+    echo Default summary xQTL Zscore statistics file directory: $Zscore_dir
 else
-    echo Summary eQTL ZScore statistics file directory is provided as ${ZScore_dir} ;
+    echo Summary xQTL Zscore statistics file directory is provided as ${Zscore_dir} ;
 fi
 
 if [ -s ${Genome_Seg_Filehead} ]; then
 > ${wkdir}/${gene_name}_ranked_segments.txt
 cat ${Genome_Seg_Filehead} | while read filehead ; do
-if [ -s  ${ZScore_dir}/${filehead}.Zscore.txt.gz ] ; then
-    nsnp=$(zcat ${ZScore_dir}/${filehead}.Zscore.txt | grep -v "#CHROM" | wc -l)
+if [ -s  ${Zscore_dir}/${filehead}.Zscore.txt.gz ] ; then
+    nsnp=$(zcat ${Zscore_dir}/${filehead}.Zscore.txt | grep -v "#CHROM" | wc -l)
     if [ "$nsnp" -gt 0 ] ; then
-        zcat ${ZScore_dir}/${filehead}.Zscore.txt | awk -v var=$filehead 'NR == 2 {line = $0; min = $10}; NR >2 && $10 < min {line = $0; min = $10}; END{print var, min}' >> ${wkdir}/${gene_name}_ranked_segments.txt
+        zcat ${Zscore_dir}/${filehead}.Zscore.txt | awk -v var=$filehead 'NR == 2 {line = $0; min = $10}; NR >2 && $10 < min {line = $0; min = $10}; END{print var, min}' >> ${wkdir}/${gene_name}_ranked_segments.txt
     else
-        echo ${ZScore_dir}/${filehead}.Zscore.txt.gz do not have any SNPs...
+        echo ${Zscore_dir}/${filehead}.Zscore.txt.gz do not have any SNPs...
     fi
 else
-    echo A non-empty ${ZScore_dir}/${filehead}.Zscore.txt.gz file dose not exist !
+    echo A non empty ${Zscore_dir}/${filehead}.Zscore.txt.gz file dose not exist !
 fi
 done
 else
@@ -84,13 +86,13 @@ else
 fi
 
 # Grep gene info from ${GeneExpFile}
-gene_info=$(grep -w ${gene_name} ${GeneExpFile} | head -n1)
+gene_info=$(grep -w ${gene_name} ${GeneInfo} | head -n1)
 target_chr=$( echo ${gene_info} | awk 'FS {print $1}');
 start_pos=$(echo ${gene_info} | awk 'FS {print $2}');
 start_pos=$((start_pos - 1000000))
 end_pos=$(echo ${gene_info} | awk 'FS {print $3}');
 end_pos=$((end_pos + 1000000))
-echo ${gene_name} from CHR $target_chr ranging from $start_pos to $end_pos
+echo ${gene_name} from CHR $target_chr has test region ranging from $start_pos to $end_pos
 
 ## for gene_ranked_segs, FS=_.,
 > ${wkdir}/${gene_name}_cis_segments.txt
@@ -103,13 +105,13 @@ cat ${wkdir}/${gene_name}_ranked_segments.txt | while read line ; do
     comp_pval=$(awk -v pval=$pval -v p_thresh=$p_thresh 'BEGIN{ print (pval+0)<(p_thresh+0) }')
     # echo Compare if $pval less than $p_thresh gives comp_pval = $comp_pval ...
 
-    row_1=$(zcat ${ZScore_dir}/${filehead}.Zscore.txt | grep -v "#CHROM" | head -n 1)
+    row_1=$(zcat ${Zscore_dir}/${filehead}.Zscore.txt | grep -v "#CHROM" | head -n 1)
     chr=$(echo ${row_1} | awk '{print $1}' )
     start=$(echo ${row_1} | awk '{print $2}')
 
     if [ "$chr" -eq "${target_chr}" ] ; then
 
-        end=$( zcat ${ZScore_dir}/${filehead}.Zscore.txt | tail -n1 | awk '{print $2}' )
+        end=$( zcat ${Zscore_dir}/${filehead}.Zscore.txt | tail -n1 | awk '{print $2}' )
 
         if [ "$end" -gt "$start_pos" ] && [ "$start" -lt "$start_pos" ] ; then
             echo -e "${filehead}\t${pval}" >> ${gene_name}_cis_segments.txt
@@ -142,7 +144,7 @@ if [ -s ${wkdir}/${gene_name}_select_segments.txt ] ; then
     cut -f1 ${wkdir}/${gene_name}_select_segments.txt > ${wkdir}/${gene_name}_select_filehead.txt
     filehead=${wkdir}/${gene_name}_select_filehead.txt
 else
-    echo "Selected genome blocks for BGW-TWAS is empty. Please check gene annotation."
+    echo "Selected genome blocks is empty. Please check gene annotation."
     exit
 fi
 
@@ -150,6 +152,6 @@ if [ $clean_output -eq 1  ]; then
    rm -f ${wkdir}/${gene_name}_cis_segments.txt  ${wkdir}/${gene_name}_trans_segments.txt ${wkdir}/${gene_name}_ranked_segments.txt
 fi
 
-echo Complete Step2 for pruning genome blocks!
+echo Complete pruning genome blocks!
 
 exit

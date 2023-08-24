@@ -4,7 +4,7 @@
 ############################################
 ############################################
 # Tool directory
-BGW_dir=/home/jyang51/jyang/GITHUB/BGW-TWAS-SS
+BGW_dir=/home/jyang51/jyang/GITHUB/BGW-xWAS-SS
 
 # Working directory to write intermediate files and output files, unique per gene
 wkdir=${BGW_dir}/Example/ExampleWorkDir
@@ -13,7 +13,7 @@ wkdir=${BGW_dir}/Example/ExampleWorkDir
 Genome_Seg_Filehead=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
 
 # Gene annotation file or Molecular trait file
-GeneExpFile=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt
+GeneInfo=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt
 
 # Specify gene name or gene identifier as in the 5th column of the gene expression file.
 gene_name=ABCA7
@@ -21,17 +21,17 @@ gene_name=ABCA7
 ######## Directories for xQTL summary statistic data
 # Parent directory of all LD files
 LDdir=${BGW_dir}/Example/ExampleData/LDdir
-ZScore_dir=${wkdir}/${gene_name}_Zscores # Zscore statistic files
+Zscore_dir=${wkdir}/${gene_name}_Zscores # Zscore statistic files
 
 # Number of cores/parallele_jobs to be used/implemented
 num_cores=2
 
-################################################################
-################################################################
+###################################################
+###################################################
 # Generate xQTL summary statistics (i.e., Score Statistics) if only individual-level training data are provided
 # Run single-variant eQTL analyses with the molecular quantitative traits and genotype data for the same training samples
-################################################################
-################################################################
+####################################################
+####################################################
 # Directory of genotype files (VCF)
 geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
 
@@ -39,7 +39,7 @@ geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
 GTfield=GT
 
 ${BGW_dir}/bin/get_sumstat.sh --BGW_dir ${BGW_dir} \
---wkdir ${wkdir} --gene_name ${gene_name} --GeneExpFile ${GeneExpFile} \
+--wkdir ${wkdir} --gene_name ${gene_name} --GeneInfo ${GeneInfo} \
 --geno_dir ${geno_dir} --LDdir ${LDdir} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
 --GTfield ${GTfield} --num_cores ${num_cores} --clean_output 1
 
@@ -58,12 +58,9 @@ p_thresh=0.001
 # maximum blocks, recommend 50 (default) for real studies
 max_blocks=50
 
-# xQTL summary statistic file directory
-Zscore_dir=${wkdir}/${gene_name}_Zscores
-
 ${BGW_dir}/bin/prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
---GeneExpFile ${GeneExpFile} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
---ZScore_dir ${Zscore_dir} \
+--GeneInfo ${GeneInfo} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
+--Zscore_dir ${Zscore_dir} \
 --p_thresh ${p_thresh} --max_blocks ${max_blocks} --clean_output 1
 
 

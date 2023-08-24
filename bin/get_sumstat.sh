@@ -1,28 +1,28 @@
 #!/usr/bin/bash
 
-################################################################
-################################################################
-# Step 1: obtain summary eQTL data (aka single variant ZScore Statistics and LD files)
-# Run single-variant test on the training genotypes and expression data.
-# First extracts gene location information for target gene from geneFile.
-################################################################
-################################################################
+#####################################################
+#####################################################
+# Obtain summary xQTL data (aka single variant Zscore Statistics and LD files)
+# Run single-variant test with training genotypes and molecular traits.
+#####################################################
+#####################################################
 
 # Variable needed for obtaining summary statistics
 ###
 # --BGW_dir : Specify the directory of BGW-TWAS tool
 # --wkdir : Specify a working directory
 # --gene_name : Specify the gene name that should be the same used in `GeneExpFile`
-# --GeneExpFile : Specify gene expression file directory
+# --GeneInfo : Specify gene annotation or molecular trait file directory
 # --geno_dir : Specify the directory of all genotype files
 # --LDdir : Specify the directory of all LD files
 # --Genome_Seg_Filehead : Specify the file containing the fileheads of all genome segmentations
 # --GTfield : Specify the genotype format in the vcf file that should be used: "GT" (default) or e.g., "DS" for dosage
 # --num_cores : Specify the number of parallele sessions
+# --clean_output : Remove intermediate files
 
 #################################
 VARS=`getopt -o "" -a -l \
-BGW_dir:,wkdir:,gene_name:,GeneExpFile:,geno_dir:,LDdir:,Genome_Seg_Filehead:,GTfield:,num_cores:,clean_output: \
+BGW_dir:,wkdir:,gene_name:,GeneInfo:,geno_dir:,LDdir:,Genome_Seg_Filehead:,GTfield:,num_cores:,clean_output: \
 -- "$@"`
 
 if [ $? != 0 ]
@@ -39,7 +39,7 @@ do
         --BGW_dir|-BGW_dir) BGW_dir=$2; shift 2;;
         --wkdir|-wkdir) wkdir=$2; shift 2;;
         --gene_name|-gene_name) gene_name=$2; shift 2;;
-        --GeneExpFile|-GeneExpFile) GeneExpFile=$2; shift 2;;
+        --GeneInfo|-GeneInfo) GeneInfo=$2; shift 2;;
         --geno_dir|-geno_dir) geno_dir=$2; shift 2;;
         --LDdir|-LDdir) LDdir=$2; shift 2;;
         --Genome_Seg_Filehead|-Genome_Seg_Filehead) Genome_Seg_Filehead=$2; shift 2;;
@@ -79,39 +79,42 @@ mkdir -p ${LDdir}
 echo LD directory ${LDdir}
 
 # Set directory for single variant eQTL summary statistics (Zscore statistics)
-ZScore_dir=${wkdir}/${gene_name}_Zscores
-mkdir -p ${ZScore_dir}
-echo Summary eQTL Zscore statistic directory ${ZScore_dir}
+Zscore_dir=${wkdir}/${gene_name}_Zscores
+mkdir -p ${Zscore_dir}
+echo Summary xQTL Zscore statistic directory ${Zscore_dir}
 cd ${wkdir}
 # echo ${wkdir}
 
-# GeneExpFile columns are Gene Name, Chr, Pos, start, end, expr_data
+# GeneInfo file columns are: Chr, start, end, gene ID, gene name, molecular trait one column per sample
 
-# the following creates a phenotype file for target gene expression trait that includes subject IDs in the first column and gene expression levels in the second column.
-if [ -s ${GeneExpFile} ] ; then
-    head -1 ${GeneExpFile} | awk '{$1=$2=$3=$4=$5=""; print substr($0,6)}' | tr ' ' '\n' > temp_ID.txt
+# Creates a trait (pheno) file for target gene that includes sample IDs in the first column and molecular traits in the second column.
+if [ -s ${GeneInfo} ] ; then
+    head -1 ${GeneInfo} | awk '{$1=$2=$3=$4=$5=""; print substr($0,6)}' | tr ' ' '\n' > temp_ID.txt
 
-    awk -F'[\t]' -v gene=${gene_name} '$5==gene{$1=$2=$3=$4=$5=""; print substr($0,6); exit; }' ${GeneExpFile} | tr ' ' '\n' > exp_temp.txt
-    paste temp_ID.txt exp_temp.txt > ${wkdir}/${gene_name}_exp_trait.txt
+    awk -F'[\t]' -v gene=${gene_name} '$5==gene{$1=$2=$3=$4=$5=""; print substr($0,6); exit; }' ${GeneInfo} | tr ' ' '\n' > trait_temp.txt
 
-    gene_exp_trait=${wkdir}/${gene_name}_exp_trait.txt
+    paste temp_ID.txt trait_temp.txt > ${wkdir}/${gene_name}_trait.txt
+
+    gene_trait=${wkdir}/${gene_name}_trait.txt
+
+    gene_info=$(awk -F'\t' -v gene=${gene_name} '$5==gene{print ; exit; }' ${GeneInfo})
+    target_chr=$(echo ${gene_info} | awk 'FS {print $1}');
+    start_pos=$(echo ${gene_info} | awk 'FS {print $2}');
+    end_pos=$(echo ${gene_info} | awk 'FS {print $3}');
+
 else
-    echo ${GeneExpFile} is empty. Please provide a valid gene expression file.
+    echo ${GeneInfo} is empty. Please provide a valid gene information file.
 fi
 
-# calculate variance of the gene expression trait
-# pv=$(awk '{delta=$2; sum+=$2; ssq+=(delta - avg/NR)^2} END {print ssq/(NR-1)}' ${wkdir}/${gene_name}_exp_trait.txt)
-#echo quantitative gene expression trait variance = $pv
-#echo -e ${gene_name} '\t' ${pv} > ${wkdir}/${gene_name}_geneExp_var.txt
 rm -f temp_ID.txt exp_temp.txt
 
 ## Run in parallele with specified number of processes by -P
-seq 1 ${num_segments}  | xargs -I % -n 1 -P ${num_cores} sh ${BGW_dir}/bin/get_eqtl_sumstat.sh ${gene_exp_trait} ${geno_dir} ${ZScore_dir} ${BGW_dir} ${LDdir} ${Genome_Seg_Filehead} % ${GTfield}
+seq 1 ${num_segments}  | xargs -I % -n 1 -P ${num_cores} sh ${BGW_dir}/bin/get_xqtl_sumstat.sh ${gene_trait} ${geno_dir} ${Zscore_dir} ${BGW_dir} ${LDdir} ${Genome_Seg_Filehead} % ${GTfield} ${target_chr} ${start_pos} ${end_pos}
 
 if [ $clean_output -eq 1 ] ; then
-rm -fr ${ZScore_dir}/output
+rm -fr ${Zscore_dir}/output
 fi
 
-echo Step 1 complete for generating eQTL summary statistics under ${ZScore_dir} and ${LDdir} !
+echo Complete generating xQTL summary statistics under ${Zscore_dir} and ${LDdir} !
 
 exit

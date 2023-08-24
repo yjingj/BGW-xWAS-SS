@@ -62,7 +62,7 @@ void CALCSS::GetSS(gsl_matrix *X, gsl_vector *y, vector< vector<double> > &LD, v
     double yty;
     gsl_blas_ddot(y, y, &yty);
     pheno_var = yty / ((double)(ni_test-1)) ;
-    cout << "Standardized expression variance = " << pheno_var << "\n";
+    // cout << "Standardized trait variance = " << pheno_var << "\n";
 
     // define used variables 
     gsl_vector *xvec_i = gsl_vector_alloc(ni_test);
@@ -78,7 +78,7 @@ void CALCSS::GetSS(gsl_matrix *X, gsl_vector *y, vector< vector<double> > &LD, v
 
     if( isnan(pheno_var)==1 || pheno_var == 0 )
     {
-        cout << "Gene expression variance = 0. Only save LDcorr file...\n";
+        cout << "Trait variance = 0. Only save LDcorr file...\n";
         for (size_t i=0; i<ns_test; ++i) {
         //Lei's change
             gsl_matrix_get_row(xvec_i, X, snp_pos[i].pos);
@@ -106,7 +106,7 @@ void CALCSS::GetSS(gsl_matrix *X, gsl_vector *y, vector< vector<double> > &LD, v
             //Lei's change
             gsl_matrix_get_row(xvec_i, X, snp_pos[i].pos);
             //calculate effect-size
-            if(xvec_i->size != y->size){cerr << "Genotype length dose not equal to gene expression variable length!\n Some samples in the genotype file may not have genotype data!\n Please check your gene expression and genotype input files!\n"; exit(-1);}
+            if(xvec_i->size != y->size){cerr << "Genotype length dose not equal to trait length!\n Some samples in the trait file may not have genotype data!\n Please check your gene trait and genotype input files!\n"; exit(-1);}
             gsl_blas_ddot(xvec_i, y, &xty);
             beta_i = xty / ((double)ni_test);
             beta.push_back(beta_i); // effect size
@@ -169,7 +169,7 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
     IFILE cov_out=NULL;
     IFILE score_out=NULL;
     if( (isnan(pheno_var) != 1) && (pheno_var != 0)) {
-        cout << "\nThe pheno variance != 0, writing z_score and LDcorr files. \n";
+        cout << "\nWriting z_score and LDcorr files. \n";
         if(zipSS){
             cov_file_str +=".LDcorr.txt.gz";
             cov_out = ifopen(cov_file_str, "w", InputFile::BGZF);

@@ -662,11 +662,11 @@ void BFGWAS::BatchRun (PARAM &cPar)
 	if(!cPar.inputSS || cPar.final_EM){
 		//Read individual Files for the first time and filt variants
 		cPar.ReadFiles();
-		cout << "\nReading individual-level reference genotype/expression files first time cost " << (clock()-time_begin)/(double(CLOCKS_PER_SEC)*60.0) << " mints \n";
+		cout << "\nReading individual-level reference genotype/trait files first time cost " << (clock()-time_begin)/(double(CLOCKS_PER_SEC)*60.0) << " mints \n";
 	} else{
 		//Read Sum Stat Files
 		cPar.ReadSS();
-		cout << "\nReading reference eQTL Summary Stat files cost " << (clock()-time_begin)/(double(CLOCKS_PER_SEC)*60.0) << " mints \n\n";
+		cout << "\nReading reference xQTL Summary Stat files cost " << (clock()-time_begin)/(double(CLOCKS_PER_SEC)*60.0) << " mints \n\n";
 	}
 	if (cPar.error==true) {cout<<"error! fail to read input data files. "<<endl; return;}
     
@@ -685,13 +685,13 @@ void BFGWAS::BatchRun (PARAM &cPar)
 		gsl_matrix *K=gsl_matrix_alloc (cPar.ni_test, cPar.ni_test);// kinship matrix
 		gsl_vector *y=gsl_vector_alloc (cPar.ni_test); // expression response variable
 		
-		//set expression response variable vector y
-		cout << "copy expression response variable success ... "<< endl;
+		//set trait variable vector y
+		cout << "copy trait success ... "<< endl;
 		cPar.CopyPheno (y);
 
 		//if ( (!cPar.file_vcf.empty()) || (!cPar.file_geno.empty()) ) {
         	// reorder y for reading vcf/genotype files
-        cout << "Reorder expression response variable if needed ... "<< endl;
+        cout << "Reorder trait variable if needed ... "<< endl;
         cPar.ReorderPheno(y); // setup VcfSampleID_test
     	//} // reorder y for reading vcf files
 
@@ -750,7 +750,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
         gsl_matrix_free(K);
         gsl_vector_free(y);
 
-        cout << "Writting eQTL Summary Statistics Success ... \n "<< endl;
+        cout << "Writting xQTL Summary Statistics Success ... \n "<< endl;
         //exit(EXIT_SUCCESS);
     }    
 	
@@ -846,7 +846,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
         	gsl_matrix *X_Genotype = gsl_matrix_alloc (cPar.ns_test, cPar.ni_test);
         	cPar.ReadGenotypes (X_Genotype, K);
 			// cout << " success standardize vector ";
-	        cout << "Load individual-level reference genotype data cost " << (clock()-time_readfile)/(double(CLOCKS_PER_SEC)*60.0) << " mints\n";
+	        cout << "Load individual-level training genotype data cost " << (clock()-time_readfile)/(double(CLOCKS_PER_SEC)*60.0) << " mints\n";
 	        gsl_matrix_free(K);
 
 	        // Calculate SS
@@ -858,12 +858,12 @@ void BFGWAS::BatchRun (PARAM &cPar)
         	cPar.trace_G = SS.trace_G;
 
 	        // calculate pheno_var; generate snp_pos
-	        cout << "Get eQTL Summary Statistics costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
+	        cout << "Get xQTL Summary Statistics costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
 	        // save summary statistics; JY updated 06/15/2022
 	        if(cPar.saveSS){
 	        	time_start=clock();
 	        	SS.WriteSS(cPar.LD, cPar.mbeta, cPar.Z_SCORE, cPar.pval_vec);
-	        	cout << "Write eQTL Summary Statistics costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
+	        	cout << "Write xQTL Summary Statistics costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
 	        }
 	        cBvsrm.CopyFromSS(SS);
 
@@ -954,8 +954,8 @@ void BFGWAS::WriteLog (int argc, char ** argv, PARAM &cPar)
 		outfile<<"## Region_PIP = "<<(double)cPar.region_pip <<endl;
 
 	}else if (cPar.a_mode >= 51 && cPar.a_mode <= 54){
-		outfile<<"## Expression mean = "<<cPar.pheno_mean<<endl;
-		outfile<<"## Expression_var = "<<cPar.pheno_var<<endl;
+		outfile<<"## Trait mean = "<<cPar.pheno_mean<<endl;
+		outfile<<"## Trait var = "<<cPar.pheno_var<<endl;
 	}
 	
 	outfile<<"##"<<endl;

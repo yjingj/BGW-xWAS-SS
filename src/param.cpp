@@ -161,7 +161,7 @@ void PARAM::ReadFiles (void)
 			//cout << "First time reading Plink bed file success! \n";
 	    }else{
 	    	if (!file_pheno.empty()){
-	    		cout << "\nStart reading pheno file ...\n";
+	    		cout << "\nStart reading trait file ...\n";
 	        	if (ReadFile_pheno (file_pheno, indicator_idv, pheno, InputSampleID, ni_total)==false)
 	            	{error=true;}
 	            if(!file_sample.empty()){
@@ -171,7 +171,7 @@ void PARAM::ReadFiles (void)
 	        	ProcessPheno();
 	        	// obtain ni_test, ni_total, PhenoID2Ind, PhenoID2Pos before reading genotypes
 	    	}else{
-	    		cout << "No phenotype input file, extracting sample information from the vcf/genotype files.\n";
+	    		cout << "No trait input file, extracting sample information from the vcf/genotype files.\n";
 	    		if (!file_vcf.empty()) {
 	        		getIDVvcf(file_vcf, indicator_idv,  ni_total, GTfield);
 	      		}else if (!file_geno.empty()) {
@@ -252,7 +252,7 @@ void PARAM::CheckParam (void)
 	if (!file_geno.empty()) {flag++;}
 
 	if (file_pheno.empty() && (a_mode==43) ) {
-		cout<<"error! phenotype file is required."<<endl; error=true;
+		cout<<"error! trait file is required."<<endl; error=true;
 	}
 
 	str=file_snps;
@@ -321,7 +321,7 @@ void PARAM::CheckData (void) {
     	// cout << "snp_pos size : " << snp_pos.size() << endl;
 
     	cout<<"\n## number of total individuals = "<<ni_total<<endl;
-		cout<<"## number of individuals with full phenotypes = "<<ni_test<<endl;
+		cout<<"## number of individuals with traits = "<<ni_test<<endl;
 		cout<<"## number of total SNPs = "<<ns_total<<endl;
 		cout<<"## number of analyzed SNPs = "<<ns_test<<endl;
 	}else{
@@ -566,7 +566,7 @@ void PARAM::CheckCvt ()
 //reorder phenotypes
 void PARAM::ReorderPheno(gsl_vector *y)
 {
-	cout << "Reorder phenotype with respect to sample orders in the vcf/geno files... "<< endl;
+	cout << "Reorder trait with respect to sample orders in the vcf/geno files... "<< endl;
 
     double pheno_i;
     string id;
@@ -575,8 +575,8 @@ void PARAM::ReorderPheno(gsl_vector *y)
     VcfSampleID_test.clear(); // set VCFSampleID_test
 
     cout << "Total number of samples in the genotype file: " << VcfSampleID.size() << endl;
-	cout << "Total number of samples in the phenotype file: " << PhenoID2Pos.size() << endl;
-	cout << "Total number of samples in with both geno and pheno data: " << PhenoID2Ind.size() << endl;
+	cout << "Total number of samples in the trait file: " << PhenoID2Pos.size() << endl;
+	cout << "Total number of samples in with both geno and trait data: " << PhenoID2Ind.size() << endl;
 
 	// indicator_idv is of the same order as in the phenotype file
 	GenoSampleID2Ind.clear();
@@ -697,10 +697,10 @@ void PARAM::CopyPheno (gsl_vector *y)
         mystd = 1.0 / sqrt(mystd);
         gsl_vector_scale(y, mystd);
 	}else{
-		cout << "Phenotype file only has one test sample ..." << endl;
+		cout << "Trait file only has one test sample ..." << endl;
 		exit(-1);
 	}
-    cout << "success standardize phenotype vector";
+    cout << "Success standardize trait vector";
 	return;
 }
 

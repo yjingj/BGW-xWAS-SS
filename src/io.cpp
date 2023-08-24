@@ -171,7 +171,7 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
     infile_code.close();
     infile_code.clear();
 
-    cout << "Number of annotation categories " << n_type << endl;
+    //cout << "Number of cis and trans annotation categories " << n_type << endl;
     mFunc.assign(n_type, 0);
 
     // Load annotation file...
@@ -276,8 +276,8 @@ bool Empty_anno (vector<bool> &indicator_snp, vector<SNPINFO> &snpInfo, size_t &
         mFunc[0]++;
     }
 
-    cout << "\nNumber of annotation categories: " << n_type << endl;
-    cout << "Number of variants per category: "; PrintVector(mFunc);
+    //cout << "\nNumber of annotation categories: " << n_type << endl;
+    cout << "Number of cis and trans variants: "; PrintVector(mFunc);
     return true;
 }
 
@@ -291,8 +291,8 @@ bool Empty_anno (vector<SNPPOS> &snp_pos, size_t &n_type, vector<size_t> &mFunc)
         snp_pos[i].indicator_func.assign(n_type, 1);
         mFunc[0]++;
     }
-    cout << "\nNumber of annotation categories: " << n_type << endl;
-    cout << "Number of variants per category: "; PrintVector(mFunc);
+    // cout << "\nNumber of annotation categories: " << n_type << endl;
+    cout << "Number of cis and trans variants: "; PrintVector(mFunc);
     return true;
 }
 
@@ -611,7 +611,7 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
                    }
                    pch = (nch == NULL) ? NULL : nch+1;
                }
-               cout << "\nMatched phenotype sample IDs in the VCF file: " << SampleVcfPos.size() << "\n";
+               cout << "\nMatched trait sample IDs in the VCF file: " << SampleVcfPos.size() << "\n";
             }
             continue;
         }
@@ -2720,7 +2720,7 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
             pch = (char *)line.c_str();
             nch = strchr(pch, '\t');
             n_type = strtol(nch, NULL, 0);
-            // cout << "Number of annotation categories" << n_type << endl;            
+            // cout << "Number of cis and trans categories" << n_type << endl;            
             continue;
         }
         else {
@@ -2735,7 +2735,7 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
     infile_code.close();
     infile_code.clear();
     
-    cout << "Number of annotation categories: " << n_type << endl;
+    cout << "Number of cis and trans categories: " << n_type << endl;
     mFunc.assign(n_type, 0);
     // Load annotation file...
     // cout<<"Reading annotation file: "<<file_anno<<endl;
@@ -3013,8 +3013,8 @@ bool setANNOCode (long int &start_pos, long int &end_pos, string &target_chr, lo
             }
         }
     //if(snp_i < 10)  cout << func_type << " with code " << func_code << endl;
-    cout << "Number of annotation categories " << n_type << endl;
-    cout << "Number of variants per category: "; PrintVector(mFunc);
+    // cout << "Number of cis and trans annotation categories " << n_type << endl;
+    cout << "Number of variants per cis and trans category: "; PrintVector(mFunc);
     return true;
 }
 
