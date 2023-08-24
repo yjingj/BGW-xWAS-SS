@@ -2988,7 +2988,7 @@ bool setANNOCode (long int &start_pos, long int &end_pos, string &target_chr, lo
     else begin_window = 0;
     long int end_window = end_pos;
     end_window = end_window + window_size;
-    // cout << "chr " << test_chrom << " begin_window " << begin_window  << "; " << "end_window " << end_window  << "; "  << endl;
+    cout << "chr = " << target_chr << "; begin_window = " << begin_window  << "; end_window = " << end_window  << "; "  << endl;
 // for loop to loop through the indicator snp vector // the size of the vector
     for (size_t snp_i = 0; snp_i < snp_pos.size(); snp_i++){
         snp_pos[snp_i].indicator_func.assign(n_type, 0);
@@ -3001,7 +3001,7 @@ bool setANNOCode (long int &start_pos, long int &end_pos, string &target_chr, lo
                if( begin_window <= b_pos && end_window >= b_pos) {
                       snp_pos[snp_i].indicator_func[0] = 1; //CIS
                       mFunc[0]++;
-                      }
+                    }
                else {
                   snp_pos[snp_i].indicator_func[1] = 1; //TRANS
                   mFunc[1]++;

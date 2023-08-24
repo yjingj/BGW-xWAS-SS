@@ -7,17 +7,19 @@ args <- commandArgs(TRUE)
 
 hypfile=args[[1]]     # hyptemp file
 k=as.numeric(args[[2]]) # EM iteration number
-pp = as.numeric(args[[3]]) # for setting beta prior of CPP
-a_gamma = as.numeric(args[[4]]) # Setting IG prior of sigma2
-b_gamma = as.numeric(args[[5]])
-n_sample = as.numeric(args[[6]]) # sample size
-hypcurrent_file = args[[7]]    # hypval.current file
-EM_result_file = args[[8]] # Save EM_result_file
+pp_cis = as.numeric(args[[3]]) # for setting beta prior of CPP for cis SNPS
+pp_trans = as.numeric(args[[4]]) # for setting beta prior of CPP for trans SNPs
+a_gamma = as.numeric(args[[5]]) # Setting IG prior of sigma2
+b_gamma = as.numeric(args[[6]]) # Setting IG prior of sigma2
+n_sample = as.numeric(args[[7]]) # sample size
+hypcurrent_file = args[[8]]    # hypval.current file
+EM_result_file = args[[9]] # Save EM_result_file
 
-print(c("a_gamma=", a_gamma, "b_gamma = ", b_gamma, "sample size = ", n_sample))
-pp_cis = 1e-5
-pp_trans = 1e-6
+print(c("pp_cis", pp_cis, "; pp_trans = ", pp_trans,  "; sample size = ", n_sample))
+print(c("a_gamma", a_gamma, "; b_gamma = ", b_gamma))
 
+# pp_cis = 0.0001; pp_trans = 0.0001
+# pp_cis = 1e-5; pp_trans = 1e-6
 
 ###### Define functions to be used
 

@@ -9,7 +9,7 @@
 
 #################################
 VARS=`getopt -o "" -a -l \
-BGW_dir:,wkdir:,gene_name:,GeneExpFile:,select_filehead:,LDdir:,Zscore_dir:,Nsample:,maf:,hfile:,em:,burnin:,Nmcmc:,PCP_thresh:,num_cores:,clean_output: \
+BGW_dir:,wkdir:,gene_name:,GeneExpFile:,select_filehead:,LDdir:,Zscore_dir:,Nsample:,maf:,hfile:,em:,burnin:,Nmcmc:,PCP_thresh:,num_cores:,pp_cis:,pp_trans:,a_gamma:,b_gamma:,clean_output: \
 -- "$@"`
 
 if [ $? != 0 ]
@@ -18,6 +18,9 @@ then
     exit 1
 fi
 
+##########################################
+# Setting Input Argument Values
+##########################################
 eval set -- "$VARS"
 
 while true
@@ -31,13 +34,17 @@ do
         --LDdir|-LDdir) LDdir=$2; shift 2;;
         --Zscore_dir|-Zscore_dir) Zscore_dir=$2; shift 2;;
         --Nsample|-Nsample) Nsample=$2; shift 2;;
-        --maf|-maf) N=$2; shift 2;;
+        --maf|-maf) maf=$2; shift 2;;
 		--hfile|-hfile) hfile=$2; shift 2;;
 		--em|-em) em=$2; shift 2;;
 		--burnin|-burnin) burnin=$2; shift 2;;
 		--Nmcmc|-Nmcmc) Nmcmc=$2; shift 2;;
         --PCP_thresh|-PCP_thresh) PCP_thresh=$2; shift 2;;
         --num_cores|-num_cores) num_cores=$2; shift 2;;
+        --pp_cis|-pp_cis) pp_cis=$2; shift 2;;
+        --pp_trans|-pp_trans) pp_trans=$2; shift 2;;
+        --a_gamma|-a_gamma) a_gamma=$2; shift 2;;
+        --b_gamma|-b_gamma) b_gamma=$2; shift 2;;
         --clean_output|-clean_output) clean_output=$2; shift 2;;
         --) shift;break;;
         *) echo "Wrong input arguments!";exit 1;;
@@ -54,7 +61,15 @@ burnin=${burnin:-10000}
 Nmcmc=${Nmcmc:-10000}
 PCP_thresh=${PCP_thresh:-0.0001}
 num_cores=${num_cores:-1}
+pp_cis=${pp_cis:-0.00001}
+pp_trans=${pp_trans:-0.000001}
+a_gamma=${a_gamma:-1}
+b_gamma=${b_gamma:-2}
 clean_output=${clean_output:-1}
+
+
+echo num_cores = ${num_cores};
+echo PCP_thresh = ${PCP_thresh}
 
 ### Extract gene info from ${GeneExpFile}
 gene_info=$(awk -F'\t' -v gene=${gene_name} '$5==gene{print ; exit; }'  ${GeneExpFile})
@@ -94,11 +109,13 @@ ${BGW_dir}/bin/gen_mkf.pl \
 --hfile ${hfile} --Nsample ${Nsample} --maf ${maf} \
 --targ ${target_chr} --start ${start_pos} --end ${end_pos} \
 --Nburnin ${burnin} --Nmcmc ${Nmcmc} \
+--pp_cis ${pp_cis} --pp_trans ${pp_trans} \
+--a_gamma ${a_gamma} --b_gamma ${b_gamma} \
 --em ${em} --mf ${mkfile}
 
 ### Run the makefile (./BGW-TWAS/bin/run_Estep.sh and ./BGW-TWAS/bin/run_Mstep.sh are called by make)
 make -f ${mkfile} clean
-echo Run make with $mkfile and j=$num_cores parallel jobs
+echo Run make with $mkfile and j=${num_cores} parallel jobs
 make -k -C ${wkdir}/${gene_name}_EM_MCMC -f ${mkfile} -j ${num_cores} > ${wkdir}/${gene_name}_EM_MCMC/make.output 2> ${wkdir}/${gene_name}_EM_MCMC/make.err
 
 ## Only save eQTL weights for SNPs with PCP > PCP_thresh

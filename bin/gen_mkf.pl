@@ -81,9 +81,10 @@ my $win="100";
 my $burnin="10000";
 my $Nmcmc="10000";
 my $NmcmcLast="10000";
-my $a_gamma="1"; # shape parameter; mode 1 in the gamma distribution
-my $b_gamma="2"; # scale parameter
-my $pcp_prior="1e-5"; # prior causal probability
+my $pp_cis="1e-5"; # prior PCP for cis SNPs
+my $pp_trans="1e-6"; # prior PCP for trans SNPs
+my $a_gamma="1"; # prior PCP for cis SNPs
+my $b_gamma="2"; # prior PCP for trans SNPs
 
 #initialize options
 Getopt::Long::Configure ('bundling');
@@ -95,6 +96,7 @@ if(!GetOptions ('h'=>\$help, 'v'=>\$verbose, 'd'=>\$debug, 'm'=>\$man,
                 'hfile:s'=>\$hfile, 'Nsample:s'=>\$Nsample, 'maf:s'=>\$maf,
                 'targ:s'=>\$target_chr, 'start:s'=>\$start_pos, 'end:s'=>\$end_pos,
                 'Nburnin:s'=>\$burnin, 'Nmcmc:s'=>\$Nmcmc, 'NmcmcLast:s'=>\$NmcmcLast,
+                'pp_cis:s'=>\$pp_cis, 'pp_trans:s'=>\$pp_trans,
                 'a_gamma:s'=>\$a_gamma, 'b_gamma:s'=>\$b_gamma,
                 'win:s'=>\$win, 'smin:s'=>\$smin, 'smax:s'=>\$smax,
                 'em:i'=>\$EM, 'mf:s'=>\$makeFile)
@@ -223,7 +225,7 @@ makeJob($tgt, $dep, @cmd);
 
 $tgt = "$wkdir/R$i.OK";
 $dep = "$wkdir/Eoutput/cp_param$i.OK $wkdir/pre_em.OK";
-@cmd = "Rscript --vanilla ${rs} $hypfile $i $pcp_prior $a_gamma $b_gamma $Nsample $hypcurrent $wkdir/Eoutput/EM_result.txt >> $wkdir/Rout.txt 2>&1";
+@cmd = "Rscript --vanilla ${rs} $hypfile $i $pp_cis $pp_trans $a_gamma $b_gamma $Nsample $hypcurrent $wkdir/Eoutput/EM_result.txt >> $wkdir/Rout.txt 2>&1";
 makeJob($tgt, $dep, @cmd);
 
 
@@ -264,7 +266,7 @@ for $i (1..$EM){
 
   $tgt = "$wkdir/R$i.OK";
   $dep = "$wkdir/Eoutput/cp_param$i.OK";
-  @cmd = "Rscript --vanilla $rs $hypfile $i $pcp_prior $a_gamma $b_gamma $Nsample $hypcurrent $wkdir/Eoutput/EM_result.txt >> $wkdir/Rout.txt 2>&1";
+  @cmd = "Rscript --vanilla $rs $hypfile $i $pp_cis $pp_trans $a_gamma $b_gamma $Nsample $hypcurrent $wkdir/Eoutput/EM_result.txt >> $wkdir/Rout.txt 2>&1";
   makeJob($tgt, $dep, @cmd);
 
 }
