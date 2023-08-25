@@ -12,16 +12,16 @@ Please contact **Jingjing Yang (<jingjing.yang@emory.edu>)** if there is any iss
 
 - [Software Installation](#software-installation)
 - [Input Files](#input-files)
-	- [1. Individual-level Training Data Files](#1.-individual-level-training-data-files)
+	- [1. Individual Training Data Files](#1.-individual-training-data-files)
 	- [2. xQTL Summary Statistic Files](#2.-xQTL-summary-statistic-files)
-	- [3. Individual-level Test GWAS Data Files](#3.-individual-level-test-gwas-data-files)
+	- [3. Individual Test GWAS Data Files](#3.-individual-test-gwas-data-files)
 - [Example Usage](#example-usage)
 	- [1. Set up Tool Directories and Input Arguments](#1.-set-up-tool-directories-and-input-arguments)
 	- [2. Generate xQTL Summary Statistics](#2.-generate-xQTL-summary-statistics)
 	- [3. Prune Genome Blocks](#3.-prune-genome-blocks)
-	- [4. Training xQTL Weights by EM-MCMC Algorithm](#4.-training-xQTL-weights-by-em-mcmc-algorithm)
+	- [4. Training xQTL Weights](#4.-training-xQTL-weights)
 	- [5. Predict Genetically Regulated Molecular Traits](#5.-predict-genetically-regulated-molecular-traits)
-	- [6. Gene-based Association Test](#6.-gene-based-association-test)
+	- [6. Gene based Association Test](#6.-gene-based-association-test)
 
 ---
 
@@ -61,7 +61,7 @@ Input files of **BGW-TWAS-SS** tool are all tab-seperated text files:
 * **Summary-level GWAS data files** include a text file of Z-score statistics by single variant GWAS test.
 
 
-### 1. Individual-level Training Data Files
+### 1. Individual Training Data Files
 #### 1.1. Gene Annotation and Molecular Quantitative Trait File
 
 * Provide data of the molecular quantitative traits of training samples as in `./Example/ExampleData/Gene_Exp_example.txt`, with one gene per row, and one sample per column starting from the 6th column. The first five columns are required to be gene annotation information including chromosome number, starting position, ending position, Gene ID, and Gene Name or second set of Gene ID. 
@@ -134,7 +134,7 @@ Input files of **BGW-TWAS-SS** tool are all tab-seperated text files:
 *******************************************************
 
 
-### 3. Individual-level Test GWAS Data Files
+### 3. Individual Test GWAS Data Files
 
 * **Test [VCF Genotype files](http://samtools.github.io/hts-specs/VCFv4.1.pdf)** are required for predicting genetically regulated molecular traits of test samples. Different from the training VCF genotype files, these test genotype files should be one per chromosome containing `_CHR[chr_num]_` in their file name, sorted by position, zipped by `bgzip`, and indexed by `TABIX` tool. For example, see `./Example/ExampleData/genotype_data_files/Test_CHR*_geno.vcf.gz`.
 
@@ -251,7 +251,7 @@ ${BGW_dir}/bin/prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 #### 3.4. Output files
 * A list of filehead of selected genome blocks and the corresponding minimum within-block single xQTL analysis p-values are given (one genome block per row) in the file of `${wkdir}/${gene_name}_select_filehead.txt`, which will be used to train xQTL weights by **EM-MCMC** algorithm.
 
-### 4. Training xQTL Weights by EM-MCMC Algorithm
+### 4. Training xQTL Weights
 
 #### 4.1. Script `EM-MCMC.sh` will train xQTL weights
 * Summary Zscore statistics and LD files for selected genome blocks will be used to run EM-MCMC algorithm, 
@@ -339,7 +339,7 @@ ${BGW_dir}/bin/Step4_get_test_grex.sh --BGW_dir ${BGW_dir} \
 
 * File `${wkdir}/${gene_name}\_sumPCP` contains the sum of posterior causal probabilities (PCP) of all analyzed SNPs, the sum of cis-SNPs, and the sum of trans-SNPs, which are the expected number of total eQTL, cis-eQTL, and trans-eQTL for the target gene.
 
-### 6. Gene-based Association Test
+### 6. Gene based Association Test
 
 * If using summary-level GWAS data for TWAS, Step 4 will not need to be implemented. One can use the weight files `${wkdir}/${gene_names}_BGW_eQTL_weights.txt` to select the test SNPs presenting in this weight file. 
 
