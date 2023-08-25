@@ -83,8 +83,8 @@ my $Nmcmc="10000";
 my $NmcmcLast="10000";
 my $pp_cis="1e-5"; # prior PCP for cis SNPs
 my $pp_trans="1e-6"; # prior PCP for trans SNPs
-my $a_gamma="1"; # prior PCP for cis SNPs
-my $b_gamma="2"; # prior PCP for trans SNPs
+my $a_gamma="1"; # hyper parameter for inverse-gamma prior of effect size variance
+my $b_gamma="2"; # hyper parameter for inverse-gamma prior of effect size variance
 
 #initialize options
 Getopt::Long::Configure ('bundling');

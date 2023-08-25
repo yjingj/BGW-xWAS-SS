@@ -71,38 +71,48 @@ ${BGW_dir}/bin/prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 ################################################################
 # Sample size
 Nsample=499
-
 # Initial hyper parameter values
 hfile=${BGW_dir}/bin/hypval.init.txt
-
-# PCP threshold
-PCP_thresh=0.0001
-
+# CPP threshold
+CPP_thresh=0.0001
 # Selected filehead file
 select_filehead=${wkdir}/${gene_name}_select_filehead.txt
 
-#### Test generating make file
-maf=0.01; em=2; burnin=10000; Nmcmc=10000
+#### Input variables for the MCMC algorithm
+# MAF threshold to filter out rare variants
+maf=0.01;
+# number of EM iterations
+em=2;
+# number of burnin iterations
+burnin=10000;
+# number of mcmc iterations
+Nmcmc=10000
+# prior causal probability for cis and trans xQTL
+pp_cis=0.0002; pp_trans=0.0001;
+# hyper parameter in the inverse-gamma prior for xQTL effect size variance
+a_gamma=1; b_gamma=2
 
 #### Run EM-MCMC.sh file
 ${BGW_dir}/bin/EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
---GeneExpFile ${GeneExpFile} --select_filehead ${select_filehead} \
+--GeneInfo ${GeneInfo} --select_filehead ${select_filehead} \
 --LDdir ${LDdir} --Zscore_dir ${Zscore_dir} \
 --Nsample ${Nsample} --maf ${maf} --hfile ${hfile} \
 --em ${em} --burnin ${burnin} --Nmcmc ${Nmcmc} \
---PCP_thresh ${PCP_thresh} --num_cores ${num_cores} \
+--CPP_thresh ${CPP_thresh} --num_cores ${num_cores} \
+--pp_cis ${pp_cis} --pp_trans ${pp_trans} \
+--a_gamma ${a_gamma} --b_gamma ${b_gamma} \
 --clean_output 0
 
 ################################################################
 ################################################################
-# Predict GReX for test samples with individual-level GWAS data
+# Predict genetically regulated molecular traits for test samples with individual-level GWAS data
 ## Need further test
 ################################################################
 ################################################################
 
-### Variables for Step 4
-BGW_weight=${wkdir}/${gene_name}_BGW_eQTL_weights.txt
+### Input variables
+BGW_weight=${wkdir}/${gene_name}_BGW_xQTL_weights.txt
 test_geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
 test_geno_filehead=${BGW_dir}/Example/ExampleData/test_geno_filehead.txt
 test_pheno=${BGW_dir}/Example/ExampleData/Test_pheno.txt
