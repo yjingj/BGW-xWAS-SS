@@ -12,7 +12,7 @@ Please contact **Jingjing Yang (<jingjing.yang@emory.edu>)** if there is any iss
 
 - [Software Installation](#software-installation)
 - [Input Files](#input-files)
-	- [1. Individual Training Data Files](#1.-individual-training-data-files)
+	- [1. Individual Training Data Files](#individual-training-data-files)
 	- [2. xQTL Summary Statistic Files](#2.-xQTL-summary-statistic-files)
 	- [3. Individual Test GWAS Data Files](#3.-individual-test-gwas-data-files)
 - [Example Usage](#example-usage)
