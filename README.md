@@ -12,7 +12,7 @@ Please contact **Jingjing Yang (<jingjing.yang@emory.edu>)** if there is any iss
 
 - [Software Installation](#software-installation)
 - [Input Files](#input-files)
-	- [1. Individual Training Data Files](#individual-training-data-files)
+	- [1. Individual Training Data Files](#1.individual-training-data-files)
 	- [2. xQTL Summary Statistic Files](#2.-xQTL-summary-statistic-files)
 	- [3. Individual Test GWAS Data Files](#3.-individual-test-gwas-data-files)
 - [Example Usage](#example-usage)
@@ -61,7 +61,7 @@ Input files of **BGW-TWAS-SS** tool are all tab-seperated text files:
 * **Summary-level GWAS data files** include a text file of Z-score statistics by single variant GWAS test.
 
 
-### 1. Individual Training Data Files
+### 1.Individual Training Data Files
 #### 1.1. Gene Annotation and Molecular Quantitative Trait File
 
 * Provide data of the molecular quantitative traits of training samples as in `./Example/ExampleData/Gene_Exp_example.txt`, with one gene per row, and one sample per column starting from the 6th column. The first five columns are required to be gene annotation information including chromosome number, starting position, ending position, Gene ID, and Gene Name or second set of Gene ID. 
