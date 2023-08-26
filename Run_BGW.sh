@@ -87,9 +87,9 @@ em=2;
 burnin=10000;
 # number of mcmc iterations
 Nmcmc=10000
-# prior causal probability for cis and trans xQTL
-pp_cis=0.0002; pp_trans=0.0001;
-# hyper parameter in the inverse-gamma prior for xQTL effect size variance
+# minimum prior causal probability for cis and trans xQTL
+pp_cis=0.0003; pp_trans=0.0002;
+# hyper shape and scale parameters in the inverse-gamma prior for xQTL effect size variance
 a_gamma=1; b_gamma=2
 
 #### Run EM-MCMC.sh file
@@ -115,16 +115,15 @@ ${BGW_dir}/bin/EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 BGW_weight=${wkdir}/${gene_name}_BGW_xQTL_weights.txt
 test_geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
 test_geno_filehead=${BGW_dir}/Example/ExampleData/test_geno_filehead.txt
-test_pheno=${BGW_dir}/Example/ExampleData/Test_pheno.txt
+test_pheno=${BGW_dir}/Example/ExampleData/test_pheno.txt
 GTfield_test=GT #or DS
 
-# n_sample=499
-# n_sample=158
-${BGW_dir}/bin/get_test_grex.sh --BGW_dir ${BGW_dir} \
+${BGW_dir}/bin/get_test_trait.sh --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
 --BGW_weight ${BGW_weight} --test_geno_dir ${test_geno_dir} \
 --test_geno_filehead ${test_geno_filehead} \
---GTfield ${GTfield} --test_pheno ${test_pheno} \
---num_cores ${num_cores}
+--GTfield ${GTfield_test} --test_pheno ${test_pheno} \
+--num_cores ${num_cores} --clean_output 0
 
-# optional script for removing files
+## test run
+${BGW_dir}/bin/Estep_mcmc -vcf ${wkdir}/${gene_name}_predict_trait/${gene_name}_test.vcf -p ${test_pheno} -o ${gene_name}_pred -GTfield ${GTfield} -saveGeno -maf 0

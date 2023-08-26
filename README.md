@@ -12,7 +12,7 @@ Please contact **Jingjing Yang (<jingjing.yang@emory.edu>)** if there is any iss
 
 - [Software Installation](#software-installation)
 - [Input Files](#input-files)
-	- [1. Individual Training Data Files](#individual-training-data-files)
+	- [1. Individual Training Data Files](#1.-individual-training-data-files)
 	- [2. xQTL Summary Statistic Files](#2.-xQTL-summary-statistic-files)
 	- [3. Individual Test GWAS Data Files](#3.-individual-test-gwas-data-files)
 - [Example Usage](#example-usage)
@@ -238,6 +238,7 @@ ${BGW_dir}/bin/get_sumstat.sh --BGW_dir ${BGW_dir} \
 - `--ZScore_dir` : Specify summary score statistic file directory, default `${wkdir}/${gene_name}_scores`
 - `--p_thresh` : Specify p-value threshold for pruning, default `1e-5`
 - `--max_blocks` : Specify the maximum number of genome blocks for jointly training gene expression prediction models, default `50`
+- `--clean_output` : Whether to delete all intermediate outcomes, taking the input value of `1` for deleting or `0` keeping all intermediate files for testing purpose.
 
 #### 3.3. Example command:
 ```
@@ -249,7 +250,9 @@ ${BGW_dir}/bin/prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 
 
 #### 3.4. Output files
-* A list of filehead of selected genome blocks and the corresponding minimum within-block single xQTL analysis p-values are given (one genome block per row) in the file of `${wkdir}/${gene_name}_select_filehead.txt`, which will be used to train xQTL weights by **EM-MCMC** algorithm.
+* A list of filehead of selected genome blocks and the corresponding minimum within-block single xQTL analysis p-values are given (one genome block per row) in the file of `${wkdir}/${gene_name}_select_segments.txt`.
+* A list of filehead of selected genome blocks are given (one genome block per row) in the file of `${wkdir}/${gene_name}_select_filehead.txt`, which will be used to train xQTL weights.
+
 
 ### 4. Training xQTL Weights
 
@@ -259,53 +262,65 @@ ${BGW_dir}/bin/prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 * Weights of xQTL with Bayesian causal posterior probability (CPP) `CPP>${CPP_thresh}` will be saved for the follow-up xWAS analysis.
 
 #### 4.2. Input arguments
-- `--BGW_dir` : Directory of BGW-TWAS tool
+- `--BGW_dir` : Directory of BGW-xWAS-SS tool
 - `--wkdir` : Working directory with writting access
-- `-GeneExpFile` : Gene expression file directory
-- `--gene_name` : Study gene name that should be the same used in `GeneExpFile`
-- `--LDdir` : Directory of all LD files with writting access
-- `--Score_dir` : Specify summary score statistic file directory, default `${wkdir}/${gene_name}_scores`
+- `-GeneInfo` : Gene annotation file directory
+- `--gene_name` : Study gene name that should be the same as in the 5th column of `GeneInfo` file
+- `--LDdir` : Directory of all LD files
+- `--Zscore_dir` : Directory of xQTL sumary Zscore statistic files, default `${wkdir}/${gene_name}_Zscores`
 - `--select_filehead` : File with selected genome block fileheads, default `${wkdir}/${gene_name}_select_filehead.txt`
-- `--N` : Number of sample size used in Step 1 to generate eQTL summary statistics
-- `--hfile` : Hyper parameter file as in `./Example/hypval.txt`, specifing the prior causal probability (_pi_) and effect size variance (_sigma2_) for cis (row 1) and trans (row 2) eQTL
-- `--em` : Number of EM iterations. Default `3`.
+- `--Nsample` : Number of training sample size used to generate xQTL summary statistics
+- `--hfile` : Hyper parameter file as in `${BGW_dir}/bin/hypval.init.txt`, specifing the prior causal probability (_pi_) and effect size variance (_sigma2_) for cis (row 1) and trans (row 2) eQTL
+- `--em` : Number of EM iterations. Default `2` for 3 EM iterations.
 - `--burnin` : Number of burnin MCMC iterations. Default `10000`.
 - `--Nmcmc` : Number of MCMC iterations. Default `10000`.
-- `--PCP_thresh` : PCP threshold for selecting eQTL with `PCP > ${PCP_thresh}` for predicting GReX and association study. Default `0.0001`.
+- `--CPP_thresh` : CPP threshold for selecting xQTL with `CPP > ${CPP_thresh}` for xWAS analysis. Default `0.0001`.
 - `--num_cores` : Specify the number of parallele sessions, default `1`.
+- `--pp_cis` : Specify the minimum prior CPP for cis xQTL, default `0.0001`. Suggest to be `1/(# of cis-variants)`.
+- `--pp_trans` : Specify the minimum prior CPP for trans xQTL, default `0.00001`. Suggest to be `1/(# of analyzed trans-variants)`.
+- `--a_gamma` : Specify the shape parameter in the inverse-gamma prior of xQTL effect size variance, default `1`.
+- `--b_gamma` : Specify the scale parameter in the inverse-gamma prior of xQTL effect size variance, default `2`.
 - `--clean_output` : Whether to delete all intermediate outcomes, taking the input value of `1` for deleting or `0` keeping all intermediate files for testing purpose.
 
 #### 4.3. Example commands:
 ```
+Nsample=499
+hfile=${BGW_dir}/bin/hypval.init.txt
+CPP_thresh=0.0001
 select_filehead=${wkdir}/${gene_name}_select_filehead.txt
+
+maf=0.01; em=2; burnin=10000; Nmcmc=10000
+pp_cis=0.0003; pp_trans=0.0002; a_gamma=1; b_gamma=2
 
 ${BGW_dir}/bin/EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
---GeneExpFile ${GeneExpFile} --LDdir ${LDdir} \
---Score_dir ${Score_dir} --select_filehead ${select_filehead} \
---N ${N} --hfile ${hfile} \
---em 3 --burnin 10000 --Nmcmc 10000 \
---PCP_thresh ${PCP_thresh} --num_cores ${num_cores} \
+--GeneInfo ${GeneInfo} --select_filehead ${select_filehead} \
+--LDdir ${LDdir} --Zscore_dir ${Zscore_dir} \
+--Nsample ${Nsample} --maf ${maf} --hfile ${hfile} \
+--em ${em} --burnin ${burnin} --Nmcmc ${Nmcmc} \
+--CPP_thresh ${CPP_thresh} --num_cores ${num_cores} \
+--pp_cis ${pp_cis} --pp_trans ${pp_trans} \
+--a_gamma ${a_gamma} --b_gamma ${b_gamma} \
 --clean_output 0
 ```
 
 
 #### 4.4. Output files
-* Bayesian estimates of eQTL PCP and effect sizes from the final EM-MCMC iteration will saved in the output `${gene_name}_BGW_eQTL_weights.txt` file under specified `${wkdir}` that lists all SNPs with `PCP>${PCP_thresh}`.
+* Bayesian estimates of xQTL CPP and effect sizes from the final EM-MCMC iteration will saved in the output `${gene_name}_BGW_xQTL_weights.txt` file under specified `${wkdir}` that lists all xQTL with `CPP>${CPP_thresh}`.
 
-* The BGW weight file (`${gene_name}_BGW_eQTL_weights.txt`) will be used for predicting GReX values with individual-level GWAS data as in Step 4 or conducting gene-based association test with GWAS summary statistics. See instructions in Step 5 for TWAS procedure.
-
+* The BGW weight file (`${gene_name}_BGW_xQTL_weights.txt`) will be used for predicting genetically regulated molecular traits with individual-level GWAS test data or conducting gene based association test with GWAS summary statistics. 
 
 
 #### Remarks
 * Intermediate output will be deleted unless with input argument `--clean_output 0`. Keeping intermediate outputs is recommended only for testing purpose.
-*  Additional arguments can be tuned in the `EM-MCMC.sh` script, but should be done with caution. These arguments are detailed in [Yang et al. 2017](https://github.com/yjingj/bfGWAS/blob/master/bfGWAS_Manual.pdf).
+*  Minimum prior causal probability for cis and trans xQTL (`--pp_cis, --pp_tans`) could be tuned to obtain desired numbers of xQTL in the weight file. 
 
 
 ### 5. Predict Genetically Regulated Molecular Traits
-Step 4 will use the BGW weight file (`${gene_name}_BGW_eQTL_weights.txt`) generated from Step 3 and provided individual-level GWAS data to predict GReX values for test samples. Both test genotype VCF files (saved per chromosome, each file name containing the pattern of `_CHR[chr_num]_`) and test phenotype file should be provided.
+- Use the obtained BGW weight file (`${gene_name}_BGW_xQTL_weights.txt`) and provided individual-level GWAS data to predict genetically regulated molecular traits for test samples. Both test genotype VCF files (saved per chromosome, each file name containing the pattern of `_CHR[chr_num]_`) and test phenotype file should be provided.
 
-The product of eQTL PCP and effect size will give an expected eQTL effect size that will be used as SNP weight for estimating the GReX values in Step 4.
+- The product of xQTL CPP and the corresponding effect size will give an expected xQTL effect size that will be used as xQTL weight for predicting genetically regulated molecular traits for test samples.
+
 
 #### 5.2.  Input arguments
 - `--BGW_dir` : Directory of BGW-TWAS tool
@@ -323,7 +338,7 @@ The product of eQTL PCP and effect size will give an expected eQTL effect size t
 #### 5.3. Example commands:
 
 ```
-${BGW_dir}/bin/Step4_get_test_grex.sh --BGW_dir ${BGW_dir} \
+${BGW_dir}/bin/get_test_trait.sh --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
 --BGW_weight ${BGW_weight} --test_geno_dir ${test_geno_dir} \
 --test_geno_filehead ${test_geno_filehead} \

@@ -106,7 +106,7 @@ else
     echo ${GeneInfo} is empty. Please provide a valid gene information file.
 fi
 
-rm -f temp_ID.txt exp_temp.txt
+rm -f temp_ID.txt trait_temp.txt
 
 ## Run in parallele with specified number of processes by -P
 seq 1 ${num_segments}  | xargs -I % -n 1 -P ${num_cores} sh ${BGW_dir}/bin/get_xqtl_sumstat.sh ${gene_trait} ${geno_dir} ${Zscore_dir} ${BGW_dir} ${LDdir} ${Genome_Seg_Filehead} % ${GTfield} ${target_chr} ${start_pos} ${end_pos}
