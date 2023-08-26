@@ -1,0 +1,18 @@
+##
+## Software Version = BGW-TWAS-SS_MCMC
+##
+## Command Line Input = -vcf /home/jyang51/jyang/GITHUB/BGW-xWAS-SS/Example/ExampleWorkDir/ABCA7_predict_trait/ABCA7_test.vcf -p /home/jyang51/jyang/GITHUB/BGW-xWAS-SS/Example/ExampleData/test_pheno.txt -o ABCA7_pred -GTfield GT -saveGeno -maf 0 
+##
+## Date = Fri Aug 25 20:01:32 2023
+
+##
+## Reference Sample Sizes and SNP Numbers :
+## number_of_total_individuals = 499
+## number_of_analyzed_individuals = 499
+## number_of_total_SNPs = 20
+## number_of_analyzed_SNPs = 20
+##
+## Computation Time:
+## total computation time = 0.00021365 min 
+## computation time break down: 
+##
