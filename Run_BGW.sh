@@ -123,7 +123,6 @@ ${BGW_dir}/bin/get_test_trait.sh --BGW_dir ${BGW_dir} \
 --BGW_weight ${BGW_weight} --test_geno_dir ${test_geno_dir} \
 --test_geno_filehead ${test_geno_filehead} \
 --GTfield ${GTfield_test} --test_pheno ${test_pheno} \
+--quant_pheno "TRUE" \
 --num_cores ${num_cores} --clean_output 0
 
-## test run
-${BGW_dir}/bin/Estep_mcmc -vcf ${wkdir}/${gene_name}_predict_trait/${gene_name}_test.vcf -p ${test_pheno} -o ${gene_name}_pred -GTfield ${GTfield} -saveGeno -maf 0

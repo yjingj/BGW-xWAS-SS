@@ -50,6 +50,7 @@ make
 
 ### 2. Additional Requirements
 * Linux tool: [**TABIX**](https://www.htslib.org/doc/tabix.html)
+* R libraries: **[data.table](https://cran.r-project.org/web/packages/data.table/index.html)**, **[tidyverse](https://www.tidyverse.org/packages/)**
 
 ## Input Files
 
@@ -317,67 +318,81 @@ ${BGW_dir}/bin/EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 
 
 ### 5. Predict Genetically Regulated Molecular Traits
-- Use the obtained BGW weight file (`${gene_name}_BGW_xQTL_weights.txt`) and provided individual-level GWAS data to predict genetically regulated molecular traits for test samples. Both test genotype VCF files (saved per chromosome, each file name containing the pattern of `_CHR[chr_num]_`) and test phenotype file should be provided.
+- Use the obtained BGW weight file **`${gene_name}_BGW_xQTL_weights.txt`** and provided individual-level GWAS test data to predict genetically regulated molecular traits for test samples. 
+- The product of xQTL CPP and the corresponding effect size will give an expected xQTL effect size that will be used as xQTL weight for predicting genetically regulated molecular traits.
+- **Test genotype VCF files** (saved per chromosome, each file name containing the pattern of **`_CHR[chr_num]_`**) need to be provided. See example test genotype VCF files `/Example/ExampleData/genotype_data_files/test_geno_CHR*_.vcf.gz`.
+- **Test phenotype file** should be provided. A psuedo test phenotype file could be used to only obtain predicted molecular trait. Test phenotype file contains **two columns without header**, first column for sample IDs as in the VCF genotype file, and the second column are phenotype values (could be all "1" as a psuedo phenotype).
+- Example test phenotype file as in `./Example/ExampleData/test_pheno.txt`:
 
-- The product of xQTL CPP and the corresponding effect size will give an expected xQTL effect size that will be used as xQTL weight for predicting genetically regulated molecular traits for test samples.
+|   |   |
+|---|---|
+|ROS20275399|	0.670773904391749|
+|ROS10442701|-1.96865256349637|
+|...|...|
 
 
-#### 5.2.  Input arguments
-- `--BGW_dir` : Directory of BGW-TWAS tool
+
+#### 5.1.  Input arguments
+- `--BGW_dir` : Directory of BGW-xWAS-SS tool
 - `--wkdir` : Working directory with writting access
-- `--gene_name` : Study gene name that should be the same used in `GeneExpFile`
-- `--BGW_weight` : Directory of the BGW eQTL weight file
+- `--gene_name` : Study gene name that should be the same used for traitning xQTL weights
+- `--BGW_weight` : Directory of the BGW xQTL weight file
 - `--test_geno_dir` : Directory of all test genotype VCF files
 - `--test_geno_filehead` : List of fileheads for test genotype VCF files
 - `--test_pheno` : Directory of the test phentoype file
+- `--quant_pheno` : Specify whether the test phenotype is quantitative `TRUE` or binary `FALSE`
 - `--GTfield` : Specify the genotype field in the VCF file to be used. Default `GT` for assayed genotype. Alternative value `DS` for the inputed dosage genotype field by [Michigan Imputation Server](https://imputationserver.sph.umich.edu/index.html#!).
 - `--num_cores` : Specify the number of parallele sessions, default `1`.
 - `--clean_output` : Whether to delete all intermediate outcomes, taking the input value of `1` for deleting or `0` keeping all intermediate files for testing purpose.
 
 
-#### 5.3. Example commands:
+#### 5.2. Example commands:
 
 ```
+BGW_weight=${wkdir}/${gene_name}_BGW_xQTL_weights.txt
+test_geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
+test_geno_filehead=${BGW_dir}/Example/ExampleData/test_geno_filehead.txt
+test_pheno=${BGW_dir}/Example/ExampleData/test_pheno.txt
+GTfield_test=GT #or DS
+
 ${BGW_dir}/bin/get_test_trait.sh --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
 --BGW_weight ${BGW_weight} --test_geno_dir ${test_geno_dir} \
 --test_geno_filehead ${test_geno_filehead} \
 --GTfield ${GTfield_test} --test_pheno ${test_pheno} \
---num_cores ${num_cores}
+--quant_pheno "TRUE" \
+--num_cores ${num_cores} --clean_output 0
 ```
+
+#### 5.3. Output
+* Predicted genetically regulated values are saved in **`${wkdir}/${gene_name}_pred_trait.txt`**, which can be used to calculate prediction R2 and test the association between _predicted\_molecular\_trait_ and _Phenotype\_of\_Interest_ (i.e., xWAS).
+
+* File **`${wkdir}/${gene_name}_xWAS_results.txt`** contains the xWAS t-test statistic (Test\_stat), xWAS test p-value (Pvalue), sum of causal posterior probabilities (CPP) of all test xQTL, the sum of CPP of cis-xQTL (Cis\_CPP), and the sum of CPP of trans-xQTL (Trans\_CPP). CPP, Cis\_CPP, and Trans\_CPP are the expected number of total xQTL, cis-xQTL, and trans-xQTL for the target test gene. In this result file, no other covariates are adjusted for in the xWAS test.
+
+
+* If additional covariates need to be adusted for in the xWAS test, one need to use the predicted molecular traits from **`${wkdir}/${gene_name}_pred_trait.txt`** and use appropriate regression model to test the association between the predicted molecular traits and the phenotype of interest.
 
 * Intermediate output will be deleted unless with input argument `--clean_output 0`. Keeping intermediate outputs is recommended only for testing purpose.
 
-
-#### 5.4. Output
-* Predicted GReX values are saved in `${wkdir}/${gene_name}_pred_grex.txt`, which can be used to calculate prediction R2 and test the association between _GReX_ and _Phenotype of Interest_ (i.e., TWAS).
-
-* File `${wkdir}/${gene_name}\_sumPCP` contains the sum of posterior causal probabilities (PCP) of all analyzed SNPs, the sum of cis-SNPs, and the sum of trans-SNPs, which are the expected number of total eQTL, cis-eQTL, and trans-eQTL for the target gene.
-
 ### 6. Gene based Association Test
 
-* If using summary-level GWAS data for TWAS, Step 4 will not need to be implemented. One can use the weight files `${wkdir}/${gene_names}_BGW_eQTL_weights.txt` to select the test SNPs presenting in this weight file. 
+* If using summary-level GWAS data for xWAS, one can use the weight files **`${wkdir}/${gene_names}_BGW_eQTL_weights.txt`** to select the test xQTL presenting in this weight file. 
 
-* Note that the eQTL weights estimated BGW are using only centered gene expressions and genotype data but not standardized to have standard deviation `1`. For a valid TWAS using GWAS summary statistics, the S-PrediXcan test statistic with genotype covariance matrix in the denominator must be used, as the FUSION test statistic with genotype correlation matrix in the denominator assumes eQTL weights are derived from standardized gene expressions and genotype data.
+* Note that the xQTL weights estimated BGW are using standardized molecular traits and genotype data.  FUSION test statistic with genotype correlation matrix in the denominator could be used.
 
-* With summary-level GWAS Z-score statistics <img src="https://render.githubusercontent.com/render/math?math=Z_i, i=1, \cdots, m"> for single SNP tests, eQTL effect sizes (i.e., weights `w`) estimated by BGW-TWAS method for `m` test SNPs
-	*  "S-PrediXcan" TWAS Z score statistic is given by
-<img src="https://render.githubusercontent.com/render/math?math=\frac{\sum_{i=1}^m \left(w_i \sigma^2_i Z_i \right) } {\sqrt{\mathbf{w'\Sigma w}}}">, with reference LD **Covariance matrix <img src="https://render.githubusercontent.com/render/math?math=\mathbf{\Sigma}">**, and reference genotype variance (diagonal values of the LD covariance matrix) of SNP `i` <img src="https://render.githubusercontent.com/render/math?math=\sigma^2_i">.
+* With summary-level GWAS Z-score statistics <img src="https://render.githubusercontent.com/render/math?math=Z_i, i=1, \cdots, m"> for single SNP tests, xQTL weights (`w`) estimated by BGW-TWAS method for `m` test xQTL
 	* "FUSION" TWAS Z score statistic is given by <img src="https://render.githubusercontent.com/render/math?math=\frac{\sum_{i=1}^m \left(w_i Z_i\right) } {\sqrt{\mathbf{w'Vw}}}">, with reference LD **Correlation matrix `V`**.
-	* One can use "TABIX" tool to extract reference genotype data of the test SNPs from external reference VCF files, for the purpose of calculating the reference covariance or correlation matrix more easily.
+	* One can use "TABIX" tool to extract reference genotype data of the test SNPs from external reference VCF files, for the purpose of calculating the reference covariance or correlation matrix more easily. Similar commands are used in `get_test_trait.sh` script to extract test genotype data from individual test genotype VCF files. 
 
-* Or one can use our other [TIGAR](https://github.com/yanglab-emory/TIGAR) tool to obtain TWAS results, where both "S-PrediXcan" and "FUSION" TWAS Z score tests were implemented.
+* Or one can use our other [TIGAR](https://github.com/yanglab-emory/TIGAR) tool to obtain TWAS results.
 
-
-
-* If using individual-level GWAS data for TWAS, Step 4 will need to be implemented to obtain predicted GReX values for all test samples. Then a simple single variant association test between _GReX_ and _Phenotype of Interest_ will result in the TWAS results.
 
 
 ## Options to save disk storage
 
-* By default setting, temporary directories such as `${wkdir}/${gene_name}_scores/output/`, `${wkdir}/${gene_name}_EM_MCMC/`, `${wkdir}/${gene_name}_GReX/`, and intermediate files `${wkdir}/${gene_name}_exp_trait.txt`, `${wkdir}/${gene_name}_exp_var.txt`, `${wkdir}/ABCA7_grex.geno` would be deleted. If not, you can delete those.
+* By default setting, temporary directories such as `${wkdir}/${gene_name}_Zscores/output/`, `${wkdir}/${gene_name}_EM_MCMC/`, `${wkdir}/${gene_name}_predict_trait/`, and intermediate files `${wkdir}/${gene_name}_trait.txt`, `${wkdir}/ABCA7_pred.geno.txt` would be deleted. If not, you can delete those.
 
-* All score statistics files under `${wkdir}/${gene_name}_scores/` contain all single variant eQTL analysis test summary statistics, which is optional to be either saved for other usage or deleted.
+* All Zscore statistics files under `${wkdir}/${gene_name}_Zscores/` contain all single variant xQTL analysis test summary statistics, which is optional to be either saved for other usage or deleted.
 
-* The weight files `${wkdir}/${gene_names}_BGW_eQTL_weights.txt` are the only file needed for TWAS, which can be gzipped to save storage.
+* The weight files `${wkdir}/${gene_names}_BGW_xQTL_weights.txt` are the only file needed for xWAS, which can be gzipped to save storage.
 

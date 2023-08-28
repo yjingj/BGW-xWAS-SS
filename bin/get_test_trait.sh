@@ -5,7 +5,7 @@
 
 #################################
 VARS=`getopt -o "" -a -l \
-BGW_dir:,wkdir:,gene_name:,BGW_weight:,test_geno_dir:,test_geno_filehead:,GTfield:,test_pheno:,num_cores:,clean_output: \
+BGW_dir:,wkdir:,gene_name:,BGW_weight:,test_geno_dir:,test_geno_filehead:,GTfield:,test_pheno:,quant_pheno:,num_cores:,clean_output: \
 -- "$@"`
 
 if [ $? != 0 ]
@@ -27,6 +27,7 @@ do
 		--test_geno_filehead|-test_geno_filehead) test_geno_filehead=$2; shift 2;;
 		--GTfield|-GTfield) GTfield=$2; shift 2;;
 		--test_pheno|-test_pheno) test_pheno=$2; shift 2;;
+        --quant_pheno|-quant_pheno) quant_pheno=$2; shift 2;;
         --num_cores|-num_cores) num_cores=$2; shift 2;;
         --clean_output|-clean_output) clean_output=$2; shift 2;;
         --) shift;break;;
@@ -39,6 +40,7 @@ done
 ##########################################
 GTfield=${Nmcmc:-"GT"}
 num_cores=${num_cores:-1}
+quant_pheno=${quant_pheno:-"TRUE"}
 clean_output=${clean_output:-1}
 
 mkdir -p ${wkdir}/${gene_name}_predict_trait
@@ -106,7 +108,7 @@ fi
 sed -i 's/#//' $BGW_weight
 if [ -s ${wkdir}/${gene_name}_pred.geno.txt ] ; then
     echo Calculating predicted genetically regulated molecular trait ...
-    Rscript ${BGW_dir}/bin/predict_molecular_trait.R ${gene_name} ${wkdir}
+    Rscript ${BGW_dir}/bin/predict_molecular_trait.R ${gene_name} ${wkdir} ${test_pheno} ${quant_pheno}
     echo Predicted genetically regulated molecular trait file is generated under ${wkdir}
 else
 	echo Test genotype dosage file ${wkdir}/${gene_name}_pred.geno.txt file failed to be generated. Please check your input arguments.

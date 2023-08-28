@@ -3,9 +3,14 @@ args <- commandArgs(TRUE)
 
 gene_name <- args[[1]]
 wkdir <- args[[2]]
+pheno_file <- args[[3]]
+quant_pheno <- as.logical(args[[4]])
 
 print(paste( "Calculate predicted genetically regulated molecular trait for gene:", gene_name ))
 print(paste("Working directory:", wkdir))
+print(paste("Test phenotype directory:", pheno_file))
+print(paste("quant_pheno:", quant_pheno))
+
 
 library(data.table)
 library(tidyverse)
@@ -65,8 +70,28 @@ if( n_snp > 0 ){
 X_geno <- matrix( as.numeric(t(tmp_test[, -(1:5)]) ), ncol = length(w_vec))
 # is.numeric(X_geno)
 pred_trait <- X_geno %*% (w_vec)
-write_tsv(data.frame(sampleID=colnames(tmp_test)[-(1:5)], pred_trait=pred_trait), file=paste0(gene_name, "_pred_trait.txt"))
+pred_trait_dt <- data.frame(SampleID=colnames(tmp_test)[-(1:5)], Pred_trait=pred_trait)
+write_tsv(pred_trait_dt, file=paste0(gene_name, "_pred_trait.txt"))
+
+pheno_data <- read.table(file = pheno_file, header = FALSE, col.names = c("SampleID", "Pheno"))
+
+xWAS_data <- merge(pred_trait_dt, pheno_data, by = "SampleID", sort = FALSE)
+Pvalue = NA; Test_stat = NA;
+if(quant_pheno){
+	temp_fit = lm(Pheno ~ Pred_trait, data = xWAS_data)
+}else{
+	temp_fit = glm(factor(Pheno) ~ Pred_trait, family = "binomial", data = xWAS_data)
+}
+Test_stat = summary(temp_fit)$coefficients[2, 3] %>% format(format = "e", digits = 4)
+Pvalue = summary(temp_fit)$coefficients[2, 4] %>% format(format = "e", digits = 4)
+
+# formatC(x, format = "e", digits = 2)
 
 total_CPP <- cis_CPP + trans_CPP
-write_tsv(data.frame(Gene=gene_name, total_CPP=total_CPP, cis_CPP=cis_CPP, trans_CPP=trans_CPP), file=paste0(gene_name, "_sumCPP.txt"))
+write_tsv(data.frame(Gene = gene_name, Test_stat = Test_stat,
+	Pvalue = Pvalue,
+	Total_CPP= format(total_CPP, format = "e", digits = 4),
+	Cis_CPP = format(cis_CPP, format = "e", digits = 4),
+	Trans_CPP = format(trans_CPP, format = "e", digits = 4)),
+	file = paste0(gene_name, "_xWAS_results.txt"))
 

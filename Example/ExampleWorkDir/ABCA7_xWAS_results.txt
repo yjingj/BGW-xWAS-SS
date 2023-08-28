@@ -1,0 +1,2 @@
+Gene	Test_stat	Pvalue	total_CPP	cis_CPP	trans_CPP
+ABCA7	6.917	1.428e-11	0.2818	0.1974	0.0844
