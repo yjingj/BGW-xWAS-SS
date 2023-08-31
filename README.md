@@ -147,8 +147,7 @@ Input files of **BGW-TWAS-SS** tool are all tab-seperated text files:
 ### 1. Set up Tool Directories and Input Arguments
 
 ```
-## Variables for training xQTL weights.
-
+### Variables for training xQTL weights.
 ### Please update tool directory and use different working and LD file directories from below
 BGW_dir=~/GIT/BGW-xWAS-SS # Tool directory
 wkdir=${BGW_dir}/Example/ExampleWorkDir
@@ -156,32 +155,11 @@ Genome_Seg_Filehead=${BGW_dir}/Example/ExampleData/geno_block_filehead.txt
 gene_name=ABCA7 # target gene
 GeneInfo=${BGW_dir}/Example/ExampleData/Gene_Exp_example.txt # Gene annotation file or Molecular trait file
 
-
 ### Directories for using summary-level xQTL data
-ZScore_dir=${wkdir}/${gene_name}_Zscores # Zscore statistic files
+Zscore_dir=${wkdir}/${gene_name}_Zscores # Zscore statistic files
 LDdir=${BGW_dir}/Example/ExampleData/LDdir # Shared by all genes
 
 num_cores=2 # Number of cores to be used
-
-### Directories and variables needed for using individual-level genotype data
-geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files # Genotype VCF directory
-GTfield=GT # specify genotype field "DS" or the corresponding field name in the VCF file for dosage genotype
-
-## Varables for selecting genome blocks 
-p_thresh=0.001 # p-value threshold
-max_blocks=50 # maximum blocks
-
-## Variables for running EM-MCMC with selected genome blocks
-N=499 # Training sample size
-hfile=${BGW_dir}/Example/hypval.txt
-PCP_thresh=0.0001
-
-## Variables for predicting genetically regulated molecular trait using individual-level test genotype data
-BGW_weight=${wkdir}/${gene_name}_BGW_eQTL_weights.txt
-test_geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
-test_geno_filehead=${BGW_dir}/Example/ExampleData/test_geno_filehead.txt
-test_pheno=${BGW_dir}/Example/ExampleData/Test_pheno.txt
-GTfield_test=GT # or DS if doseage data to be used
 ```
 
 #### Remarks
@@ -209,6 +187,10 @@ GTfield_test=GT # or DS if doseage data to be used
 
 #### 2.3. Example command:
 ```
+### Directories and variables needed for using individual-level genotype data
+geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files # Genotype VCF directory
+GTfield=GT # specify genotype field "DS" or the corresponding field name in the VCF file for dosage genotype
+
 ${BGW_dir}/bin/get_sumstat.sh --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} --GeneInfo ${GeneInfo} \
 --geno_dir ${geno_dir} --LDdir ${LDdir} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
@@ -236,16 +218,20 @@ ${BGW_dir}/bin/get_sumstat.sh --BGW_dir ${BGW_dir} \
 - `--gene_name` : Gene name that should be the same used in `GeneExpFile`
 - `-GeneExpFile` : Gene expression file directory
 - `--Genome_Seg_Filehead` : Directory of the file containing a list of fileheads of segmented genotype files
-- `--ZScore_dir` : Specify summary score statistic file directory, default `${wkdir}/${gene_name}_scores`
+- `--Zscore_dir` : Specify summary score statistic file directory, default `${wkdir}/${gene_name}_scores`
 - `--p_thresh` : Specify p-value threshold for pruning, default `1e-5`
 - `--max_blocks` : Specify the maximum number of genome blocks for jointly training gene expression prediction models, default `50`
 - `--clean_output` : Whether to delete all intermediate outcomes, taking the input value of `1` for deleting or `0` keeping all intermediate files for testing purpose.
 
 #### 3.3. Example command:
 ```
+Zscore_dir=${wkdir}/${gene_name}_Zscores  # Zscore statistic files
+p_thresh=0.001 # p-value threshold
+max_blocks=50 # maximum blocks
+
 ${BGW_dir}/bin/prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 --GeneInfo ${GeneInfo} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
---ZScore_dir ${ZScore_dir} \
+--Zscore_dir ${Zscore_dir} \
 --p_thresh ${p_thresh} --max_blocks ${max_blocks} --clean_output 1
 ```
 
@@ -275,9 +261,9 @@ ${BGW_dir}/bin/prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 - `--em` : Number of EM iterations. Default `2` for 3 EM iterations.
 - `--burnin` : Number of burnin MCMC iterations. Default `10000`.
 - `--Nmcmc` : Number of MCMC iterations. Default `10000`.
-- `--CPP_thresh` : CPP threshold for selecting xQTL with `CPP > ${CPP_thresh}` for xWAS analysis. Default `0.0001`.
+- `--CPP_thresh` : CPP threshold for selecting xQTL with `CPP > ${CPP_thresh}` for xWAS analysis. Default `0.001`.
 - `--num_cores` : Specify the number of parallele sessions, default `1`.
-- `--pp_cis` : Specify the minimum prior CPP for cis xQTL, default `0.0001`. Suggest to be `1/(# of cis-variants)`.
+- `--pp_cis` : Specify the minimum prior CPP for cis xQTL, default `0.0003`. Suggest to be `1/(# of analyzed cis-variants)`.
 - `--pp_trans` : Specify the minimum prior CPP for trans xQTL, default `0.00001`. Suggest to be `1/(# of analyzed trans-variants)`.
 - `--a_gamma` : Specify the shape parameter in the inverse-gamma prior of xQTL effect size variance, default `1`.
 - `--b_gamma` : Specify the scale parameter in the inverse-gamma prior of xQTL effect size variance, default `2`.
@@ -287,11 +273,13 @@ ${BGW_dir}/bin/prune.sh --wkdir ${wkdir} --gene_name ${gene_name} \
 ```
 Nsample=499
 hfile=${BGW_dir}/bin/hypval.init.txt
-CPP_thresh=0.0001
+CPP_thresh=0.001
 select_filehead=${wkdir}/${gene_name}_select_filehead.txt
 
 maf=0.01; em=2; burnin=10000; Nmcmc=10000
 pp_cis=0.0003; pp_trans=0.0002; a_gamma=1; b_gamma=2
+
+Zscore_dir=${wkdir}/${gene_name}_Zscores  # Zscore statistic files
 
 ${BGW_dir}/bin/EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} \
@@ -349,6 +337,7 @@ ${BGW_dir}/bin/EM-MCMC.sh  --BGW_dir ${BGW_dir} \
 #### 5.2. Example commands:
 
 ```
+## Variables for predicting genetically regulated molecular trait using individual-level test genotype data
 BGW_weight=${wkdir}/${gene_name}_BGW_xQTL_weights.txt
 test_geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
 test_geno_filehead=${BGW_dir}/Example/ExampleData/test_geno_filehead.txt

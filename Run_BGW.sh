@@ -74,7 +74,7 @@ Nsample=499
 # Initial hyper parameter values
 hfile=${BGW_dir}/bin/hypval.init.txt
 # CPP threshold
-CPP_thresh=0.0001
+CPP_thresh=0.001
 # Selected filehead file
 select_filehead=${wkdir}/${gene_name}_select_filehead.txt
 
