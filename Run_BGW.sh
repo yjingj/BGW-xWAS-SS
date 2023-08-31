@@ -1,6 +1,6 @@
 ############################################
 ############################################
-# Step 0: Set up directories of the tool, working directory, genome block information file, and number of cores (for parallele computation).
+# Set up directories of the tool, working directory, genome block information file, and number of cores (for parallele computation).
 ############################################
 ############################################
 # Tool directory

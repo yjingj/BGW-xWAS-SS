@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 # Tool Tabix is required for running this script
-# R library data.table and dplyr are required
+# R library data.table and tidyverse are required
 
 #################################
 VARS=`getopt -o "" -a -l \
