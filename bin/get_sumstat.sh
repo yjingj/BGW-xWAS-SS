@@ -94,6 +94,7 @@ if [ -s ${GeneInfo} ] ; then
     awk -F'[\t]' -v gene=${gene_name} '$5==gene{$1=$2=$3=$4=$5=""; print substr($0,6); exit; }' ${GeneInfo} | tr ' ' '\n' > trait_temp.txt
 
     paste temp_ID.txt trait_temp.txt > ${wkdir}/${gene_name}_trait.txt
+    sed -i "s/\r//g"  ${wkdir}/${gene_name}_trait.txt
 
     gene_trait=${wkdir}/${gene_name}_trait.txt
 
@@ -101,7 +102,7 @@ if [ -s ${GeneInfo} ] ; then
     target_chr=$(echo ${gene_info} | awk 'FS {print $1}');
     start_pos=$(echo ${gene_info} | awk 'FS {print $2}');
     end_pos=$(echo ${gene_info} | awk 'FS {print $3}');
-
+    echo Gene $gene_name with start position $start_pos and end position $end_pos
 else
     echo ${GeneInfo} is empty. Please provide a valid gene information file.
 fi
