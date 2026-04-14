@@ -1,9 +1,14 @@
 # Compiled source #
+./Makefile
 Changes.txt
 Example/Test_wkdir/*
 test_script_AD.sh
 Example/AnalyzeResults/Rplots.pdf
 Example/ExampleWorkDir/ABCA7_EM_MCMC/*
+
+./.gitignore
+./bin/Estep_mcmc
+./libStatGen/libStatGen.a
 
 ###################
 *.com

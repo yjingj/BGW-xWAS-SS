@@ -17,12 +17,13 @@
 # --LDdir : Specify the directory of all LD files
 # --Genome_Seg_Filehead : Specify the file containing the fileheads of all genome segmentations
 # --GTfield : Specify the genotype format in the vcf file that should be used: "GT" (default) or e.g., "DS" for dosage
+# --miss : Specify the percentage of missing genotypes allowed for a variant to be included in the analysis, default 0.5 (50%). Variants with missing genotype percentage > miss will be removed from the analysis.
 # --num_cores : Specify the number of parallele sessions
 # --clean_output : Remove intermediate files
 
 #################################
 VARS=`getopt -o "" -a -l \
-BGW_dir:,wkdir:,gene_name:,GeneInfo:,geno_dir:,LDdir:,Genome_Seg_Filehead:,GTfield:,num_cores:,clean_output: \
+BGW_dir:,wkdir:,gene_name:,GeneInfo:,geno_dir:,LDdir:,Genome_Seg_Filehead:,GTfield:,miss:,num_cores:,clean_output: \
 -- "$@"`
 
 if [ $? != 0 ]
@@ -44,6 +45,7 @@ do
         --LDdir|-LDdir) LDdir=$2; shift 2;;
         --Genome_Seg_Filehead|-Genome_Seg_Filehead) Genome_Seg_Filehead=$2; shift 2;;
         --GTfield|-GTfield) GTfield=$2; shift 2;;
+        --miss|-miss) miss=$2; shift 2;;
         --num_cores|-num_cores) num_cores=$2; shift 2;;
         --clean_output|-clean_output) clean_output=$2; shift 2;;
         --) shift;break;;
@@ -55,6 +57,7 @@ done
 # Setting Default Input Argument Values
 ##########################################
 GTfield=${GTfield:-"GT"}
+miss=${miss:-0.5}
 num_cores=${num_cores:-1}
 clean_output=${clean_output:-1}
 
@@ -110,7 +113,7 @@ fi
 rm -f temp_ID.txt trait_temp.txt
 
 ## Run in parallele with specified number of processes by -P
-seq 1 ${num_segments}  | xargs -I % -n 1 -P ${num_cores} sh ${BGW_dir}/bin/get_xqtl_sumstat.sh ${gene_trait} ${geno_dir} ${Zscore_dir} ${BGW_dir} ${LDdir} ${Genome_Seg_Filehead} % ${GTfield} ${target_chr} ${start_pos} ${end_pos}
+seq 1 ${num_segments}  | xargs -I % -n 1 -P ${num_cores} sh ${BGW_dir}/bin/get_xqtl_sumstat.sh ${gene_trait} ${geno_dir} ${Zscore_dir} ${BGW_dir} ${LDdir} ${Genome_Seg_Filehead} % ${GTfield} ${target_chr} ${start_pos} ${end_pos} ${miss}
 
 if [ $clean_output -eq 1 ] ; then
 rm -fr ${Zscore_dir}/output

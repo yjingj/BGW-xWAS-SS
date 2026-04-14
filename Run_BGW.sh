@@ -4,7 +4,7 @@
 ############################################
 ############################################
 # Tool directory
-BGW_dir=/home/jyang51/jyang/GITHUB/BGW-xWAS-SS
+BGW_dir=/nfs/yangfss2/data/shared/Software/BGW-xWAS-SS
 
 # Working directory to write intermediate files and output files, unique per gene
 wkdir=${BGW_dir}/Example/ExampleWorkDir

@@ -36,18 +36,23 @@ CPP = g++
 ## Will need the bfGWAS_SS/libStateGen/MemoryAllocators.h and bfGWAS_SS/libStateGen/MemoryAllocators.cpp from "https://github.com/yjingj/bfGWAS_SS.git"; the ones from original libStatGen.git will cause error
 ## C++ libraries used in this tool: zlib, gsl, eigen3, lapack, atlas, blas; Please add -I[path to libraries] accordingly
 
-CPPFLAGS = -ggdb -Wall -O3 -I/usr/lib64 -I./libStatGen/include/ -I/home/jyang/local/lib/gsl/include/ -I/home/jyang/local/lib/zlib/include -I/home/jyang/local/lib/  -D__ZLIB_AVAILABLE__ -D_FILE_OFFSET_BITS=64 -D__STDC_LIMIT_MACROS #-pg
+# echo ${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=/nfs/yangfss2/data/shared/lib/gsl-2.8/lib/:/nfs/yangfss2/data/shared/lib/:/usr/lib64/
 
+CPPFLAGS = -ggdb -Wall -O3 -I/usr/lib64/ -I/nfs/yangfss2/data/shared/lib/ -I/nfs/yangfss2/data/shared/lib/gsl-2.8/lib/ -I/nfs/yangfss2/data/shared/lib/gsl-2.8/include/ -I./libStatGen/include/ -I/beegfs/nvme/hpc/software/spack/opt/spack/linux-rhel8-sapphirerapids/gcc-13.2.0/zlib-1.3.1-j3swb5ll6kgipphma2xsdbtgyezjgzf4/include -I/beegfs/nvme/hpc/software/spack/opt/spack/linux-rhel8-sapphirerapids/gcc-13.2.0/eigen-3.4.0-lvcl5z4jvuebqqchmxvglwsup42jpqbj/include  -D__ZLIB_AVAILABLE__ -D_FILE_OFFSET_BITS=64 -D__STDC_LIMIT_MACROS #-pg
 
 ## Include correct libraries of gsl, blas, lapack, atlas, libStatGen
-LIBS = -lgsl -lgslcblas -pthread -lz -lm ./libStatGen/libStatGen.a
+# gsl, lapack are installed locally
+LIBS = -L/nfs/yangfss2/data/shared/lib/gsl-2.8/lib/ -lgsl -lgslcblas -lm -pthread -lz ./libStatGen/libStatGen.a /nfs/yangfss2/data/shared/lib/liblapack.a /nfs/yangfss2/data/shared/lib/librefblas.a /nfs/yangfss2/data/shared/lib/libtmglib.a
 
 # Detailed library paths, D for dynamic and S for static
 LIBS_LNX_D_LAPACK = -llapack
 LIBS_MAC_D_LAPACK = -framework Veclib
-LIBS_LNX_S_LAPACK = /usr/lib64/liblapacke.so -lgfortran /usr/lib64/atlas/libsatlas.so.3 /usr/lib64/libblas.so -Wl,--allow-multiple-definition 
+LIBS_LNX_S_LAPACK = -lgfortran /usr/lib64/atlas/libsatlas.so.3 -Wl,--allow-multiple-definition
+# /usr/lib64/liblapacke.so
+# /beegfs/nvme/hpc/software/spack/opt/spack/linux-rhel8-sapphirerapids/gcc-13.2.0/openblas-0.3.26-77c6q3rbzipevb7adz7elfxf4x7clzw6/lib/libopenblas-r0.3.26.so
 
-#LIBS_LNX_S_LAPACK = /usr/lib/lapack/liblapack.a -lgfortran  /usr/lib/atlas-base/libatlas.a /usr/lib/libblas/libblas.a -Wl,--allow-multiple-definition 
+#LIBS_LNX_S_LAPACK = /usr/lib/lapack/liblapack.a -lgfortran  /usr/lib/atlas-base/libatlas.a /usr/lib/libblas/libblas.a -Wl,--allow-multiple-definition
 
 # Options
 
