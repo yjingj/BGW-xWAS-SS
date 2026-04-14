@@ -37,11 +37,12 @@ geno_dir=${BGW_dir}/Example/ExampleData/genotype_data_files
 
 # Specify the genotype field "GT" (called genotype) or "DS" (imputation dosage) to be used from the VCF files
 GTfield=GT
+miss=0.5 # missing genotype percentage threshold to filter out variants with high missingness, default 0.5 (50%)
 
 ${BGW_dir}/bin/get_sumstat.sh --BGW_dir ${BGW_dir} \
 --wkdir ${wkdir} --gene_name ${gene_name} --GeneInfo ${GeneInfo} \
 --geno_dir ${geno_dir} --LDdir ${LDdir} --Genome_Seg_Filehead ${Genome_Seg_Filehead} \
---GTfield ${GTfield} --num_cores ${num_cores} --clean_output 1
+--GTfield ${GTfield} --miss ${miss} --num_cores ${num_cores} --clean_output 1
 
 ################################################################
 ################################################################
